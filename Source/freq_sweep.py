@@ -55,7 +55,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     f.close()
 
     if (results_folder is not None) and (not path.exists(results_folder)): makedirs(
-        results_folder)  # Create the folder if it does not exists
+        results_folder)  # Create the folder if it does not exist
     if (results_folder is None) and (save_td or compute_yz): results_folder = working_dir
 
     """ --- Main program --- """
@@ -126,7 +126,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         t2 = t.time()
         d_axis = read_and_save_ms(original_folder=working_dir + project_name + fortran_ext,
                                   target_filename=simset_task.overrides()['save_channels_file'][:-4],
-                                  new_folder=results_folder, output_filename=output_files + '_d', save=save_td,
+                                  new_folder=results_folder, output_filename=output_files+'_d', save=save_td,
                                   output=compute_yz, n_sim=fpoints)
         print(' d-axis injection results collected in', round((t.time() - t2), 2), 'seconds')
 
@@ -145,15 +145,15 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         t2 = t.time()
         q_axis = read_and_save_ms(original_folder=working_dir + project_name + fortran_ext,
                                   target_filename=simset_task.overrides()['save_channels_file'][:-4],
-                                  new_folder=results_folder, output_filename=output_files + '_q', save=save_td,
+                                  new_folder=results_folder, output_filename=output_files+'_q', save=save_td,
                                   output=compute_yz, n_sim=fpoints)
         print(' q-axis injection results collected in', round((t.time() - t2), 2), 'seconds')
 
     if compute_yz:
         t2 = t.time()
-        YZ_computation(fbase=fbase, frequencies=freq, fft_periods=fft_periods, start_fft=start_fft,
+        yz_computation(fbase=fbase, frequencies=freq, fft_periods=fft_periods, start_fft=start_fft,
                        ss=ss[find_nearest(ss[:, 0], t_snap):, :],
-                       VI1_TD=d_axis[:, 1:], VI2_TD=q_axis[:, 1:], TD=d_axis[:, 0], results_folder=results_folder,
+                       vi1_td=d_axis[:, 1:], vi2_td=q_axis[:, 1:], td=d_axis[:, 0], results_folder=results_folder,
                        results_name=output_files)
         print(' Admittance computation finished in ', round((t.time() - t2), 2), 'seconds')
 
@@ -177,8 +177,7 @@ def read_and_save_ms(n_sim=None, original_folder=None, target_filename=None, new
              (file.endswith(".out") and (file.count(target_filename) > 0))]  # end in .out and contain name
     # More file filtering: file name followed by an _ and another two _ near the end
     files_filtered = [file for file in files if (
-                file[len(target_filename)] == '_' and file.count("_", len(target_filename)) == 2 and len(file) > len(
-            target_filename))]
+                file[len(target_filename)] == '_' and file.count("_", len(target_filename)) == 2 and len(file) > len(target_filename))]
     if len(files_filtered) != n_sim: files_filtered = [file for file in files_filtered if file.endswith(
         "_01.out")]  # If multiple output vars, it only reads the 1st file
     n = 4  # Number of simulation variables to be retreived (excluding time)
@@ -197,17 +196,16 @@ def read_and_save_ms(n_sim=None, original_folder=None, target_filename=None, new
     if output: return values
 
 
-def YZ_computation(fbase=None, frequencies=None, fft_periods=1, start_fft=None,
-                   ss=None, VI1_TD=None, VI2_TD=None, TD=None, results_folder=None, results_name='Y'):
-    dt = np.mean([TD[i + 1] - TD[i] for i in range(min(len(TD), 100))])  # Sampling time [s]
+def yz_computation(fbase=None, frequencies=None, fft_periods=1, start_fft=None,
+                   ss=None, vi1_td=None, vi2_td=None, td=None, results_folder=None, results_name='Y'):
+    dt = np.mean([td[i + 1] - td[i] for i in range(min(len(td), 100))])  # Sampling time [s]
 
     # Subtracts the steady state values from the signals after the system reached steady state
-    start_idx = find_nearest(TD, start_fft)
-    if TD[0] == dt: ss = ss[1:, :]  # If the simulations do not start at 0 but at dt, then shift the snapshot by dt
-    ss_ext = np.tile(ss[start_idx:, 1:], (
-    1, int(round(VI1_TD.shape[1] / 4))))  # Extend the steady-state matrix by the number of simulations
-    deltaVI1_TD = VI1_TD[start_idx:, :] - ss_ext  # Small-signal steady state computation
-    deltaVI2_TD = VI2_TD[start_idx:, :] - ss_ext
+    start_idx = find_nearest(td, start_fft)
+    if td[0] == dt: ss = ss[1:, :]  # If the simulations do not start at 0 but at dt, then shift the snapshot by dt
+    ss_ext = np.tile(ss[start_idx:, 1:], (1, int(round(vi1_td.shape[1] / 4))))  # Extend the steady-state matrix by the number of simulations
+    deltavi1_td = vi1_td[start_idx:, :] - ss_ext  # Small-signal steady state computation
+    deltavi2_td = vi2_td[start_idx:, :] - ss_ext
 
     Y_dd = np.empty((len(frequencies),), dtype='cdouble')  # also dtype='csingle'
     Y_dq = np.empty((len(frequencies),), dtype='cdouble')
@@ -216,8 +214,8 @@ def YZ_computation(fbase=None, frequencies=None, fft_periods=1, start_fft=None,
 
     # Option 1: No target frequency-based FFT distinction
     L = int(fft_periods * 1 / fbase * 1.0 / dt)
-    deltaVI1_FD = np.fft.rfft(deltaVI1_TD, n=L, axis=0) * 2 / L
-    deltaVI2_FD = np.fft.rfft(deltaVI2_TD, n=L, axis=0) * 2 / L
+    deltaVI1_FD = np.fft.rfft(deltavi1_td, n=L, axis=0) * 2 / L
+    deltaVI2_FD = np.fft.rfft(deltavi2_td, n=L, axis=0) * 2 / L
     # freqs = np.fft.rfftfreq(L, d=dt) # rFFT frequency points
     for sim, frequency in enumerate(frequencies):
         idx = int(round(frequency * fft_periods * 1 / fbase))
@@ -241,7 +239,7 @@ def YZ_computation(fbase=None, frequencies=None, fft_periods=1, start_fft=None,
     # Option 2: Target frequency-based FFT distinction (more efficient) To be added
 
     if results_folder is not None:
-        if not path.exists(results_folder): makedirs(results_folder)  # Create the folder if it does not exists
+        if not path.exists(results_folder): makedirs(results_folder)  # Create the folder if it does not exist
         ##                np.savetxt(results_folder+'\\'+'frequencies.txt', frequencies, header="f", delimiter='\t',comments='')
         ##                np.savetxt(results_folder+'\\'+'Y.txt', np.stack((Y_dd,Y_dq,Y_qd,Y_qq),axis=1), header="dd\tdq\tqd\tqq", delimiter='\t',comments='')
         np.savetxt(results_folder + '\\' + results_name + '.txt',
