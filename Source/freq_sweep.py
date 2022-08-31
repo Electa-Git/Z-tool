@@ -214,15 +214,15 @@ def yz_computation(fbase=None, frequencies=None, fft_periods=1, start_fft=None,
 
     # Option 1: No target frequency-based FFT distinction
     L = int(fft_periods * 1 / fbase * 1.0 / dt)
-    deltaVI1_FD = np.fft.rfft(deltavi1_td, n=L, axis=0) * 2 / L
-    deltaVI2_FD = np.fft.rfft(deltavi2_td, n=L, axis=0) * 2 / L
+    deltavi1_fd = np.fft.rfft(deltavi1_td, n=L, axis=0) * 2 / L
+    deltavi2_fd = np.fft.rfft(deltavi2_td, n=L, axis=0) * 2 / L
     # freqs = np.fft.rfftfreq(L, d=dt) # rFFT frequency points
     for sim, frequency in enumerate(frequencies):
         idx = int(round(frequency * fft_periods * 1 / fbase))
-        Vdq = np.matrix([[deltaVI1_FD[idx, 4 * sim + 0], deltaVI2_FD[idx, 4 * sim + 0]],
-                         [deltaVI1_FD[idx, 4 * sim + 1], deltaVI2_FD[idx, 4 * sim + 1]]])
-        Idq = np.matrix([[deltaVI1_FD[idx, 4 * sim + 2], deltaVI2_FD[idx, 4 * sim + 2]],
-                         [deltaVI1_FD[idx, 4 * sim + 3], deltaVI2_FD[idx, 4 * sim + 3]]])
+        Vdq = np.matrix([[deltavi1_fd[idx, 4 * sim + 0], deltavi2_fd[idx, 4 * sim + 0]],
+                         [deltavi1_fd[idx, 4 * sim + 1], deltavi2_fd[idx, 4 * sim + 1]]])
+        Idq = np.matrix([[deltavi1_fd[idx, 4 * sim + 2], deltavi2_fd[idx, 4 * sim + 2]],
+                         [deltavi1_fd[idx, 4 * sim + 3], deltavi2_fd[idx, 4 * sim + 3]]])
 
         Y = Idq * np.linalg.inv(Vdq)
         Y_dd[sim] = Y[0, 0]
