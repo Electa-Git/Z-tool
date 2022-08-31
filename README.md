@@ -17,3 +17,9 @@ To use the tool, the following pre-requisites are needed
 2) PSCAD v5 or higher
 
 3) If you opt for the MATLAB usage, then ...
+
+## Usage
+
+## Future work
+
+## Contributors
