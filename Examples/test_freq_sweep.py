@@ -1,6 +1,6 @@
 #!python3.7
 """ Simple script to test the impedance measurement tool """
-from freq_sweep import *
+from Source.freq_sweep import *
 
 PSCAD_folder = r'C:\Users\fcifuent\Desktop\KU Leuven\Projects\Z based analysis\Freq measurement\PSCAD_MODEL'
 results_folder = PSCAD_folder + r'\\Results'
