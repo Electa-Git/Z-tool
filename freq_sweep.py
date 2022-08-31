@@ -11,8 +11,6 @@ from mhi.pscad import launch  # PSCAD automation functions
 rcParams['mathtext.fontset'] = 'cm'  # Font selection
 rcParams['font.family'] = 'STIXGeneral'  # 'cmu serif'
 
-
-# noinspection PyUnboundLocalVariable
 def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_perturb_mag=None,
                     freq=None, fpoints=None, fbase=None, fmin=None, fmax=None, working_dir=None,
                     delay_inj=0.001, freq_text_file='frequencies.txt', snapshot_file='Snapshot', take_snapshot=True,
