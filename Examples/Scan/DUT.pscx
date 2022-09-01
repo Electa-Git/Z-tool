@@ -23,7 +23,7 @@
     <param name="Warn" value="0" />
     <param name="Check" value="0" />
     <param name="description" value="" />
-    <param name="revisor" value="fcifuent, 1662030696" />
+    <param name="revisor" value="fcifuent, 1662033589" />
     <param name="labels" value="" />
     <param name="Preprocessor" value="" />
   </paramlist>
@@ -87,7 +87,7 @@
     </paramlist>
   </GlobalSubstitutions>
   <definitions>
-    <Definition classid="UserCmpDefn" name="dq2abc" build="" crc="111906146" view="false" instances="0" date="1662029964" id="1585482763" w="320" h="400">
+    <Definition classid="UserCmpDefn" name="dq2abc" build="" crc="111906146" view="false" instances="0" date="1662032583" id="1585482763" w="320" h="400">
       <paramlist>
         <param name="Description" value="dq to abc transformation" />
       </paramlist>
@@ -653,7 +653,7 @@
         </User>
       </schematic>
     </Definition>
-    <Definition classid="UserCmpDefn" name="abc2dq_1" build="" crc="87063819" view="false" instances="0" date="1662029964" id="1944828422" w="320" h="400">
+    <Definition classid="UserCmpDefn" name="abc2dq_1" build="" crc="87063819" view="false" instances="0" date="1662032582" id="1944828422" w="320" h="400">
       <paramlist>
         <param name="Description" value="abd to dq transformation" />
       </paramlist>
@@ -1426,7 +1426,7 @@
         </Wire>
       </schematic>
     </Definition>
-    <Definition classid="UserCmpDefn" name="Main" id="267680329" group="" url="" version="" build="" crc="88429064" view="false" date="1662029964">
+    <Definition classid="UserCmpDefn" name="Main" id="267680329" group="" url="" version="" build="" crc="127943823" view="false" date="1662033555">
       <paramlist name="">
         <param name="Description" value="" />
       </paramlist>
@@ -1652,7 +1652,7 @@
         </User>
         <User classid="UserCmp" defn="master:compare" id="1495825074" x="306" y="90" w="80" h="59" z="20" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="18432996">
-            <param name="X" value="3.001" />
+            <param name="X" value="0.25" />
             <param name="OL" value="0" />
             <param name="OH" value="1" />
             <param name="INTR" value="0" />
@@ -1942,10 +1942,10 @@
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="942629397" name="master:const" x="126" y="144" w="92" h="35" z="40" orient="0" defn="master:const" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="942629397" name="master:const" x="126" y="144" w="92" h="35" z="50" orient="0" defn="master:const" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="10628662">
             <param name="Name" value="V_perturb_mag" />
-            <param name="Value" value="0.1" />
+            <param name="Value" value="0.5" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
@@ -2000,7 +2000,7 @@
             <param name="Y10" value="9.0" />
             <param name="File" value="frequencies.txt" />
             <param name="path" value="0" />
-            <param name="npairs" value="80" />
+            <param name="npairs" value="40" />
             <param name="Name" value="XYlist_freq" />
             <param name="X11" value="11" />
             <param name="X12" value="12" />
@@ -2017,7 +2017,7 @@
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="2042674121" name="master:consti" x="666" y="90" w="76" h="35" z="50" orient="6" defn="master:consti" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="2042674121" name="master:consti" x="666" y="90" w="76" h="35" z="40" orient="6" defn="master:consti" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="74846674">
             <param name="Name" value="selector" />
             <param name="Value" value="2" />
@@ -3385,10 +3385,10 @@ Selector = 2: perturbation in q-axis]]></Sticky>
   </definitions>
   <List classid="Resource" />
   <hierarchy>
-    <call link="149218120" name="DUT:DS" z="-1" view="false" instance="0">
+    <call link="735043989" name="DUT:DS" z="-1" view="false" instance="0">
       <call link="1466550816" name="DUT:Main" z="-1" view="true" instance="0">
-        <call link="1466109744" name="DUT:abc2dq_1" z="260" view="false" instance="1" />
-        <call link="359113615" name="DUT:abc2dq_1" z="270" view="false" instance="0" />
+        <call link="1466109744" name="DUT:abc2dq_1" z="260" view="false" instance="0" />
+        <call link="359113615" name="DUT:abc2dq_1" z="270" view="false" instance="1" />
         <call link="127393690" name="DUT:dq2abc" z="360" view="false" instance="0" />
       </call>
     </call>
