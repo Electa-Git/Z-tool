@@ -126,8 +126,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         t2 = t.time()
         d_axis = read_and_save_ms(original_folder=working_dir + project_name + fortran_ext,
                                   target_filename=simset_task.overrides()['save_channels_file'][:-4],
-                                  new_folder=results_folder, output_filename=output_files+'_d', save=save_td,
-                                  output=compute_yz, n_sim=f_points)
+                                  new_folder=results_folder, save=save_td,output=compute_yz, n_sim=f_points)
         print(' d-axis injection results collected in', round((t.time() - t2), 2), 'seconds')
 
     # q-axis injection
@@ -145,8 +144,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         t2 = t.time()
         q_axis = read_and_save_ms(original_folder=working_dir + project_name + fortran_ext,
                                   target_filename=simset_task.overrides()['save_channels_file'][:-4],
-                                  new_folder=results_folder, output_filename=output_files+'_q', save=save_td,
-                                  output=compute_yz, n_sim=f_points)
+                                  new_folder=results_folder, save=save_td, output=compute_yz, n_sim=f_points)
         print(' q-axis injection results collected in', round((t.time() - t2), 2), 'seconds')
 
     if compute_yz:
