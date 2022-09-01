@@ -1,0 +1,38 @@
+<workspace name="DUTscan" version="5.0.0" crc="54077523">
+  <projects>
+    <project type="project" name="DUT" filepath=".\DUT.pscx" />
+  </projects>
+  <simulations>
+    <simulation name="Perturbation" dependson="None" id="747445" classid="SimulationSet">
+      <paramlist name="Default">
+        <param name="enabled" value="true" />
+        <param name="before_run" value="" />
+        <param name="before_block" value="true" />
+        <param name="after_run" value="" />
+        <param name="after_block" value="true" />
+      </paramlist>
+      <task namespace="DUT" classid="SimulationTask" id="24564816" order="0" pmr="false" volley="1" ammunition="1" rank_snap="false" clean="false">
+        <paramlist name="Options">
+          <param name="simulationset" value="" />
+          <param name="namespace" value="DUT" />
+          <param name="name" value="" />
+          <param name="ammunition" value="1" />
+          <param name="volley" value="1" />
+          <param name="affinity_type" value="1" />
+          <param name="affinity" value="1" />
+          <param name="rank_snap" value="false" />
+          <param name="substitutions" value="" />
+          <param name="clean" value="false" />
+        </paramlist>
+      </task>
+    </simulation>
+  </simulations>
+  <pmr />
+  <messagegrid expanded="">
+    <column name="Icon" />
+    <column name="Id" />
+    <column name="Component" />
+    <column name="Namespace" />
+    <column name="Description" />
+  </messagegrid>
+</workspace>
