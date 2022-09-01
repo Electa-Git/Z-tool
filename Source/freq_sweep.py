@@ -240,7 +240,7 @@ def yz_computation(f_base=None, frequencies=None, fft_periods=1, start_fft=None,
         if not path.exists(results_folder): makedirs(results_folder)  # Create the folder if it does not exist
         ##                np.savetxt(results_folder+'\\'+'frequencies.txt', frequencies, header="f", delimiter='\t',comments='')
         ##                np.savetxt(results_folder+'\\'+'Y.txt', np.stack((Y_dd,Y_dq,Y_qd,Y_qq),axis=1), header="dd\tdq\tqd\tqq", delimiter='\t',comments='')
-        np.savetxt(results_folder + '\\' + results_name + '.txt',
+        np.savetxt(results_folder + '\\' + results_name + '_Y.txt',
                    np.stack((frequencies, Y_dd, Y_dq, Y_qd, Y_qq), axis=1), header="f\tdd\tdq\tqd\tqq", delimiter='\t',
                    comments='')
         ##                np.savetxt(results_folder+'\\'+'Y_dd.txt', Y_dd,  delimiter='\t')
@@ -279,7 +279,7 @@ def yz_computation(f_base=None, frequencies=None, fft_periods=1, start_fft=None,
         ax[1].set_ylabel('Phase [°]')
         ax[1].set_xlabel('Frequency [Hz]')
         ax[1].legend(loc='upper right', ncol=2)
-        fig.savefig(results_folder + '\\' + "Admittance.pdf", format="pdf", bbox_inches="tight")
+        fig.savefig(results_folder + '\\' + results_name + "_Y.pdf", format="pdf", bbox_inches="tight")
 
 
 def wait4pscad(time=1, pscad=None):
