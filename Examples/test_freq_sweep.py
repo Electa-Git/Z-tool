@@ -17,11 +17,11 @@ delay_inj       = 0.00   # [s] Delay between the steady-state signal and the inj
 start_fft       = 0.25   # [s] Time for the DUT to reach the new steady-state (injections)
 fft_periods     = 1      # Number of periods used in the FFT for the lowest frequency
 
-t_snap          = 0.25                                      # [s]
+t_snap          = 0.25                                       # [s]
 t_sim           = delay_inj + start_fft + fft_periods/f_base # [s]
-t_step          = 2                                         # [us]
-sample_step     = int(0.5*0.5/f_max)                            # [us]
-v_perturb_mag   = 0.5                                       # [kV]
+t_step          = 2                                          # [us]
+sample_step     = int(1e6*0.5*0.5/f_max)                     # [us]
+v_perturb_mag   = 0.5                                        # [kV]
 
 print('Results for a sample time of',str(sample_step),'us')
 frequency_sweep(t_snap  = t_snap, t_sim = t_sim, t_step = t_step, sample_step = sample_step, v_perturb_mag = v_perturb_mag,
