@@ -77,7 +77,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     XYlist_freq.parameters(File=freq_text_file, path='RELATIVE', npairs=f_points)
     Tdelay_inj = main.find('Tdelay_inj')
     Tdelay_inj.parameters(X=delay_inj + t_snap)
-    V_p_mag = main.find('v_perturb_mag')
+    V_p_mag = main.find('V_perturb_mag')
     V_p_mag.parameters(Value=v_perturb_mag)
     if component_parameters is not None:
         Parameters = [main.find('master:const', 'Param1'), main.find('master:const', 'Param2'),
