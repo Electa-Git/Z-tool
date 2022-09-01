@@ -1,5 +1,5 @@
 #!python3.7
-""" Find the documentation for this function at the end of the script or by typing help(frequency_sweep)"""
+""" Find the documentation for this function at the end of the script or by typing help(frequency_sweep) """
 
 import time as t  # Relative time
 from os import getcwd, chdir, makedirs, path, listdir  # Operating system features
@@ -12,14 +12,14 @@ rcParams['mathtext.fontset'] = 'cm'  # Font selection
 rcParams['font.family'] = 'STIXGeneral'  # 'cmu serif'
 
 def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_perturb_mag=None,
-                    freq=None, fpoints=None, fbase=None, fmin=None, fmax=None, working_dir=None,
+                    freq=None, f_points=None, f_base=None, f_min=None, f_max=None, working_dir=None,
                     delay_inj=0.001, freq_text_file='frequencies.txt', snapshot_file='Snapshot', take_snapshot=True,
                     project_name='Impedance_testing_single_frequ', workspace_name='STATCOM_Workspace',
                     fortran_ext=r'.gf46', num_parallel_sim=8, component_parameters=None,
                     results_folder=None, output_files='Perturbation', compute_yz=False, save_td=False,
                     fft_periods=1, start_fft=1):
     """" --- Input data handling --- """
-    if (t_snap or t_sim or t_step or v_perturb_mag or ((fpoints or fbase or fmax or fmin) and freq)) is None:
+    if (t_snap or t_sim or t_step or v_perturb_mag or ((f_points or f_base or f_max or f_min) and freq)) is None:
         print(
             'One or more required arguments are missing!! \n Check the function documentation by typing help('
             'frequency_sweep) \n')
@@ -32,25 +32,25 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         working_dir = getcwd() + '\\'
     print('\nRunning from ' + working_dir + '\n')
     if freq is None:
-        freq = np.logspace(np.log10(fmin), np.log10(fmax), num=int(
-            fpoints))  # Create the frequency perturbation vector, float by deafult, use dtype='int16' for integers
+        freq = np.logspace(np.log10(f_min), np.log10(f_max), num=int(
+            f_points))  # Create the frequency perturbation vector, float by deafult, use dtype='int16' for integers
         for j in range(freq.size): freq[j] = freq[j] - (
-                    freq[j] % fbase)  # Modify the list so the values are multiples of a base frequency
+                    freq[j] % f_base)  # Modify the list so the values are multiples of a base frequency
         freq = np.unique(
             freq)  # Since it is a brute force calculation, there are repeated values: let's get rid of them
-        multiples = np.arange(fmin, fmax + fbase, fbase)
-        if len(freq) < int(fpoints) and len(multiples) > len(freq):  # Not enough values
+        multiples = np.arange(f_min, f_max + f_base, f_base)
+        if len(freq) < int(f_points) and len(multiples) > len(freq):  # Not enough values
             scope = np.setxor1d(freq, multiples)  # XOR operator
-            to_be_added = min(int(fpoints) - len(freq), len(multiples) - len(freq))
+            to_be_added = min(int(f_points) - len(freq), len(multiples) - len(freq))
             idx = np.floor(len(scope) / to_be_added) * np.arange(to_be_added)  # Add the values indexed uniformly
             for i in idx: freq = np.append(freq, scope[int(i)])
             freq.sort()
 
     # Frequency vector to XY table
-    fpoints = len(freq)
+    f_points = len(freq)
     with open(freq_text_file, 'w') as f:  # Create the .txt file
         f.write('! This file stores the frequency swept values \n')  # Write header
-        for j in range(fpoints): f.write(str(j + 1) + '\t' + str(freq[j]) + '\n')  # Write values
+        for j in range(f_points): f.write(str(j + 1) + '\t' + str(freq[j]) + '\n')  # Write values
         f.write('ENDFILE:')  # Write end of the file
     f.close()
 
@@ -74,7 +74,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     selector = main.find('master:consti', 'selector')
     selector.parameters(Value=0)
     XYlist_freq = main.find('XYlist_freq')
-    XYlist_freq.parameters(File=freq_text_file, path='RELATIVE', npairs=fpoints)
+    XYlist_freq.parameters(File=freq_text_file, path='RELATIVE', npairs=f_points)
     Tdelay_inj = main.find('Tdelay_inj')
     Tdelay_inj.parameters(X=delay_inj + t_snap)
     V_p_mag = main.find('v_perturb_mag')
@@ -115,7 +115,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     print('\n Running single frequency d-axis injection simulation')
     t1 = t.time()
     selector.parameters(Value=1)
-    simset_task.parameters(volley=num_parallel_sim, affinity_type='DISABLE_TRACING', ammunition=fpoints)
+    simset_task.parameters(volley=num_parallel_sim, affinity_type='DISABLE_TRACING', ammunition=f_points)
     simset_task.overrides(duration=t_sim, time_step=t_step, plot_step=sample_step, start_method=1,
                           timed_snapshots=0, startup_inputfile=snapshot_file + '.snp',
                           save_channels_file=output_files + '_d.out', save_channels=1)
@@ -127,14 +127,14 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         d_axis = read_and_save_ms(original_folder=working_dir + project_name + fortran_ext,
                                   target_filename=simset_task.overrides()['save_channels_file'][:-4],
                                   new_folder=results_folder, output_filename=output_files+'_d', save=save_td,
-                                  output=compute_yz, n_sim=fpoints)
+                                  output=compute_yz, n_sim=f_points)
         print(' d-axis injection results collected in', round((t.time() - t2), 2), 'seconds')
 
     # q-axis injection
     print(' Running single frequency q-axis injection simulation')
     t1 = t.time()
     selector.parameters(Value=2)
-    simset_task.parameters(volley=num_parallel_sim, affinity_type='DISABLE_TRACING', ammunition=fpoints)
+    simset_task.parameters(volley=num_parallel_sim, affinity_type='DISABLE_TRACING', ammunition=f_points)
     simset_task.overrides(duration=t_sim, time_step=t_step, plot_step=sample_step, start_method=1,
                           timed_snapshots=0, startup_inputfile=snapshot_file + '.snp',
                           save_channels_file=output_files + '_q.out', save_channels=1)
@@ -146,12 +146,12 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         q_axis = read_and_save_ms(original_folder=working_dir + project_name + fortran_ext,
                                   target_filename=simset_task.overrides()['save_channels_file'][:-4],
                                   new_folder=results_folder, output_filename=output_files+'_q', save=save_td,
-                                  output=compute_yz, n_sim=fpoints)
+                                  output=compute_yz, n_sim=f_points)
         print(' q-axis injection results collected in', round((t.time() - t2), 2), 'seconds')
 
     if compute_yz:
         t2 = t.time()
-        yz_computation(fbase=fbase, frequencies=freq, fft_periods=fft_periods, start_fft=start_fft,
+        yz_computation(f_base=f_base, frequencies=freq, fft_periods=fft_periods, start_fft=start_fft,
                        ss=ss[find_nearest(ss[:, 0], t_snap):, :],
                        vi1_td=d_axis[:, 1:], vi2_td=q_axis[:, 1:], td=d_axis[:, 0], results_folder=results_folder,
                        results_name=output_files)
@@ -196,7 +196,7 @@ def read_and_save_ms(n_sim=None, original_folder=None, target_filename=None, new
     if output: return values
 
 
-def yz_computation(fbase=None, frequencies=None, fft_periods=1, start_fft=None,
+def yz_computation(f_base=None, frequencies=None, fft_periods=1, start_fft=None,
                    ss=None, vi1_td=None, vi2_td=None, td=None, results_folder=None, results_name='Y'):
     dt = np.mean([td[i + 1] - td[i] for i in range(min(len(td), 100))])  # Sampling time [s]
 
@@ -213,12 +213,12 @@ def yz_computation(fbase=None, frequencies=None, fft_periods=1, start_fft=None,
     Y_qq = np.empty((len(frequencies),), dtype='cdouble')
 
     # Option 1: No target frequency-based FFT distinction
-    L = int(fft_periods * 1 / fbase * 1.0 / dt)
+    L = int(fft_periods * 1 / f_base * 1.0 / dt)
     deltavi1_fd = np.fft.rfft(deltavi1_td, n=L, axis=0) * 2 / L
     deltavi2_fd = np.fft.rfft(deltavi2_td, n=L, axis=0) * 2 / L
     # freqs = np.fft.rfftfreq(L, d=dt) # rFFT frequency points
     for sim, frequency in enumerate(frequencies):
-        idx = int(round(frequency * fft_periods * 1 / fbase))
+        idx = int(round(frequency * fft_periods * 1 / f_base))
         Vdq = np.matrix([[deltavi1_fd[idx, 4 * sim + 0], deltavi2_fd[idx, 4 * sim + 0]],
                          [deltavi1_fd[idx, 4 * sim + 1], deltavi2_fd[idx, 4 * sim + 1]]])
         Idq = np.matrix([[deltavi1_fd[idx, 4 * sim + 2], deltavi2_fd[idx, 4 * sim + 2]],
@@ -304,7 +304,7 @@ Author: Francisco Javier Cifuentes García
 V0.1 [03/08/2022]
 PSCAD automation
 The values of the frequency list are multiples of the base frequency.
-The simulation configuration is set to perfom one snapshot and then the frequency sweeps.
+The simulation configuration is set to perform one snapshot and then the frequency sweeps.
 The function accepts several input arguments to customize the frequency sweep:
 
 Required
@@ -318,10 +318,10 @@ Required
         freq			Frequencies to perform the injections [Hz]. Alternatively, the user can provide info to compute the list.
       
 Optional
-        fpoints			Number of frequency perturbation points.
-        fbase		 	Base frequency [Hz].
-        fmin			Start frequency [Hz].
-        fmax			End frequency [Hz].
+        f_points			Number of frequency perturbation points.
+        f_base		 	Base frequency [Hz].
+        f_min			Start frequency [Hz].
+        f_max			End frequency [Hz].
         fft_periods 		Number of periods used to compute the FFT. Default = 1.
         start_fft		Time for the DUT to reach the new steady-state (injections) [s] . 
 	delay_inj 	 	Waiting time until the injections are performed [s]. Default = 0.001 s.
@@ -338,7 +338,7 @@ Optional
                          	If specified, it can also perform the analysis of the results: admitance / impedance measurement.
         compute_yz	 	Compute the admittance and save the results. If no results folder is specified then it saves the data in working_dir.
         save_td  		Bool: If set to True, the several files of time domain data are saved into more compact .txt files for each independent
-                                perturbation. The format is [time Vd(f1) Vq(f1) Id(f1) Iq(f1) ... Vd(fmax) Vq(fmax) Id(fmax) Iq(fmax)].
+                                perturbation. The format is [time Vd(f1) Vq(f1) Id(f1) Iq(f1) ... Vd(f_max) Vq(f_max) Id(f_max) Iq(f_max)].
 
 """
 
