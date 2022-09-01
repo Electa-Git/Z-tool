@@ -14,11 +14,11 @@ rcParams['font.family'] = 'STIXGeneral'  # 'cmu serif'
 def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_perturb_mag=None,
                     freq=None, f_points=None, f_base=None, f_min=None, f_max=None, working_dir=None,
                     delay_inj=0.001, freq_text_file='frequencies.txt', snapshot_file='Snapshot', take_snapshot=True,
-                    project_name='Impedance_testing_single_frequ', workspace_name='STATCOM_Workspace',
+                    project_name='DUT', workspace_name='DUTscan',
                     fortran_ext=r'.gf46', num_parallel_sim=8, component_parameters=None,
                     results_folder=None, output_files='Perturbation', compute_yz=False, save_td=False,
                     fft_periods=1, start_fft=1):
-    """" --- Input data handling --- """
+    """ --- Input data handling --- """
     if (t_snap or t_sim or t_step or v_perturb_mag or ((f_points or f_base or f_max or f_min) and freq)) is None:
         print(
             'One or more required arguments are missing!! \n Check the function documentation by typing help('
