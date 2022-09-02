@@ -28,6 +28,9 @@ to perform the voltage perturbations. In addition, the user needs to specify the
 
 The next step is to introduce the frequency scan parameters in the python script _test_freq_sweep.py_.
 The parameters, which are self-descriptive, are provided to the frequency_sweep function which is the main function of the package.
+
+![test_freq_sweep.py](img_5.png)
+
 After running _test_freq_sweep.py_, we will see the status of the process in real time.
 When the scan is finished, we can access the results (for example, if `compute_yz = True`) in the previously specificed results folder.
 The admittance is ploted and saved in a _.pdf_ file and also a _.txt_ tab separated file structured as **frequency Ydd Ydq Yqd Yqq** is provided.
