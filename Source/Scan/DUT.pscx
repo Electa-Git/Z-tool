@@ -23,7 +23,7 @@
     <param name="Warn" value="0" />
     <param name="Check" value="0" />
     <param name="description" value="" />
-    <param name="revisor" value="fcifuent, 1662030696" />
+    <param name="revisor" value="fcifuent, 1662132309" />
     <param name="labels" value="" />
     <param name="Preprocessor" value="" />
   </paramlist>
@@ -1426,7 +1426,7 @@
         </Wire>
       </schematic>
     </Definition>
-    <Definition classid="UserCmpDefn" name="Main" id="267680329" group="" url="" version="" build="" crc="88429064" view="false" date="1662029964">
+    <Definition classid="UserCmpDefn" name="Main" id="267680329" group="" url="" version="" build="" crc="14876445" view="false" date="1662029964">
       <paramlist name="">
         <param name="Description" value="" />
       </paramlist>
@@ -1832,9 +1832,9 @@
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" id="1215823241" name="master:pgb" x="1080" y="270" w="113" h="40" z="440" orient="0" defn="master:pgb" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1215823241" name="master:pgb" x="1080" y="270" w="68" h="40" z="440" orient="0" defn="master:pgb" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="65740200">
-            <param name="Name" value="I_pcc_dq_output" />
+            <param name="Name" value="I_pcc_dq" />
             <param name="Group" value="" />
             <param name="UseSignalName" value="0" />
             <param name="enab" value="1" />
@@ -1855,9 +1855,9 @@
             <param name="Name" value="V_DUT" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1472899833" name="master:pgb" x="1080" y="360" w="107" h="40" z="430" orient="0" defn="master:pgb" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1472899833" name="master:pgb" x="1080" y="360" w="72" h="40" z="430" orient="0" defn="master:pgb" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="65740200">
-            <param name="Name" value="V_pcc_dq_input" />
+            <param name="Name" value="V_pcc_dq" />
             <param name="Group" value="" />
             <param name="UseSignalName" value="0" />
             <param name="enab" value="1" />
@@ -2476,10 +2476,10 @@ Selector = 2: perturbation in q-axis]]></Sticky>
               <param name="ymin" value="-1" />
               <param name="ymax" value="1" />
             </paramlist>
-            <Curve classid="Curve" id="1765958165" name="V_pcc_dq_input" link="1472899833" color="0" bold="0" show="-1" mode="0">
+            <Curve classid="Curve" id="1765958165" name="V_pcc_dq" link="1472899833" color="0" bold="0" show="-1" mode="0">
               <path />
             </Curve>
-            <Curve classid="Curve" id="158292881" name="I_pcc_dq_output" link="1215823241" color="0" bold="0" show="-1" mode="0">
+            <Curve classid="Curve" id="158292881" name="I_pcc_dq" link="1215823241" color="0" bold="0" show="-1" mode="0">
               <path />
             </Curve>
           </Graph>
@@ -3385,10 +3385,10 @@ Selector = 2: perturbation in q-axis]]></Sticky>
   </definitions>
   <List classid="Resource" />
   <hierarchy>
-    <call link="149218120" name="DUT:DS" z="-1" view="false" instance="0">
+    <call link="863010506" name="DUT:DS" z="-1" view="false" instance="0">
       <call link="1466550816" name="DUT:Main" z="-1" view="true" instance="0">
-        <call link="1466109744" name="DUT:abc2dq_1" z="260" view="false" instance="1" />
-        <call link="359113615" name="DUT:abc2dq_1" z="270" view="false" instance="0" />
+        <call link="1466109744" name="DUT:abc2dq_1" z="260" view="false" instance="0" />
+        <call link="359113615" name="DUT:abc2dq_1" z="270" view="false" instance="1" />
         <call link="127393690" name="DUT:dq2abc" z="360" view="false" instance="0" />
       </call>
     </call>

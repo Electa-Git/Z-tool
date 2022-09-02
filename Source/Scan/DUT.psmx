@@ -28,7 +28,7 @@
     <Window defn="DUT:Main" call="0" />
   </ViewContext>
   <List classid="View">
-    <View name="Main" zoomscale="0.96" scrollx="0" scrolly="0" />
+    <View name="Main" zoomscale="1.5" scrollx="100" scrolly="110" />
     <View name="Park" zoomscale="1.2" scrollx="0" scrolly="0" />
     <View name="abc2dq_1" zoomscale="0.96" scrollx="0" scrolly="0" />
     <View name="dq2abc" zoomscale="1.2" scrollx="0" scrolly="230" />
