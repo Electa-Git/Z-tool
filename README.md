@@ -25,7 +25,7 @@ If PYTHONPATH does not exit, it needs to be created.
 
 ## Usage
 ### Python-based example
-Follow the example described [here](Examples/README.md).
+Follow the example described [here](Examples).
 
 ### MATLAB-based example
 
@@ -35,3 +35,5 @@ Follow the example described [here](Examples/README.md).
 - [ ] Stability assessment
 
 ## Contributors
+* Fransciso Javier Cifuentes Garcia
+* Eros Avdiaj
