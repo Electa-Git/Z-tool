@@ -24,11 +24,13 @@ These parameters can be control settings, setpoints, etc. that we can use to ful
 Generally, the user needs to place the DUT in the canvas and connect it to the ideal 3 phase voltage source which is used
 to perform the voltage perturbations. In addition, the user needs to specify the steady-state voltage at the connection point (this value is used for initialization).
 
+![img_4.png](img_4.png)
+
 The next step is to introduce the frequency scan parameters in the python script _test_freq_sweep.py_.
 The parameters, which are self-descriptive, are provided to the frequency_sweep function which is the main function of the package.
-After running _test_freq_sweep.py_, we will se the status of the process in real time.
-When the scan is finished, we can access the results (for example, if compute_yz = True) in the previously specificed results folder.
-The admittance is ploted and saved in a .pdf file and also a .txt tab separated file structured as **frequency Ydd Ydq Yqd Yqq** is provided.
+After running _test_freq_sweep.py_, we will see the status of the process in real time.
+When the scan is finished, we can access the results (for example, if `compute_yz = True`) in the previously specificed results folder.
+The admittance is ploted and saved in a _.pdf_ file and also a _.txt_ tab separated file structured as **frequency Ydd Ydq Yqd Yqq** is provided.
 
 ![img_2.png](img_2.png)
 
