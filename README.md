@@ -2,7 +2,7 @@
 Z-tool is a python-based implementation for the analysis of modern power systems.
 The basic functionalities are impedance/admittance scan and stability assessment.
 The scan is done based on an already existing project/model in PSCAD according to the preferences of the user.
-The following features are currently proved:
+The following features are currently implemented:
 - [x] Voltage perturbation
 
 ## Installation
