@@ -23,7 +23,7 @@
     <param name="Warn" value="0" />
     <param name="Check" value="0" />
     <param name="description" value="" />
-    <param name="revisor" value="fcifuent, 1662535401" />
+    <param name="revisor" value="fcifuent, 1662535928" />
     <param name="labels" value="" />
     <param name="Preprocessor" value="" />
   </paramlist>
@@ -110,7 +110,7 @@
     </paramlist>
   </GlobalSubstitutions>
   <definitions>
-    <Definition classid="UserCmpDefn" name="dq2abc" build="" crc="92692818" view="false" instances="0" date="1662130251" id="1585482763" w="320" h="400">
+    <Definition classid="UserCmpDefn" name="dq2abc" build="" crc="68033165" view="false" instances="0" date="1662130251" id="1585482763" w="320" h="400">
       <paramlist>
         <param name="Description" value="dq to abc transformation" />
       </paramlist>
@@ -318,12 +318,13 @@
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[Base value used to per unitize the input i.e. input divider.]]></help>
           </parameter>
-          <parameter name="untitled" desc="untitled" type="Choice" group="" helpmode="Append" animate="false">
-            <value><![CDATA[0]]></value>
+          <parameter name="qaxis" desc="Q axis" type="Choice" group="" helpmode="Append" animate="false">
+            <value><![CDATA[1]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[]]></help>
-            <choice><![CDATA[0 = item]]></choice>
+            <choice><![CDATA[1 = Lagging]]></choice>
+            <choice><![CDATA[-1 = Leading]]></choice>
           </parameter>
         </category>
       </form>
@@ -706,6 +707,11 @@
             <param name="Dim" value="1" />
             <param name="Name" value="" />
             <param name="DPath" value="1" />
+          </paramlist>
+        </User>
+        <User id="1225588214" classid="UserCmp" defn="master:import" x="90" y="126" h="25" w="73" z="30" q="4" orient="0" link="-1" disable="false">
+          <paramlist name="" link="-1" crc="117509081">
+            <param name="Name" value="qaxis" />
           </paramlist>
         </User>
       </schematic>
@@ -1503,7 +1509,7 @@
         </Wire>
       </schematic>
     </Definition>
-    <Definition classid="UserCmpDefn" name="Main" id="267680329" group="" url="" version="" build="" crc="107356002" view="false" date="1662130251">
+    <Definition classid="UserCmpDefn" name="Main" id="267680329" group="" url="" version="" build="" crc="97211530" view="false" date="1662130251">
       <paramlist name="">
         <param name="Description" value="" />
       </paramlist>
@@ -2421,10 +2427,11 @@ Selector = 2: perturbation in q-axis]]></Sticky>
           </paramlist>
         </User>
         <User classid="UserCmp" id="127393690" name="DUT:dq2abc" x="1044" y="162" w="81" h="57" z="400" orient="0" defn="DUT:dq2abc" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="96207647">
+          <paramlist name="" link="-1" crc="49849602">
             <param name="Name" value="" />
             <param name="Xb" value="1" />
             <param name="untitled" value="0" />
+            <param name="qaxis" value="1" />
           </paramlist>
         </User>
         <Sticky classid="Sticky" id="540384842" x="180" y="468" w="126" h="72" colors="0, 15792890">

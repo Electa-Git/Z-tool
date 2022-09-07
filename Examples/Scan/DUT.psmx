@@ -7,10 +7,10 @@
     <Window defn="DUT:Main" call="0" />
   </ViewContext>
   <List classid="View">
-    <View name="Main" zoomscale="1.2" scrollx="86" scrolly="0" />
+    <View name="Main" zoomscale="1.2" scrollx="63" scrolly="0" />
     <View name="Park" zoomscale="1.2" scrollx="0" scrolly="0" />
-    <View name="abc2dq_1" zoomscale="1.5" scrollx="0" scrolly="0" />
-    <View name="dq2abc" zoomscale="1.5" scrollx="0" scrolly="5" />
+    <View name="abc2dq_1" zoomscale="1.5" scrollx="0" scrolly="58" />
+    <View name="dq2abc" zoomscale="1.2" scrollx="0" scrolly="0" />
     <View name="PLL" zoomscale="1.2" scrollx="0" scrolly="73" />
     <View name="Park_1" zoomscale="1.2" scrollx="0" scrolly="143" />
     <View name="PI" zoomscale="1.2" scrollx="0" scrolly="127" />

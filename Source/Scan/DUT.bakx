@@ -23,7 +23,7 @@
     <param name="Warn" value="0" />
     <param name="Check" value="0" />
     <param name="description" value="" />
-    <param name="revisor" value="fcifuent, 1662132309" />
+    <param name="revisor" value="fcifuent, 1662535811" />
     <param name="labels" value="" />
     <param name="Preprocessor" value="" />
   </paramlist>
@@ -87,7 +87,7 @@
     </paramlist>
   </GlobalSubstitutions>
   <definitions>
-    <Definition classid="UserCmpDefn" name="dq2abc" build="" crc="111906146" view="false" instances="0" date="1662029964" id="1585482763" w="320" h="400">
+    <Definition classid="UserCmpDefn" name="dq2abc" build="" crc="115792594" view="false" instances="0" date="1662029964" id="1585482763" w="320" h="400">
       <paramlist>
         <param name="Description" value="dq to abc transformation" />
       </paramlist>
@@ -295,6 +295,14 @@
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[Base value used to per unitize the input i.e. input divider.]]></help>
           </parameter>
+          <parameter name="qaxis" desc="Q axis" type="Choice" group="" helpmode="Append" animate="false">
+            <value><![CDATA[1]]></value>
+            <cond><![CDATA[true]]></cond>
+            <vis><![CDATA[true]]></vis>
+            <help><![CDATA[]]></help>
+            <choice><![CDATA[1 = Lagging]]></choice>
+            <choice><![CDATA[-1 = Leading]]></choice>
+          </parameter>
         </category>
       </form>
       <schematic classid="UserCanvas">
@@ -322,7 +330,7 @@
             <param name="Name" value="angle" />
           </paramlist>
         </User>
-        <User id="393569114" classid="UserCmp" defn="master:export" x="666" y="342" h="24" w="64" z="240" q="4" orient="4" link="-1" disable="false">
+        <User id="393569114" classid="UserCmp" defn="master:export" x="738" y="342" h="24" w="64" z="240" q="4" orient="4" link="-1" disable="false">
           <paramlist name="" link="-1" crc="68967217">
             <param name="Name" value="abc" />
           </paramlist>
@@ -335,7 +343,7 @@
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:dot_product" id="411151095" x="576" y="432" w="80" h="61" z="220" orient="0" defn="master:dot_product" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" name="master:dot_product" id="411151095" x="648" y="432" w="80" h="61" z="220" orient="0" defn="master:dot_product" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="123394297">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
@@ -386,13 +394,13 @@
           <vertex x="-54" y="-72" />
           <vertex x="0" y="-72" />
         </Wire>
-        <User classid="UserCmp" name="master:dot_product" id="2089575827" x="576" y="144" w="80" h="61" z="140" orient="0" defn="master:dot_product" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" name="master:dot_product" id="2089575827" x="648" y="144" w="80" h="61" z="140" orient="0" defn="master:dot_product" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="123394297">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:datamerge" id="491699810" x="630" y="342" w="27" h="80" z="230" orient="4" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datamerge" id="491699810" x="702" y="342" w="27" h="80" z="230" orient="4" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="43697768">
             <param name="N" value="3" />
             <param name="Type" value="2" />
@@ -413,10 +421,10 @@
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="142063364" name="" x="522" y="90" w="28" h="46" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="142063364" name="" x="594" y="90" w="100" h="46" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-36" />
-          <vertex x="-18" y="-36" />
+          <vertex x="-90" y="-36" />
         </Wire>
         <User classid="UserCmp" defn="master:trig" id="1055199172" x="468" y="54" w="80" h="36" z="40" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="54546159">
@@ -442,7 +450,7 @@
           <vertex x="-126" y="-54" />
           <vertex x="0" y="-54" />
         </Wire>
-        <User classid="UserCmp" defn="master:datamerge" id="2130515003" x="540" y="162" w="27" h="62" z="60" orient="4" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datamerge" id="2130515003" x="612" y="162" w="27" h="62" z="60" orient="4" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="43697768">
             <param name="N" value="2" />
             <param name="Type" value="2" />
@@ -463,7 +471,7 @@
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="938688205" name="" x="504" y="108" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="938688205" name="" x="576" y="108" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
@@ -481,7 +489,7 @@
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:datamerge" id="860552512" x="540" y="306" w="27" h="62" z="170" orient="4" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datamerge" id="860552512" x="612" y="306" w="27" h="62" z="170" orient="4" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="43697768">
             <param name="N" value="2" />
             <param name="Type" value="2" />
@@ -502,14 +510,14 @@
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1944026029" name="" x="504" y="252" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1944026029" name="" x="576" y="252" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="512016077" name="" x="504" y="180" w="28" h="64" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="512016077" name="" x="504" y="180" w="100" h="64" orient="0" disable="false">
           <vertex x="0" y="0" />
-          <vertex x="18" y="0" />
-          <vertex x="18" y="54" />
+          <vertex x="90" y="0" />
+          <vertex x="90" y="54" />
         </Wire>
         <User classid="UserCmp" defn="master:trig" id="2021243753" x="468" y="396" w="80" h="36" z="120" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="54546159">
@@ -570,7 +578,7 @@
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:datamerge" id="1350213702" x="540" y="450" w="27" h="62" z="200" orient="4" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datamerge" id="1350213702" x="612" y="450" w="27" h="62" z="200" orient="4" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="43697768">
             <param name="N" value="2" />
             <param name="Type" value="2" />
@@ -591,14 +599,14 @@
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1673076763" name="" x="504" y="396" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1673076763" name="" x="576" y="396" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1774188040" name="" x="504" y="324" w="28" h="64" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1774188040" name="" x="504" y="324" w="100" h="64" orient="0" disable="false">
           <vertex x="0" y="0" />
-          <vertex x="18" y="0" />
-          <vertex x="18" y="54" />
+          <vertex x="90" y="0" />
+          <vertex x="90" y="54" />
         </Wire>
         <Wire classid="WireOrthogonal" id="161795773" name="" x="306" y="180" w="10" h="82" orient="0" disable="false">
           <vertex x="0" y="0" />
@@ -613,17 +621,17 @@
             <param name="Name" value="Xb" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:dot_product" id="1227186117" x="576" y="288" w="80" h="61" z="210" orient="0" defn="master:dot_product" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" name="master:dot_product" id="1227186117" x="648" y="288" w="80" h="61" z="210" orient="0" defn="master:dot_product" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="123394297">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="317356376" name="" x="612" y="270" w="10" h="136" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="317356376" name="" x="684" y="270" w="10" h="136" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-126" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1881541939" name="" x="612" y="432" w="10" h="136" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1881541939" name="" x="684" y="432" w="10" h="136" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-126" />
         </Wire>
@@ -636,24 +644,56 @@
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" id="176413458" name="master:datalabel" x="576" y="468" w="60" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="176413458" name="master:datalabel" x="648" y="468" w="60" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="dq_scaled" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="551766681" name="master:datalabel" x="576" y="324" w="60" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="551766681" name="master:datalabel" x="648" y="324" w="60" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="dq_scaled" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="917375748" name="master:datalabel" x="576" y="180" w="60" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="917375748" name="master:datalabel" x="648" y="180" w="60" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="dq_scaled" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:gain" id="990212633" x="540" y="396" w="80" h="36" z="0" orient="0" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="34173863">
+            <param name="G" value="qaxis" />
+            <param name="COM" value="Gain" />
+            <param name="Dim" value="1" />
+            <param name="Name" value="" />
+            <param name="DPath" value="1" />
+          </paramlist>
+        </User>
+        <User id="1698520838" classid="UserCmp" defn="master:import" x="90" y="126" h="25" w="73" z="30" q="4" orient="0" link="-1" disable="false">
+          <paramlist name="" link="-1" crc="117509081">
+            <param name="Name" value="qaxis" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:gain" id="1278420145" x="540" y="252" w="80" h="36" z="0" orient="0" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="34173863">
+            <param name="G" value="qaxis" />
+            <param name="COM" value="Gain" />
+            <param name="Dim" value="1" />
+            <param name="Name" value="" />
+            <param name="DPath" value="1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:gain" id="1218983667" x="540" y="108" w="80" h="36" z="0" orient="0" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="34173863">
+            <param name="G" value="qaxis" />
+            <param name="COM" value="Gain" />
+            <param name="Dim" value="1" />
+            <param name="Name" value="" />
+            <param name="DPath" value="1" />
           </paramlist>
         </User>
       </schematic>
     </Definition>
-    <Definition classid="UserCmpDefn" name="abc2dq_1" build="" crc="87063819" view="false" instances="0" date="1662029964" id="1944828422" w="320" h="400">
+    <Definition classid="UserCmpDefn" name="abc2dq_1" build="" crc="120060013" view="false" instances="0" date="1662029964" id="1944828422" w="320" h="400">
       <paramlist>
         <param name="Description" value="abd to dq transformation" />
       </paramlist>
@@ -860,6 +900,14 @@
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[Base value to per untize the input i.e. input divider.]]></help>
+          </parameter>
+          <parameter name="qaxis" desc="Q axis" type="Choice" group="" helpmode="Append" animate="false">
+            <value><![CDATA[1]]></value>
+            <cond><![CDATA[true]]></cond>
+            <vis><![CDATA[true]]></vis>
+            <help><![CDATA[]]></help>
+            <choice><![CDATA[1 = Lagging]]></choice>
+            <choice><![CDATA[-1 = Leading]]></choice>
           </parameter>
         </category>
       </form>
@@ -1120,10 +1168,10 @@
           <vertex x="18" y="0" />
           <vertex x="18" y="-54" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1405273268" name="" x="396" y="486" w="64" h="154" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1405273268" name="" x="396" y="486" w="64" h="82" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="54" y="0" />
-          <vertex x="54" y="-144" />
+          <vertex x="54" y="-72" />
         </Wire>
         <User classid="UserCmp" defn="master:datamerge" id="1811368135" x="504" y="324" w="27" h="62" z="210" orient="4" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="43697768">
@@ -1175,6 +1223,18 @@
             <param name="COM" value="Trig-Func" />
             <param name="Dim" value="1" />
             <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:mult" id="1594428825" x="450" y="378" w="56" h="80" z="0" orient="3" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="29714769">
+            <param name="DPath" value="1" />
+            <param name="Name" value="" />
+            <param name="Dim" value="3" />
+          </paramlist>
+        </User>
+        <User id="211238707" classid="UserCmp" defn="master:import" x="522" y="378" h="25" w="73" z="40" q="4" orient="4" link="-1" disable="false">
+          <paramlist name="" link="-1" crc="117509081">
+            <param name="Name" value="qaxis" />
           </paramlist>
         </User>
       </schematic>
@@ -1426,7 +1486,7 @@
         </Wire>
       </schematic>
     </Definition>
-    <Definition classid="UserCmpDefn" name="Main" id="267680329" group="" url="" version="" build="" crc="14876445" view="false" date="1662029964">
+    <Definition classid="UserCmpDefn" name="Main" id="267680329" group="" url="" version="" build="" crc="91530318" view="false" date="1662029964">
       <paramlist name="">
         <param name="Description" value="" />
       </paramlist>
@@ -2382,15 +2442,17 @@ Selector = 2: perturbation in q-axis]]></Sticky>
           </paramlist>
         </User>
         <User classid="UserCmp" id="1466109744" name="DUT:abc2dq_1" x="1044" y="270" w="81" h="59" z="260" orient="0" defn="DUT:abc2dq_1" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="101150998">
+          <paramlist name="" link="-1" crc="38057765">
             <param name="Name" value="" />
             <param name="Xb" value="1" />
+            <param name="qaxis" value="1" />
           </paramlist>
         </User>
         <User classid="UserCmp" id="359113615" name="DUT:abc2dq_1" x="1044" y="360" w="81" h="59" z="270" orient="0" defn="DUT:abc2dq_1" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="101150998">
+          <paramlist name="" link="-1" crc="38057765">
             <param name="Name" value="" />
             <param name="Xb" value="1" />
+            <param name="qaxis" value="1" />
           </paramlist>
         </User>
         <User classid="UserCmp" name="master:datalabel" id="2089639510" x="1008" y="378" w="36" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
@@ -2399,9 +2461,10 @@ Selector = 2: perturbation in q-axis]]></Sticky>
           </paramlist>
         </User>
         <User classid="UserCmp" id="127393690" name="DUT:dq2abc" x="1044" y="162" w="81" h="57" z="360" orient="0" defn="DUT:dq2abc" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="57486968">
+          <paramlist name="" link="-1" crc="49849602">
             <param name="Name" value="" />
             <param name="Xb" value="1" />
+            <param name="qaxis" value="1" />
           </paramlist>
         </User>
         <Sticky classid="Sticky" id="540384842" x="306" y="432" w="126" h="72" colors="0, 15792890">
@@ -3385,7 +3448,7 @@ Selector = 2: perturbation in q-axis]]></Sticky>
   </definitions>
   <List classid="Resource" />
   <hierarchy>
-    <call link="863010506" name="DUT:DS" z="-1" view="false" instance="0">
+    <call link="739290029" name="DUT:DS" z="-1" view="false" instance="0">
       <call link="1466550816" name="DUT:Main" z="-1" view="true" instance="0">
         <call link="1466109744" name="DUT:abc2dq_1" z="260" view="false" instance="0" />
         <call link="359113615" name="DUT:abc2dq_1" z="270" view="false" instance="1" />
