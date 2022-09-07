@@ -1,4 +1,4 @@
-<workspace name="DUTscan" version="5.0.0" crc="54077523">
+<workspace name="DUTscan" version="5.0.0" crc="96380942">
   <projects>
     <project type="project" name="DUT" filepath=".\DUT.pscx" />
   </projects>
@@ -16,13 +16,47 @@
           <param name="simulationset" value="" />
           <param name="namespace" value="DUT" />
           <param name="name" value="" />
-          <param name="ammunition" value="1" />
-          <param name="volley" value="1" />
-          <param name="affinity_type" value="1" />
+          <param name="ammunition" value="56" />
+          <param name="volley" value="8" />
+          <param name="affinity_type" value="0" />
           <param name="affinity" value="1" />
           <param name="rank_snap" value="false" />
           <param name="substitutions" value="" />
           <param name="clean" value="false" />
+        </paramlist>
+        <paramlist name="project_overrides">
+          <param name="duration" value="2.0" />
+          <param name="time_step" value="2" />
+          <param name="plot_step" value="126.0" />
+          <param name="start_method" value="1" />
+          <param name="startup_inputfile" value="Snapshot.snp" />
+          <param name="save_channels_file" value="VSC_q.out" />
+          <param name="save_channels" value="1" />
+          <param name="timed_snapshots" value="0" />
+          <param name="snapshot_file" value="Snapshot.snp" />
+          <param name="snap_time" value="3" />
+          <param name="run_config" value="0" />
+          <param name="run_count" value="1" />
+          <param name="remove_snapshot_offset" value="true" />
+          <param name="only_in_use_channels" value="false" />
+          <param name="state_animation" value="true" />
+          <param name="manual_start" value="true" />
+          <param name="override_duration" value="true" />
+          <param name="override_time_step" value="true" />
+          <param name="override_plot_step" value="true" />
+          <param name="override_start_method" value="true" />
+          <param name="override_startup_inputfile" value="true" />
+          <param name="override_save_channels_file" value="true" />
+          <param name="override_save_channels" value="true" />
+          <param name="override_timed_snapshots" value="true" />
+          <param name="override_snapshot_file" value="true" />
+          <param name="override_snap_time" value="true" />
+          <param name="override_run_config" value="false" />
+          <param name="override_run_count" value="false" />
+          <param name="override_remove_snapshot_offset" value="false" />
+          <param name="override_only_in_use_channels" value="false" />
+          <param name="override_state_animation" value="false" />
+          <param name="override_manual_start" value="false" />
         </paramlist>
       </task>
     </simulation>

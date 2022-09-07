@@ -28,10 +28,10 @@
     <Window defn="DUT:Main" call="0" />
   </ViewContext>
   <List classid="View">
-    <View name="Main" zoomscale="1.5" scrollx="100" scrolly="110" />
+    <View name="Main" zoomscale="1.5" scrollx="87" scrolly="0" />
     <View name="Park" zoomscale="1.2" scrollx="0" scrolly="0" />
-    <View name="abc2dq_1" zoomscale="0.96" scrollx="0" scrolly="0" />
-    <View name="dq2abc" zoomscale="1.2" scrollx="0" scrolly="230" />
+    <View name="abc2dq_1" zoomscale="1.5" scrollx="87" scrolly="13" />
+    <View name="dq2abc" zoomscale="1.2" scrollx="0" scrolly="0" />
   </List>
   <Output device="EMTDC" version="2010" date="2022/09/01" time="12:59:31.000000">
     <Domain name="Time" unit="s" mult="0.0" skew="0.0">
