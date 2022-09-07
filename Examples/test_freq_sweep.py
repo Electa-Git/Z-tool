@@ -21,7 +21,6 @@ t_sim = start_fft + fft_periods / f_base  # [s]
 t_step = 2  # [us]
 v_perturb_mag = 1  # [kV]
 
-print('Results for a sample time of', str(sample_step), 'us')
 frequency_sweep.frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, v_perturb_mag=v_perturb_mag,
                                 f_points=perturbations, f_base=f_base, f_max=f_max, f_min=f_min,
                                 start_fft=start_fft, fft_periods=fft_periods,
