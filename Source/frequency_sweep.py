@@ -8,7 +8,7 @@ from Source.tools import *
 
 def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_perturb_mag=None,
                     freq=None, f_points=None, f_base=None, f_min=None, f_max=None, working_dir=None,
-                    delay_inj=0.001, freq_text_file='frequencies.txt', snapshot_file='Snapshot', take_snapshot=True,
+                    delay_inj=0.0, freq_text_file='frequencies.txt', snapshot_file='Snapshot', take_snapshot=True,
                     project_name='DUT', workspace_name='DUTscan',
                     fortran_ext=r'.gf46', num_parallel_sim=8, component_parameters=None,
                     results_folder=None, output_files='Perturbation', compute_yz=False, save_td=False,
@@ -20,9 +20,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
             'frequency_sweep) \n')
         return
     # If the sample time is not provided, it is set to half of the minimum required value (multiple of step_time)
-    if sample_step is None:
-        n = int(1e6 * 0.5 * 0.5 / f_max) + t_step / 2
-        sample_step = round(n - (n % t_step), 3)  # [us]
+    if sample_step is None:  sample_step = round(t_step*np.floor((1e6*0.5*0.5/f_max + t_step/2)/t_step), 3)  # [us]
     if working_dir is None:
         working_dir = getcwd() + '\\'  # Location of the PSCAD workspace
     else:
