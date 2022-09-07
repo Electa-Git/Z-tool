@@ -32,6 +32,7 @@ Follow the example described [here](Examples).
 ## Future work
 - [ ] Current/voltage perturbation
 - [ ] Disable all output channels but the necessary ones
+- [ ] DC-side scan
 - [ ] PSCAD library: load and source sub-systems measurement
 - [ ] Stability assessment
 - [ ] Frequency scan optimization
