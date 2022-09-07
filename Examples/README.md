@@ -24,7 +24,7 @@ The upper right-most section includes user-defined parameters that can be change
 These parameters can be control settings, setpoints, etc. that we can use to fully characterize a device.
 
 _Care should be taken when it comes to the desired dq-frame convention:_ the q-axis position (lagging or leading) can be 
-modified by the Q-axis option of the **coordinate transformation** section (lagging by default).
+modified by the Q-axis option of the **coordinate transformation** section (lagging by default). See figure below.
 
 ![Q-axis convention](img_7.png)
 
