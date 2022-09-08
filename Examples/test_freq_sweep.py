@@ -1,6 +1,6 @@
 #!python3.7
 """ Simple script to test the impedance measurement tool """
-from Source import frequency_sweep
+from Source.frequency_sweep import frequency_sweep
 from os import getcwd
 
 pscad_folder = getcwd() + r'\\Scan'           # Absolute location of the PSCAD workspace
@@ -21,7 +21,7 @@ t_sim = start_fft + fft_periods / f_base  # [s]
 t_step = 2  # [us]
 v_perturb_mag = 1  # [kV]
 
-frequency_sweep.frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, v_perturb_mag=v_perturb_mag,
+frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, v_perturb_mag=v_perturb_mag,
                                 f_points=perturbations, f_base=f_base, f_max=f_max, f_min=f_min,
                                 start_fft=start_fft, fft_periods=fft_periods,
                                 compute_yz=True, results_folder=results_folder, working_dir=pscad_folder,
