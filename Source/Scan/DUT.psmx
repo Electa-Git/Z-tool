@@ -25,10 +25,10 @@
     <message status="normal" label="build" groupid="400003" scope="" id="503140162" classid="MessageObj"><![CDATA[Finished compiling with PSCAD Version 5.0.0]]></message>
   </messagelist>
   <ViewContext>
-    <Window defn="DUT:abc2dq_1" call="0" />
+    <Window defn="DUT:Main" call="0" />
   </ViewContext>
   <List classid="View">
-    <View name="Main" zoomscale="1.5" scrollx="41" scrolly="72" />
+    <View name="Main" zoomscale="1.5" scrollx="107" scrolly="63" />
     <View name="Park" zoomscale="1.2" scrollx="0" scrolly="0" />
     <View name="abc2dq_1" zoomscale="1.5" scrollx="87" scrolly="13" />
     <View name="dq2abc" zoomscale="1.2" scrollx="0" scrolly="0" />

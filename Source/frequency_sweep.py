@@ -24,7 +24,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     if working_dir is None:
         working_dir = getcwd() + '\\'  # Location of the PSCAD workspace
     else:
-        chdir(working_dir.encode('unicode_escape'))  # Location of the PSCAD workspace
+        chdir(working_dir.encode('ascii', 'backslashreplace'))  # ('unicode_escape'))  Location of the PSCAD workspace
         working_dir = getcwd() + '\\'
     print('\nRunning from ' + working_dir + '\n')
 
