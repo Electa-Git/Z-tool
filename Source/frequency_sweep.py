@@ -29,7 +29,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     print('\nRunning from ' + working_dir + '\n')
 
     # The snapshot time must be a multiple of the sampling time
-    t_snap = np.ceil(t_snap/(sample_step*1e-6))*sample_step*1e-6
+    t_snap = round(np.ceil(t_snap/(sample_step*1e-6))*sample_step*1e-6, 6)
 
     # Create frequency list if it is not provided
     if freq is None: freq = create_freq.loglist(f_min=f_min, f_max=f_max, f_points=f_points, f_base=f_base)
