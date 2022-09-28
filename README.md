@@ -30,6 +30,7 @@ Follow the example described [here](Examples).
 ### MATLAB-based example
 
 ## Future work
+- [ ] Adapt the main function so a previous snapshot can be re-used
 - [ ] Current/voltage perturbation
 - [ ] Disable all output channels but the necessary ones
 - [ ] DC-side scan
