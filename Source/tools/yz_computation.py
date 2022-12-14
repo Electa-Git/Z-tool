@@ -12,10 +12,17 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, start_fft=None,
 
     # Subtracts the steady state values from the signals after the system reached steady state
     start_idx = find_nearest(td, start_fft)
-    if td[0] != 0.0: ss = ss[1:, :]  # If the simulations do not start at 0 but at dt, then shift the snapshot by dt
-    ss_ext = np.tile(ss[start_idx:, 1:], (1, int(round(vi1_td.shape[1] / 4))))  # Extend the steady-state matrix by the number of simulations
-    deltavi1_td = vi1_td[start_idx:, :] - ss_ext  # Small-signal steady state computation
-    deltavi2_td = vi2_td[start_idx:, :] - ss_ext
+    if ss is None:
+        # Steady-state as the average after the transient period (assuming a LTI sys i.e. no LTP = no steady-state osc.)
+        # WARNING: THIS IS NOT VALIDATED YET
+        deltavi1_td = vi1_td[start_idx:, :] - np.tile(np.mean(vi1_td[start_idx:, :], axis=0), (td[start_idx:].size, 1))
+        deltavi2_td = vi2_td[start_idx:, :] - np.tile(np.mean(vi2_td[start_idx:, :], axis=0), (td[start_idx:].size, 1))
+    else:
+        # Use the steady-state waveforms
+        if td[0] != 0.0 and ss[0, 0] != td[0]: ss = ss[1:, :]  # Shift the snapshot by dt
+        ss_ext = np.tile(ss[start_idx:, 1:], (1, int(round(vi1_td.shape[1] / 4))))  # Extend the steady-state matrix
+        deltavi1_td = vi1_td[start_idx:, :] - ss_ext  # Small-signal steady state computation
+        deltavi2_td = vi2_td[start_idx:, :] - ss_ext
 
     Y_dd = np.empty((len(frequencies),), dtype='cdouble')  # Also dtype='csingle'
     Y_dq = np.empty((len(frequencies),), dtype='cdouble')
