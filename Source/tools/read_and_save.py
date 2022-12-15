@@ -30,14 +30,14 @@ def multiple_s(n_sim=None, original_folder=None, target_filename=None, new_folde
     if len(files_filtered) != n_sim: files_filtered = [file for file in files_filtered if file.endswith("_01.out")]
     n = 4  # Number of simulation variables to be retreived (excluding time)
     # Only for the first file, it loads the first column (time)
-    first_values = np.loadtxt(original_folder + '\\' + files_filtered[0], skiprows=1,usecols=np.arange(0, n + 1))
+    first_values = np.loadtxt(original_folder + '\\' + files_filtered[0], skiprows=1, usecols=np.arange(0, n + 1))
     values = np.empty((first_values.shape[0], n*len(files_filtered)+1), dtype='d')  # Preallocation of memory
     values[:, 0:n + 1] = first_values  # Save the first file
     del first_values, files
     j = n + 1  # File counter
     for file in files_filtered[1:n_sim]:
         # Save the rest without the time / first column
-        values[:, j:j + n] = np.loadtxt(original_folder + '\\' + file, skiprows=1,usecols=np.arange(1, n + 1))
+        values[:, j:j + n] = np.loadtxt(original_folder + '\\' + file, skiprows=1, usecols=np.arange(1, n + 1))
         j += n
     if save: np.savetxt(new_folder + '\\' + target_filename + '.txt', values, delimiter='\t', comments='')
     if output: return values

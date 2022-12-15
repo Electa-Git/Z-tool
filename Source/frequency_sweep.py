@@ -20,7 +20,9 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
             'frequency_sweep) \n')
         return
     # If the sample time is not provided, it is set to half of the minimum required value (multiple of step_time)
-    if sample_step is None:  sample_step = round(t_step*np.floor((1e6*0.5*0.5/f_max + t_step/2)/t_step), 3)  # [us]
+    if sample_step is None:
+        if f_max is None: f_max = max(freq)
+        sample_step = round(t_step*np.floor((1e6*0.5*0.5/f_max + t_step/2)/t_step), 3)  # [us]
     if working_dir is None:
         working_dir = getcwd() + '\\'  # Location of the PSCAD workspace
     else:
@@ -92,15 +94,26 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                               save_channels_file=snapshot_file + '.out', save_channels=1)
         simset.run()
         print(' Snapshot done in', round((t.time() - t1), 2), 'seconds')
+    else:  # It performs the unperturbed simulation starting from the given snapshot
+        print(' Running steady-state simulation')
+        t1 = t.time()
+        selector.parameters(Value=0)  # No injection for the steady state
+        simset_task.parameters(volley=1, affinity_type='DISABLE_TRACING',
+                               ammunition=1)  # affinity_type = 'DISABLE_TRACING' disables the plotting
+        simset_task.overrides(duration=t_sim, time_step=t_step, plot_step=sample_step, start_method=1,
+                              timed_snapshots=0, startup_inputfile=snapshot_file + '.snp',
+                              save_channels_file=snapshot_file + '.out', save_channels=1)
+        simset.run()
+        print(' Steady-state simulation completed in', round((t.time() - t1), 2), 'seconds')
 
-    if results_folder is not None and (save_td or compute_yz):
+    if save_td or compute_yz:
         wait4pscad(time=1, pscad=pscad)
         t1 = t.time()
         ss = read_and_save.single_s(original_folder=working_dir + project_name + fortran_ext,
                                     target_filename=simset_task.overrides()['save_channels_file'][:-4],
-                                    new_folder=results_folder, save=save_td,
-                                    output=compute_yz)
-        print(' Snapshot results collected in', round((t.time() - t1), 2), 'seconds')
+                                    new_folder=results_folder, save=save_td, output=compute_yz)
+        if take_snapshot: ss = ss[find_nearest(ss[:, 0], t_snap):, :]  # Get rid of the transient results, i.e. t<t_snap
+        print(' Unperturbed simulation results collected in', round((t.time() - t1), 2), 'seconds')
 
     # d-axis injection
     print('\n Running single frequency d-axis injection simulation')
@@ -112,7 +125,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                           save_channels_file=output_files + '_d.out', save_channels=1)
     simset.run()
     print(' d-axis injection finished in', round((t.time() - t1), 2), 'seconds')
-    if results_folder is not None and (save_td or compute_yz):
+    if save_td or compute_yz:
         wait4pscad(time=1, pscad=pscad)
         t2 = t.time()
         d_axis = read_and_save.multiple_s(original_folder=working_dir + project_name + fortran_ext,
@@ -130,7 +143,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                           save_channels_file=output_files + '_q.out', save_channels=1)
     simset.run()
     print(' q-axis injection finished in', round((t.time() - t1), 2), 'seconds')
-    if results_folder is not None and (save_td or compute_yz):
+    if save_td or compute_yz:
         wait4pscad(time=1, pscad=pscad)
         t2 = t.time()
         q_axis = read_and_save.multiple_s(original_folder=working_dir + project_name + fortran_ext,
@@ -140,8 +153,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
 
     if compute_yz:
         t2 = t.time()
-        yz_computation.admittance(f_base=f_base, frequencies=freq, fft_periods=fft_periods, start_fft=start_fft,
-                                  ss=ss[find_nearest(ss[:, 0], t_snap):, :],
+        yz_computation.admittance(f_base=f_base, frequencies=freq, fft_periods=fft_periods, start_fft=start_fft, ss=ss,
                                   vi1_td=d_axis[:, 1:], vi2_td=q_axis[:, 1:], td=d_axis[:, 0],
                                   results_folder=results_folder, results_name=output_files)
         print(' Admittance computation finished in ', round((t.time() - t2), 2), 'seconds')
