@@ -30,10 +30,12 @@ Follow the example described [here](Examples).
 ### MATLAB-based example
 
 ## Future work
+- [ ] Minimum simulation time before starting FFT (does it need to be at least as long as the period of the input or could it be smaller?)
 - [ ] Adapt the main function so a previous snapshot can be re-used
 - [ ] Current/voltage perturbation
 - [ ] Disable all output channels but the necessary ones
 - [ ] DC-side scan
+- [ ] Seemesly licensing when license is not retained
 - [ ] PSCAD library: load and source sub-systems measurement
 - [ ] Stability assessment
 - [ ] Frequency scan optimization
