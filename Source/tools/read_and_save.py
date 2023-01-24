@@ -28,8 +28,8 @@ def multiple_s(n_sim=None, original_folder=None, target_filename=None, new_folde
                 file[len(target_filename)] == '_' and file.count("_", len(target_filename)) == 2 and len(file) > len(target_filename))]
     # If multiple output vars, it only reads the 1st file
     if len(files_filtered) != n_sim: files_filtered = [file for file in files_filtered if file.endswith("_01.out")]
-    # Sort out the files from low to high simulation, 1st remove the extension and then split to get the sim number
-    files_filtered.sort(key=lambda file_name: int(file_name[:-4].split('_')[1]))
+    # Sort the files from low to high simulation: split by '_' and take the rank number (position 2 from the end)
+    files_filtered.sort(key=lambda file_name: int(file_name.split('_')[-2]))
     n = 4  # Number of simulation variables to be retreived (excluding time)
     # Only for the first file, it loads the first column (time)
     first_values = np.loadtxt(original_folder + '\\' + files_filtered[0], skiprows=1, usecols=np.arange(0, n + 1))
