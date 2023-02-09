@@ -14,4 +14,4 @@ def loglist(f_min = 1, f_max = 1000, f_points = 50, f_base = 1):
         idx = np.floor(len(scope) / to_be_added) * np.arange(to_be_added)  # Add the values indexed uniformly
         for i in idx: freq = np.append(freq, scope[int(i)])
         freq.sort()
-    return freq
+    return np.around(freq,8)  # Round to get rid of floating-point inaccuracies
