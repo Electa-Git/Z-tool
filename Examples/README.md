@@ -7,7 +7,7 @@ To use the tool, the following pre-requisites are needed
    * Matplotlib (idem)
    * [PSCAD automation library]([url](https://www.pscad.com/webhelp-v5-al/index.html))
 
-   Check the end of the page for instructions on how to install the previous packages.
+   Check the [end of the page](#basic-installation-of-python-dependencies) for instructions on how to install the previous packages.
 
 
 2. PSCAD v5 or higher
@@ -23,7 +23,7 @@ After opening the PSCAD workspace we can see that there are several sections:
 
 ![Sections used for the PSCAD automation](../Doc/img_1.png)
 
-The canvas shows four sections at the top which are modified/used by Python so as to perform the frequency scan of the DUT.
+The canvas shows four sections at the top which are modified/used by Python to perform the frequency scan of the DUT.
 The upper right-most section includes user-defined parameters that can be changed when calling the frequency scan python function.
 These parameters can be control settings, setpoints, etc. that we can use to fully characterize a device.
 

@@ -11,6 +11,8 @@ To use the tool, the following pre-requisites are needed
    * Numpy (already included in most python packages such as Anaconda)
    * Matplotlib (idem)
    * [PSCAD automation library]([url](https://www.pscad.com/webhelp-v5-al/index.html))
+   
+   Check the example [here](Examples) for more information on how to install the previous.
 
 2. PSCAD v5 or higher
 
