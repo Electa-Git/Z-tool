@@ -22,7 +22,7 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
         for sim, frequency in enumerate(frequencies):
             idx = int(round(frequency * fft_periods * 1 / f_base))  # Index of the target frequency
             for col, sim_type in enumerate(["_d", "_q"]):
-                # Debugging
+                # Debug
                 # if sim == 21:
                 #     for name in names:
                 #         # Current and voltages

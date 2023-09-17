@@ -1,5 +1,7 @@
 __all__ = ['single_s', 'multiple_s']
 
+"""Documentation for this function is not updated"""
+
 import numpy as np  # Numerical python functions
 from os import listdir
 
