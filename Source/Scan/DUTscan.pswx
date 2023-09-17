@@ -1,5 +1,6 @@
-<workspace name="DUTscan" version="5.0.0" crc="54077523">
+<workspace name="DUTscan" version="5.0.0" crc="83100931">
   <projects>
+    <project type="library" name="Z_tool" filepath=".\Z_tool.pslx" />
     <project type="project" name="DUT" filepath=".\DUT.pscx" />
   </projects>
   <simulations>
@@ -23,6 +24,40 @@
           <param name="rank_snap" value="false" />
           <param name="substitutions" value="" />
           <param name="clean" value="false" />
+        </paramlist>
+        <paramlist name="project_overrides">
+          <param name="duration" value="0.5" />
+          <param name="time_step" value="50" />
+          <param name="plot_step" value="250" />
+          <param name="start_method" value="0" />
+          <param name="startup_inputfile" value="noname.snp" />
+          <param name="save_channels_file" value="noname.out" />
+          <param name="save_channels" value="0" />
+          <param name="timed_snapshots" value="0" />
+          <param name="snapshot_file" value="noname.snp" />
+          <param name="snap_time" value="0.3" />
+          <param name="run_config" value="0" />
+          <param name="run_count" value="1" />
+          <param name="remove_snapshot_offset" value="true" />
+          <param name="only_in_use_channels" value="false" />
+          <param name="state_animation" value="true" />
+          <param name="manual_start" value="true" />
+          <param name="override_duration" value="false" />
+          <param name="override_time_step" value="false" />
+          <param name="override_plot_step" value="false" />
+          <param name="override_start_method" value="true" />
+          <param name="override_startup_inputfile" value="true" />
+          <param name="override_save_channels_file" value="false" />
+          <param name="override_save_channels" value="false" />
+          <param name="override_timed_snapshots" value="true" />
+          <param name="override_snapshot_file" value="true" />
+          <param name="override_snap_time" value="true" />
+          <param name="override_run_config" value="false" />
+          <param name="override_run_count" value="false" />
+          <param name="override_remove_snapshot_offset" value="false" />
+          <param name="override_only_in_use_channels" value="false" />
+          <param name="override_state_animation" value="false" />
+          <param name="override_manual_start" value="false" />
         </paramlist>
       </task>
     </simulation>

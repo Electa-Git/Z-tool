@@ -2,12 +2,14 @@
   <messagelist>
     <message status="normal" label="clean" groupid="100000" scope="DUT" id="855515781" classid="MessageObj"><![CDATA[Removed 0 files]]></message>
     <message status="normal" label="clean" groupid="100000" scope="DUT" id="1627462233" classid="MessageObj"><![CDATA[Completed cleaning of temporary files and data.]]></message>
+    <message status="error" label="build" groupid="300503" id="544207706" classid="CmpNavigator">
+      <User scope="DUT" name="Z_tool:DCscan" status="error" link="2047437522" /><![CDATA[Unable to resolve definition 'Z_tool:DCscan']]></message>
   </messagelist>
   <ViewContext>
     <Window defn="DUT:Main" call="0" />
   </ViewContext>
   <List classid="View">
-    <View name="Main" zoomscale="1.2" scrollx="63" scrolly="0" />
+    <View name="Main" zoomscale="1.875" scrollx="0" scrolly="0" />
     <View name="Park" zoomscale="1.2" scrollx="0" scrolly="0" />
     <View name="abc2dq_1" zoomscale="1.5" scrollx="0" scrolly="58" />
     <View name="dq2abc" zoomscale="1.2" scrollx="0" scrolly="0" />

@@ -3,99 +3,354 @@ __all__ = ['admittance']
 import matplotlib.pyplot as plt
 import numpy as np  # Numerical python functions
 from matplotlib import rcParams  # Text's parameters for plots
+
 rcParams['mathtext.fontset'] = 'cm'  # Font selection
 rcParams['font.family'] = 'STIXGeneral'  # 'cmu serif'
 
-def admittance(f_base=None, frequencies=None, fft_periods=1, start_fft=None,
-               ss=None, vi1_td=None, vi2_td=None, td=None, results_folder=None, results_name='Y'):
-    dt = np.mean([td[i + 1] - td[i] for i in range(min(len(td), 100))])  # Sampling time [s]
+def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", sides=None, dt=None,
+               start_idx=None, zblocks=None, results_folder=None, results_name='Y'):
+    # Small-signal sinusoidal steady state computation and rFFT (no target frequency-based FFT distinction)
+    L = int(fft_periods * 1 / f_base * 1.0 / dt)  # For the FFT computation
+    if scantype is "AC":
+        # Compute the small-signal sinusoidal steady-state waveforms
+        # For each simulation (freq) it contains a matrix: [Vd_d Vd_q; Vq_d Vq_q]
+        deltaV = np.empty((len(frequencies), 2, 2), dtype='cdouble')  # Also dtype='csingle'
+        deltaI = np.empty((len(frequencies), 2, 2), dtype='cdouble')  # Also dtype='csingle'
+        Y = np.empty((len(frequencies), 2, 2), dtype='cdouble')  # Also dtype='csingle'
+        names = ['VDUTac:1', 'VDUTac:2', 'IDUTacA' + sides + ':1', 'IDUTacA' + sides + ':2']
+        row = {names[0]: 0, names[1]: 1, names[2]: 0, names[3]: 1}
+        for sim, frequency in enumerate(frequencies):
+            idx = int(round(frequency * fft_periods * 1 / f_base))  # Index of the target frequency
+            for col, sim_type in enumerate(["_d", "_q"]):
+                # Debugging
+                # if sim == 21:
+                #     for name in names:
+                #         # Current and voltages
+                #         fig, ax = plt.subplots()
+                #         t = np.arange(len(zblocks.perturbation_data[sim][name + sim_type][start_idx:])) * dt
+                #         ax.plot(t, zblocks.snapshot_data[name][start_idx:], 'b', linewidth=2, label="Snapshot")
+                #         ax.plot(t, zblocks.perturbation_data[sim][name + sim_type][start_idx:], 'r', linewidth=2,
+                #                 label="Perturbation")
+                #         ax.set(xlabel='Time (s)', ylabel=name)
+                #         ax.grid()
+                #         ax.legend(loc='upper right', ncol=1)
+                #         fig.savefig("test.png")
+                #         plt.show()
+                # End degub
 
-    # Subtracts the steady state values from the signals after the system reached steady state
-    start_idx = find_nearest(td, start_fft)
-    if ss is None:
-        # Steady-state as the average after the transient period (assuming a LTI sys i.e. no LTP = no steady-state osc.)
-        # WARNING: THIS IS NOT VALIDATED YET
-        deltavi1_td = vi1_td[start_idx:, :] - np.tile(np.mean(vi1_td[start_idx:, :], axis=0), (td[start_idx:].size, 1))
-        deltavi2_td = vi2_td[start_idx:, :] - np.tile(np.mean(vi2_td[start_idx:, :], axis=0), (td[start_idx:].size, 1))
-    else:
-        # Use the steady-state waveforms
-        if td[0] != 0.0 and ss[0, 0] != td[0]: ss = ss[1:, :]  # Shift the snapshot by dt
-        ss_ext = np.tile(ss[start_idx:, 1:], (1, int(round(vi1_td.shape[1] / 4))))  # Extend the steady-state matrix
-        deltavi1_td = vi1_td[start_idx:, :] - ss_ext  # Small-signal steady state computation
-        deltavi2_td = vi2_td[start_idx:, :] - ss_ext
+                for name in names:
+                    delta = zblocks.perturbation_data[sim][name+sim_type][start_idx:] - zblocks.snapshot_data[name][start_idx:]
+                    delta_FD = np.fft.rfft(delta, n=L, axis=0) * 2 / L
+                    # freq_FD = np.fft.rfftfreq(L, d=dt)  # rFFT frequency points
+                    # Retrieve the response at the target frequency
+                    if "V" in name:
+                        deltaV[sim, row[name], col] = delta_FD[idx]
+                    else:
+                        deltaI[sim, row[name], col] = delta_FD[idx]
+            Y[sim,...] = np.matmul(deltaI[sim,...], np.linalg.inv(deltaV[sim,...]))
 
-    Y_dd = np.empty((len(frequencies),), dtype='cdouble')  # Also dtype='csingle'
-    Y_dq = np.empty((len(frequencies),), dtype='cdouble')
-    Y_qd = np.empty((len(frequencies),), dtype='cdouble')
-    Y_qq = np.empty((len(frequencies),), dtype='cdouble')
+        # Debugging
+        # FFT
+        # sim = 20
+        # for sim_type in ["_d", "_q"]:
+        #     fig, ax = plt.subplots(nrows=2, ncols=1)
+        #     colors = {names[0]: 'b', names[1]: 'r', names[2]: 'm', names[3]: 'g'}
+        #     for name in names:
+        #         delta = zblocks.perturbation_data[sim][name + sim_type][start_idx:] - zblocks.snapshot_data[name][start_idx:]
+        #         delta_FD = np.fft.rfft(delta, n=L, axis=0) * 2 / L
+        #         ax[0].plot(freq_FD, np.abs(delta_FD), colors[name], linewidth=2, label=name)
+        #         ax[1].plot(freq_FD, np.angle(delta_FD, deg=True), colors[name], linewidth=2, label=name)
+        #     ax[0].legend(loc='upper right', ncol=1)
+        #     ax[0].set_title(zblocks.name+' - Sim type: '+sim_type+' perturbation')
+        #     ax[0].set(xlabel='Frequency [Hz]', ylabel="Magnitude")
+        #     ax[0].set_xscale("log")
+        #     ax[0].set_yscale("log")
+        #     ax[0].grid()
+        #     ax[0].minorticks_on()
+        #     ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+        #     ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-',
+        #                linewidth=0.5)
+        #     ax[1].set(xlabel='Frequency [Hz]', ylabel="Phase [°]")
+        #     ax[1].set_xscale("log")
+        #     ax[1].grid()
+        #     ax[1].minorticks_on()
+        #     ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+        #     ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-',
+        #                linewidth=0.5)
+        #     fig.savefig("FFT.png")
+            #plt.show()
+        # End degub
 
-    # Option 1: No target frequency-based FFT distinction
-    L = int(fft_periods * 1 / f_base * 1.0 / dt)
-    deltavi1_fd = np.fft.rfft(deltavi1_td, n=L, axis=0) * 2 / L
-    deltavi2_fd = np.fft.rfft(deltavi2_td, n=L, axis=0) * 2 / L
-    # freqs = np.fft.rfftfreq(L, d=dt) # rFFT frequency points
-    for sim, frequency in enumerate(frequencies):
-        idx = int(round(frequency * fft_periods * 1 / f_base))
-        Vdq = np.matrix([[deltavi1_fd[idx, 4 * sim + 0], deltavi2_fd[idx, 4 * sim + 0]],
-                         [deltavi1_fd[idx, 4 * sim + 1], deltavi2_fd[idx, 4 * sim + 1]]])
-        Idq = np.matrix([[deltavi1_fd[idx, 4 * sim + 2], deltavi2_fd[idx, 4 * sim + 2]],
-                         [deltavi1_fd[idx, 4 * sim + 3], deltavi2_fd[idx, 4 * sim + 3]]])
+        if results_folder is not None:
+            filename = results_folder + '\\' + results_name + '_Y_' + zblocks.name + sides
+            np.savetxt(filename+'.txt',
+                       np.stack((frequencies, Y[:, 0, 0], Y[:, 0, 1], Y[:, 1, 0], Y[:, 1, 1]), axis=1), delimiter='\t',
+                       header="f\td-d\td-q\tq-d\tq-q", comments='')
 
-        Y = Idq * np.linalg.inv(Vdq)
-        Y_dd[sim] = Y[0, 0]
-        Y_dq[sim] = Y[0, 1]
-        Y_qd[sim] = Y[1, 0]
-        Y_qq[sim] = Y[1, 1]
+            fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 0, 0])), marker='o', facecolors='none', edgecolors='b',
+                          linewidths=1.5, label=r'$Y_{dd}$')
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 0, 1])), marker='x', c='r', linewidths=1.5,
+                          label=r'$Y_{dq}$')
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 1, 0])), marker='+', c='m', linewidths=1.5,
+                          label=r'$Y_{qd}$')
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 1, 1])), marker='.', c='g', linewidths=1.5,
+                          label=r'$Y_{qq}$')
+            # ax[0].set_yscale("log")
+            ax[0].set_xscale("log")
+            ax[0].set_xlim([frequencies[0], frequencies[-1]])
+            ax[0].minorticks_on()
+            ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+            ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+            ax[0].set_ylabel('Magnitude [dB]')
+            ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
+            ax[0].legend(loc='upper right', ncol=2)
 
-        # Z = Vdq * np.linalg.inv(Idq)
-        # Z_dd[sim] = Z[0,0]
-        # Z_dq[sim] = Z[0,1]
-        # Z_qd[sim] = Z[1,0]
-        # Z_qq[sim] = Z[1,1]
+            ax[1].scatter(frequencies, np.angle(Y[:, 0, 0], deg=True), marker='o', facecolors='none', edgecolors='b',
+                          linewidths=1.5, label=r'$Y_{dd}$')
+            ax[1].scatter(frequencies, np.angle(Y[:, 0, 1], deg=True), marker='x', c='r', linewidths=1.5,
+                          label=r'$Y_{dq}$')
+            ax[1].scatter(frequencies, np.angle(Y[:, 1, 0], deg=True), marker='+', c='m', linewidths=1.5,
+                          label=r'$Y_{qd}$')
+            ax[1].scatter(frequencies, np.angle(Y[:, 1, 1], deg=True), marker='.', c='g', linewidths=1.5,
+                          label=r'$Y_{qq}$')
+            ax[1].set_xscale("log")
+            ax[1].set_ylim([-200, 200])
+            ax[1].set_yticks([-180, -90, 0, 90, 180])
+            ax[1].set_xlim([frequencies[0], frequencies[-1]])
+            ax[1].minorticks_on()
+            ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+            ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+            ax[1].set_ylabel('Phase [°]')
+            ax[1].set_xlabel('Frequency [Hz]')
+            ax[1].legend(loc='upper right', ncol=2)
+            fig.savefig(filename + ".pdf", format="pdf", bbox_inches="tight")
+            fig.clear()
 
-    # Option 2: Target frequency-based FFT distinction (more efficient) To be added
+    elif scantype is "DC":
+        # Use the actual steady-state waveforms (allows to remove periodicity)
+        # For each simulation (freq) it contains a matrix: [Vd_d Vd_q; Vq_d Vq_q]
+        deltaV = np.empty((len(frequencies),), dtype='cdouble')  # Also dtype='csingle'
+        deltaI = np.empty((len(frequencies),), dtype='cdouble')  # Also dtype='csingle'
+        names = ['VDUTdc', 'IDUTdcA' + sides]
+        for sim, frequency in enumerate(frequencies):
+            idx = int(round(frequency * fft_periods * 1 / f_base))  # Index of the target frequency
+            for name in names:
+                delta = zblocks.perturbation_data[sim][name + "_dc"][start_idx:] - zblocks.snapshot_data[name][start_idx:]
+                delta_FD = np.fft.rfft(delta, n=L, axis=0) * 2 / L
+                # Retrieve the response at the target frequency
+                if "V" in name:
+                    deltaV[sim] = delta_FD[idx]
+                else:
+                    deltaI[sim] = delta_FD[idx]
+        Y = deltaI / deltaV
 
-    if results_folder is not None:
-        np.savetxt(results_folder + '\\' + results_name + '_Y.txt',
-                   np.stack((frequencies, Y_dd, Y_dq, Y_qd, Y_qq), axis=1), header="f\tdd\tdq\tqd\tqq", delimiter='\t',
-                   comments='')
+        if results_folder is not None:
+            filename = results_folder + '\\' + results_name + '_Ydc_' + zblocks.name + sides
+            np.savetxt(filename+'.txt', np.stack((frequencies, Y), axis=1), delimiter='\t', header="f\tdc", comments='')
+            fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y)), marker='o', facecolors='none', edgecolors='b',
+                          linewidths=1.5, label=r'$Y_{dc}$')
+            # ax[0].set_yscale("log")
+            ax[0].set_xscale("log")
+            ax[0].set_xlim([frequencies[0], frequencies[-1]])
+            ax[0].minorticks_on()
+            ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+            ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+            ax[0].set_ylabel('Magnitude [dB]')
+            ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
+            ax[0].legend(loc='upper right', ncol=2)
 
-        fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
-        ax[0].scatter(frequencies, 20*np.log10(np.abs(Y_dd)), marker='o', facecolors='none', edgecolors='b',
-                      linewidths=1.5, label=r'$Y_{dd}$')
-        ax[0].scatter(frequencies, 20*np.log10(np.abs(Y_dq)), marker='x', c='r', linewidths=1.5, label=r'$Y_{dq}$')
-        ax[0].scatter(frequencies, 20*np.log10(np.abs(Y_qd)), marker='+', c='m', linewidths=1.5, label=r'$Y_{qd}$')
-        ax[0].scatter(frequencies, 20*np.log10(np.abs(Y_qq)), marker='.', c='g', linewidths=1.5, label=r'$Y_{qq}$')
-        # ax[0].set_yscale("log")
-        ax[0].set_xscale("log")
-        ax[0].set_xlim([frequencies[0], frequencies[-1]])
-        ax[0].minorticks_on()
-        ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
-        ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
-        ax[0].set_ylabel('Magnitude [dB]')
-        ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
-        ax[0].legend(loc='upper right', ncol=2)
+            ax[1].scatter(frequencies, np.angle(Y, deg=True), marker='o', facecolors='none', edgecolors='b',
+                          linewidths=1.5, label=r'$Y_{dc}$')
+            ax[1].set_xscale("log")
+            ax[1].set_ylim([-200, 200])
+            ax[1].set_yticks([-180, -90, 0, 90, 180])
+            ax[1].set_xlim([frequencies[0], frequencies[-1]])
+            ax[1].minorticks_on()
+            ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+            ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+            ax[1].set_ylabel('Phase [°]')
+            ax[1].set_xlabel('Frequency [Hz]')
+            ax[1].legend(loc='upper right', ncol=2)
+            fig.savefig(filename + ".pdf", format="pdf", bbox_inches="tight")
+            fig.clear()
 
-        ax[1].scatter(frequencies, np.angle(Y_dd, deg=True), marker='o', facecolors='none', edgecolors='b',
-                      linewidths=1.5, label=r'$Y_{dd}$')
-        ax[1].scatter(frequencies, np.angle(Y_dq, deg=True), marker='x', c='r', linewidths=1.5, label=r'$Y_{dq}$')
-        ax[1].scatter(frequencies, np.angle(Y_qd, deg=True), marker='+', c='m', linewidths=1.5, label=r'$Y_{qd}$')
-        ax[1].scatter(frequencies, np.angle(Y_qq, deg=True), marker='.', c='g', linewidths=1.5, label=r'$Y_{qq}$')
-        ax[1].set_xscale("log")
-        ax[1].set_ylim([-200, 200])
-        ax[1].set_yticks([-180, -90, 0, 90, 180])
-        ax[1].set_xlim([frequencies[0], frequencies[-1]])
-        ax[1].minorticks_on()
-        ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
-        ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
-        ax[1].set_ylabel('Phase [°]')
-        ax[1].set_xlabel('Frequency [Hz]')
-        ax[1].legend(loc='upper right', ncol=2)
-        fig.savefig(results_folder + '\\' + results_name + "_Y.pdf", format="pdf", bbox_inches="tight")
+    elif scantype is "ACDC":
+        # For each simulation (freq) it contains a 3x3 matrix: [Vdc_dc Vdc_d Vdc_q; Vd_dc Vd_d Vd_q; Vq_dc Vq_d Vq_q]
+        deltaV = np.empty((len(frequencies), 3, 3), dtype='cdouble')  # Also dtype='csingle'
+        deltaI = np.empty((len(frequencies), 3, 3), dtype='cdouble')
+        Y = np.empty((len(frequencies), 3, 3), dtype='cdouble')
+        for block_num, block in enumerate(zblocks):
+            if block.type == "AC":
+                namesAC = ['VDUTac:1', 'VDUTac:2', 'IDUTacA' + sides[block_num] + ':1', 'IDUTacA' + sides[block_num] + ':2']
+            else:
+                namesDC = ['VDUTdc', 'IDUTdcA' + sides[block_num]]
+        names = namesDC + namesAC
+        row = {names[0]: 0, names[1]: 0, names[2]: 1, names[3]: 2, names[4]: 1, names[5]: 2}
+        for sim, frequency in enumerate(frequencies):
+            idx = int(round(frequency * fft_periods * 1 / f_base))  # Index of the target frequency
+            for col, sim_type in enumerate(["_dc", "_d", "_q"]):
+                for block in zblocks:
+                    # Select whether it is a DC or AC block
+                    if block.type == "AC":
+                        names = namesAC
+                    else:
+                        names = namesDC
+                    for name in names:
+                        delta = block.perturbation_data[sim][name + sim_type][start_idx:] - block.snapshot_data[name][start_idx:]
+                        delta_FD = np.fft.rfft(delta, n=L, axis=0) * 2 / L
+                        # Retrieve the response at the target frequency
+                        if "V" in name:
+                            deltaV[sim, row[name], col] = delta_FD[idx]
+                        else:
+                            deltaI[sim, row[name], col] = delta_FD[idx]
+            Y[sim, ...] = np.matmul(deltaI[sim, ...], np.linalg.inv(deltaV[sim, ...]))
 
-def find_nearest(array, value):  # Efficient function to find the nearest value to a given one and its position
-    idx = np.searchsorted(array, value, side="left")
-    if idx > 0 and (idx == len(array) or np.abs(value - array[idx - 1]) < np.abs(value - array[idx])):
-        return idx - 1
-    else:
-        return idx
+        # deltaV = {i: np.empty((3, 3), dtype='cdouble') for i in range(len(frequencies))}
+        # deltaI = {i: np.empty((3, 3), dtype='cdouble') for i in range(len(frequencies))}
+        # Y = np.empty((len(frequencies), 3, 3), dtype='cdouble')  # Also dtype='csingle'
+        # for sim, frequency in enumerate(frequencies):
+        #     for y, sim_type in enumerate(["_dc", "_d", "_q"]):
+        #         for idx, block in enumerate(zblocks):
+        #             side = sides[idx]
+        #             if block.type == "AC":
+        #                 names = ['VDUTac:1', 'VDUTac:2', 'IDUTacA' + side + ':1', 'IDUTacA' + side + ':2']
+        #                 row = {names[0]: 1, names[1]: 2, names[2]: 1, names[3]: 2}
+        #             else:
+        #                 names = ['VDUTdc', 'IDUTdcA' + side]
+        #                 row = {names[0]: 0, names[1]: 0}
+        #             for name in names:
+        #                 delta = block.perturbation_data[sim][name + sim_type][start_idx:] - block.snapshot_data[name][
+        #                                                                                     start_idx:]
+        #                 delta_FD = np.fft.rfft(delta, n=L, axis=0) * 2 / L
+        #                 # Retrieve the response at the target frequency
+        #                 if "V" in name:
+        #                     deltaV[sim][row[name], y] = delta_FD[int(round(frequency * fft_periods * 1 / f_base))]
+        #                 else:
+        #                     deltaI[sim][row[name], y] = delta_FD[int(round(frequency * fft_periods * 1 / f_base))]
+        #
+        #     Y[sim] = np.matmul(deltaI[sim], np.linalg.inv(deltaV[sim]))
+
+        if results_folder is not None:
+            filename = results_folder + '\\' + results_name + '_Yacdc_' + zblocks[0].name + sides[0] + '_' + zblocks[
+                1].name + sides[1]
+            np.savetxt(filename+'.txt',
+                       np.stack((frequencies, Y[:, 0, 0], Y[:, 0, 1], Y[:, 0, 2], Y[:, 1, 0], Y[:, 1, 1], Y[:, 1, 2],
+                                 Y[:, 2, 0], Y[:, 2, 1], Y[:, 2, 2]), axis=1),  delimiter='\t',
+                       header="f\tdc-dc\tdc-d\tdc-q\td-dc\td-d\td-q\tq-dc\tq-d\tq-q", comments='')
+
+            fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 1, 1])), marker='o', facecolors='none', edgecolors='b',
+                          linewidths=1.5, label=r'$Y_{dd}$')
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 1, 2])), marker='x', c='r', linewidths=1.5,
+                          label=r'$Y_{dq}$')
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 2, 1])), marker='+', c='m', linewidths=1.5,
+                          label=r'$Y_{qd}$')
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 2, 2])), marker='.', c='g', linewidths=1.5,
+                          label=r'$Y_{qq}$')
+            # ax[0].set_yscale("log")
+            ax[0].set_xscale("log")
+            ax[0].set_xlim([frequencies[0], frequencies[-1]])
+            ax[0].minorticks_on()
+            ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+            ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+            ax[0].set_ylabel('Magnitude [dB]')
+            ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
+            ax[0].legend(loc='upper right', ncol=2)
+
+            ax[1].scatter(frequencies, np.angle(Y[:, 1, 1], deg=True), marker='o', facecolors='none', edgecolors='b',
+                          linewidths=1.5, label=r'$Y_{dd}$')
+            ax[1].scatter(frequencies, np.angle(Y[:, 1, 2], deg=True), marker='x', c='r', linewidths=1.5,
+                          label=r'$Y_{dq}$')
+            ax[1].scatter(frequencies, np.angle(Y[:, 2, 1], deg=True), marker='+', c='m', linewidths=1.5,
+                          label=r'$Y_{qd}$')
+            ax[1].scatter(frequencies, np.angle(Y[:, 2, 2], deg=True), marker='.', c='g', linewidths=1.5,
+                          label=r'$Y_{qq}$')
+            ax[1].set_xscale("log")
+            ax[1].set_ylim([-200, 200])
+            ax[1].set_yticks([-180, -90, 0, 90, 180])
+            ax[1].set_xlim([frequencies[0], frequencies[-1]])
+            ax[1].minorticks_on()
+            ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+            ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+            ax[1].set_ylabel('Phase [°]')
+            ax[1].set_xlabel('Frequency [Hz]')
+            ax[1].legend(loc='upper right', ncol=2)
+            fig.savefig(
+                results_folder + '\\' + results_name + '_Yac_' + zblocks[0].name + sides[0] + '_' + zblocks[1].name +
+                sides[1] + ".pdf",
+                format="pdf", bbox_inches="tight")
+            fig.clear()
+
+            fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 0, 0])), marker='o', facecolors='none', edgecolors='b',
+                          linewidths=1.5, label=r'$Y_{dc}$')
+            # ax[0].set_yscale("log")
+            ax[0].set_xscale("log")
+            ax[0].set_xlim([frequencies[0], frequencies[-1]])
+            ax[0].minorticks_on()
+            ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+            ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+            ax[0].set_ylabel('Magnitude [dB]')
+            ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
+            ax[0].legend(loc='upper right', ncol=2)
+
+            ax[1].scatter(frequencies, np.angle(Y[:, 0, 0], deg=True), marker='o', facecolors='none', edgecolors='b',
+                          linewidths=1.5, label=r'$Y_{dc}$')
+            ax[1].set_xscale("log")
+            ax[1].set_ylim([-200, 200])
+            ax[1].set_yticks([-180, -90, 0, 90, 180])
+            ax[1].set_xlim([frequencies[0], frequencies[-1]])
+            ax[1].minorticks_on()
+            ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+            ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+            ax[1].set_ylabel('Phase [°]')
+            ax[1].set_xlabel('Frequency [Hz]')
+            ax[1].legend(loc='upper right', ncol=2)
+            fig.savefig(
+                results_folder + '\\' +results_name+'_Ydc_' + zblocks[0].name + sides[0] + '_' + zblocks[1].name + sides[1] + ".pdf",
+                format="pdf", bbox_inches="tight")
+            fig.clear()
+
+            fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 0, 1])), marker='o', facecolors='none', edgecolors='b',
+                          linewidths=1.5, label=r'$Y_{dc-d}$')
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 0, 2])), marker='x', c='r', linewidths=1.5,
+                          label=r'$Y_{dc-q}$')
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 1, 0])), marker='+', c='m', linewidths=1.5,
+                          label=r'$Y_{d-dc}$')
+            ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 2, 0])), marker='.', c='g', linewidths=1.5,
+                          label=r'$Y_{q-dc}$')
+            # ax[0].set_yscale("log")
+            ax[0].set_xscale("log")
+            ax[0].set_xlim([frequencies[0], frequencies[-1]])
+            ax[0].minorticks_on()
+            ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+            ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+            ax[0].set_ylabel('Magnitude [dB]')
+            ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
+            ax[0].legend(loc='upper right', ncol=2)
+
+            ax[1].scatter(frequencies, np.angle(Y[:, 0, 1], deg=True), marker='o', facecolors='none', edgecolors='b',
+                          linewidths=1.5, label=r'$Y_{dc-d}$')
+            ax[1].scatter(frequencies, np.angle(Y[:, 0, 2], deg=True), marker='x', c='r', linewidths=1.5,
+                          label=r'$Y_{dc-q}$')
+            ax[1].scatter(frequencies, np.angle(Y[:, 1, 0], deg=True), marker='+', c='m', linewidths=1.5,
+                          label=r'$Y_{d-dc}$')
+            ax[1].scatter(frequencies, np.angle(Y[:, 2, 0], deg=True), marker='.', c='g', linewidths=1.5,
+                          label=r'$Y_{q-dc}$')
+            ax[1].set_xscale("log")
+            ax[1].set_ylim([-200, 200])
+            ax[1].set_yticks([-180, -90, 0, 90, 180])
+            ax[1].set_xlim([frequencies[0], frequencies[-1]])
+            ax[1].minorticks_on()
+            ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+            ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+            ax[1].set_ylabel('Phase [°]')
+            ax[1].set_xlabel('Frequency [Hz]')
+            ax[1].legend(loc='upper right', ncol=2)
+            fig.savefig(
+                results_folder + '\\' +results_name+'_Ycoup_' + zblocks[0].name + sides[0] + '_' + zblocks[1].name + sides[
+                    1] + ".pdf",
+                format="pdf", bbox_inches="tight")

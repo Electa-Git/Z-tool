@@ -109,7 +109,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     if save_td or compute_yz:
         wait4pscad(time=1, pscad=pscad)
         t1 = t.time()
-        ss = read_and_save.single_s(original_folder=working_dir + project_name + fortran_ext,
+        ss = read_and_save_old.single_s(original_folder=working_dir + project_name + fortran_ext,
                                     target_filename=simset_task.overrides()['save_channels_file'][:-4],
                                     new_folder=results_folder, save=save_td, output=compute_yz)
         if take_snapshot: ss = ss[find_nearest(ss[:, 0], t_snap):, :]  # Get rid of the transient results, i.e. t<t_snap
@@ -128,7 +128,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     if save_td or compute_yz:
         wait4pscad(time=1, pscad=pscad)
         t2 = t.time()
-        d_axis = read_and_save.multiple_s(original_folder=working_dir + project_name + fortran_ext,
+        d_axis = read_and_save_old.multiple_s(original_folder=working_dir + project_name + fortran_ext,
                                           target_filename=simset_task.overrides()['save_channels_file'][:-4],
                                           new_folder=results_folder, save=save_td, output=compute_yz, n_sim=f_points)
         print(' d-axis injection results collected in', round((t.time() - t2), 2), 'seconds')
@@ -146,14 +146,14 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     if save_td or compute_yz:
         wait4pscad(time=1, pscad=pscad)
         t2 = t.time()
-        q_axis = read_and_save.multiple_s(original_folder=working_dir + project_name + fortran_ext,
+        q_axis = read_and_save_old.multiple_s(original_folder=working_dir + project_name + fortran_ext,
                                           target_filename=simset_task.overrides()['save_channels_file'][:-4],
                                           new_folder=results_folder, save=save_td, output=compute_yz, n_sim=f_points)
         print(' q-axis injection results collected in', round((t.time() - t2), 2), 'seconds')
 
     if compute_yz:
         t2 = t.time()
-        yz_computation.admittance(f_base=f_base, frequencies=freq, fft_periods=fft_periods, start_fft=start_fft, ss=ss,
+        yz_computation_old.admittance(f_base=f_base, frequencies=freq, fft_periods=fft_periods, start_fft=start_fft, ss=ss,
                                   vi1_td=d_axis[:, 1:], vi2_td=q_axis[:, 1:], td=d_axis[:, 0],
                                   results_folder=results_folder, results_name=output_files)
         print(' Admittance computation finished in ', round((t.time() - t2), 2), 'seconds')

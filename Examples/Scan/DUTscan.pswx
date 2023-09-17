@@ -1,5 +1,6 @@
-<workspace name="DUTscan" version="5.0.0" crc="96380942">
+<workspace name="DUTscan" version="5.0.0" crc="84453675">
   <projects>
+    <project type="library" name="Z_tool" filepath="..\..\Source\Scan\Z_tool.pslx" />
     <project type="project" name="DUT" filepath=".\DUT.pscx" />
   </projects>
   <simulations>
@@ -16,25 +17,25 @@
           <param name="simulationset" value="" />
           <param name="namespace" value="DUT" />
           <param name="name" value="" />
-          <param name="ammunition" value="56" />
+          <param name="ammunition" value="48" />
           <param name="volley" value="8" />
-          <param name="affinity_type" value="0" />
+          <param name="affinity_type" value="1" />
           <param name="affinity" value="1" />
           <param name="rank_snap" value="false" />
           <param name="substitutions" value="" />
           <param name="clean" value="false" />
         </paramlist>
         <paramlist name="project_overrides">
-          <param name="duration" value="2.0" />
+          <param name="duration" value="1.5" />
           <param name="time_step" value="2" />
-          <param name="plot_step" value="126.0" />
+          <param name="plot_step" value="250.0" />
           <param name="start_method" value="1" />
           <param name="startup_inputfile" value="Snapshot.snp" />
-          <param name="save_channels_file" value="VSC_q.out" />
+          <param name="save_channels_file" value="RL_dc.out" />
           <param name="save_channels" value="1" />
           <param name="timed_snapshots" value="0" />
           <param name="snapshot_file" value="Snapshot.snp" />
-          <param name="snap_time" value="3" />
+          <param name="snap_time" value="1.0" />
           <param name="run_config" value="0" />
           <param name="run_count" value="1" />
           <param name="remove_snapshot_offset" value="true" />
