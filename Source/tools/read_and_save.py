@@ -5,8 +5,9 @@ __all__ = ['single_s', 'multiple_s']
 import numpy as np  # Numerical python functions
 from os import listdir
 
-AC_scan_variables = ['V_DUTac:1', 'V_DUTac:2', 'I_DUTacA1:1', 'I_DUTacA1:2', 'I_DUTacA2:1', 'I_DUTacA2:2']
-DC_scan_variables = ['V_DUTdc', 'I_DUTdcA1', 'I_DUTdcA2']
+AC_scan_variables = ['IDUTacA1:1', 'IDUTacA1:2','VDUTac:1', 'VDUTac:2', 'IDUTacA2:1', 'IDUTacA2:2']
+DC_scan_variables = ['IDUTdcA1', 'IDUTdcA2','VDUTdc']
+scan_variables = AC_scan_variables + DC_scan_variables
 
 def single_s(out_files=None, save_folder=None, save=False, files=None, zblocks=None, new_file_name=None):
     save_time = True  # Save the time vector only once for space-saving
@@ -72,7 +73,7 @@ def multiple_s(n_sim=None, out_folder=None, file_name=None, save_folder=None, sa
                     values = np.loadtxt(root_name + "_" + str(sim) + "_" + str(file_num) + ".out", skiprows=1)
             if save_time:
                 zblocks[0].perturbation_data["time"] = values[:, 0]  # Retreive the time vector
-                print(" Time vector start",zblocks[0].perturbation_data["time"][0],"and end",zblocks[0].perturbation_data["time"][-1])
+                # print(" Time vector start",zblocks[0].perturbation_data["time"][0],"and end",zblocks[0].perturbation_data["time"][-1])
                 save_time = False  # Only for the first scanning block (to save memory)
             for block in zblocks:
                 # For each z-tool block related to the file, asign the corresponding data to the block
@@ -83,7 +84,9 @@ def multiple_s(n_sim=None, out_folder=None, file_name=None, save_folder=None, sa
                         for col in block.relative_cols[file_num]:
                             ch = col - 1 + 10 * (file_num - 1)  # Absolute output channel number for the column
                             # print(" Channel",ch,"variable",block.out_vars_names[ch],"initial value",values[0, col - 1])
-                            block.perturbation_data[sim-1][block.out_vars_names[ch]+sim_type] = values[:, col - 1]  # Data
+                            if block.out_vars_names[ch] in scan_variables:
+                                # Retrieve the currents and voltages
+                                block.perturbation_data[sim-1][block.out_vars_names[ch]+sim_type] = values[:, col - 1]
 
     if save:
         file_name = save_folder+'\\'+file_name
@@ -92,10 +95,11 @@ def multiple_s(n_sim=None, out_folder=None, file_name=None, save_folder=None, sa
             data = zblocks[0].perturbation_data["time"].reshape(-1, 1)  # Retreive the time vector data
             for block in zblocks:
                 for name in list(block.out_vars_names.values()):
-                    if name != "time":  # Do not include the time vector because it is already added
+                    if (name != "time") and (name in scan_variables):  # Only currents and voltages
                         data = np.append(data, block.perturbation_data[sim][name+sim_type].reshape(-1, 1), axis=1)
                         var_names.append(name)
             np.savetxt(file_name + "_" + str(sim) + '.txt', data, delimiter='\t', header="\t".join(var_names))
+
 
 multiple_s.__doc__ = """
 Function that reads Multiple Simulations results and saves them into a dedicated file and/or loads them into memory for further processing.
