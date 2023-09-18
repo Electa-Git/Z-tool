@@ -93,7 +93,7 @@ def frequency_sweep_ACDC_full(t_snap=None, t_sim=None, t_step=None, sample_step=
                               results_folder=None, output_files='Perturbation', compute_yz=False, save_td=False,
                               fft_periods=1, start_fft=None):
     # Debugging control
-    run_sim = False
+    run_sim = True
     verbose = True
     """ --- Input data handling --- """
     # CHECK the following if: it does not work... "or" operator gives a bool as output not None
