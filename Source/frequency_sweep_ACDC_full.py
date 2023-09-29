@@ -79,6 +79,8 @@ class Scanblock:
             self.type = "AC"
             self.var_names = ['VDUTac', 'IDUTacA1', 'IDUTacA2', 'theta']  # Root of the variable names
             self.group = "ACscan"
+            self.area = None  # Corresponding AC area identificator
+            self.theta = 0.0  # Steady-state voltage angle
         else:
             self.var_names = ['VDUTdc', 'IDUTdcA1', 'IDUTdcA2']  # Root part of the variable names
             self.type = "DC"
@@ -87,13 +89,13 @@ class Scanblock:
 def frequency_sweep_ACDC_full(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_perturb_mag=None,
                               freq=None, f_points=None, f_base=None, f_min=None, f_max=None, working_dir=None,
                               freq_text_file='frequencies.txt', snapshot_file='Snapshot',
-                              take_snapshot=True, dt_injections=None, topology=None,
-                              project_name='DUT', workspace_name='DUTscan', scanid=None,
+                              take_snapshot=True, dt_injections=None, topology=None,stability_analsyis=False,
+                              project_name='DUT', workspace_name='DUTscan',
                               fortran_ext=r'.gf46', num_parallel_sim=8, component_parameters=None,
                               results_folder=None, output_files='Perturbation', compute_yz=False, save_td=False,
                               fft_periods=1, start_fft=None):
     # Debugging control
-    run_sim = True
+    run_sim = False
     verbose = True
     """ --- Input data handling --- """
     # CHECK the following if: it does not work... "or" operator gives a bool as output not None
@@ -149,12 +151,23 @@ def frequency_sweep_ACDC_full(t_snap=None, t_sim=None, t_step=None, sample_step=
 
     print(' Setting parameters and configuration')
     # Get components and set global parameters for all simulations
-    if scanid is None:
+    if topology is None:
         # If a single block is in the canvas, only that one needs to be scanned
         blocks = main.find_first("Z_tool:ACscan")  # This assumes a single scan block in the main canvas
         if blocks is None: blocks = main.find_first("Z_tool:DCscanPM")  # If it did not find a ACscan it is DCscan
         scanid = blocks.parameters()['Name']  # Retrieve the scan block name for identification
         # The rest of the code works well based on scanid
+    else:
+        # Read the topology matrix
+        Ytopology = np.loadtxt(topology, skiprows=1, comments=["#", "%", "!"])
+        # len(ScanBlocksTool)*2 by len(ScanBlocksTool)*2 # nameA-1 nameA-2 nameB-1 nameB-2 ... x nameA-1 nameA-2 nameB-1 ...
+        # 0 means no interconnection, 1 means connection between the edges: diagonals are single-sided / shunt
+        with open(topology, 'r') as f:
+            block_names_Y = f.readline().strip('\n').split()
+        scanid = list(set([name[:-2] for name in block_names_Y]))  # List of PSCAD block names / identifiers
+        if verbose:
+            print("Detailed block names:",block_names_Y)
+            print("PSCAD block names:", scanid)
 
     ScanBlocksAC = []
     ScanBlocksDC = []
@@ -198,7 +211,66 @@ def frequency_sweep_ACDC_full(t_snap=None, t_sim=None, t_step=None, sample_step=
         scantype = "DC"
         ScanBlocks = ScanBlocksDC
         group = "DCscanPM"
+    if verbose:
+        print("AC scan blocks", ScanBlocksAC)
+        print("DC scan blocks", ScanBlocksDC)
     print(' Type of scan:', scantype)
+
+    # Create the undirected graph - adjacent matrix but diagonals can be 1
+    g = Graph(len(Ytopology))
+    for row, name in enumerate(block_names_Y):
+        if verbose: print("Block names based on topology file", name)
+        for col, edge in enumerate(Ytopology[row]):
+            if int(edge) == 1: g.addEdge(row, col)
+    # Obtain the connected components of the graph
+    cc = g.connectedComponents()  # List of lists with blocks # involved in each scan
+
+    # Extract the interconnected blocks for network scan (remove shunts a.k.a. unconnected vertices)
+    scans_network = [c for c in cc if len(c) != 1]  # List of lists with blocks # in each scan with more than 1 block
+    # After this for loop, the list is filtered & enhanced by a network scans object: num of runs, names, adj matrix...
+    passive_networks_scans = []  # This variable stores said lists
+    acdc_converters_blocks = []  # Stores the block names of the AC-side of AC/DC converters
+    for idx, net in enumerate(scans_network):
+        network_names = [block_names_Y[element] for element in net]
+        if len(net) > 2:
+            # Multiterminal network
+            if network_names[0][:-2] in ScanBlocksAC_names:
+                passive_networks_scans.append(Network(network_names, "AC", Ytopology[net, :][:, net]))
+                if verbose: print("   AC network scan involving", network_names)
+            else:
+                passive_networks_scans.append(Network(network_names, "DC", Ytopology[net, :][:, net]))
+                if verbose: print("   DC network scan involving", network_names)
+        else:
+            # Point to point: it needs to check that it is not an AC/DC converter
+            types = []
+            names = []
+            for name in network_names:
+                if name[:-2] in ScanBlocksAC_names:
+                    types.append("AC")
+                    names.append(name)
+                else:
+                    types.append("DC")
+                    names.append(name)
+            if types[0] == types[1]:
+                # If the block type are the same, then they are interconnecting an AC or DC network
+                passive_networks_scans.append(Network(network_names, types[0], Ytopology[net, :][:, net]))
+                if verbose: print("   " + types[0] + " network scan involving", network_names)
+            else:
+                # AC / DC converter: decouples AC grids in terms of reference frames / angles
+                acdc_converters_blocks.append(names[0])
+                acdc_converters_blocks.append(names[1])
+
+    acdc_converters_blocks = list(set(acdc_converters_blocks))  # Get rid of repetitions
+    # Create a new undirected graph for AC areas identification
+    if verbose: print("AC/DC converters at AC buses:", acdc_converters_blocks)
+    g_new = Graph(len(Ytopology))
+    for row, name in enumerate(block_names_Y):
+        for col, edge in enumerate(Ytopology[row]):
+            if col == row or block_names_Y[col][:-2] == name[:-2]: g_new.addEdge(row, col)  # Same scan block
+            if int(edge) == 1 and name not in acdc_converters_blocks: g_new.addEdge(row, col)  # Not AC/DC
+    # Obtain the connected components of the new graph
+    cc_new = g_new.connectedComponents()  # List of lists with blocks in the same area
+
     ScanBlocks.sort(key=lambda x: x.parameters()['Name'][:-3], reverse=False)  # Sort the blocks by their "bus" number
     ScanBlocks_id = [i for i in range(1, len(ScanBlocksAC) + len(ScanBlocksDC) + 1)]  # Unique scan block_id signals
     # Create a list with the active scan block objects containing rich information about each block
@@ -209,9 +281,16 @@ def frequency_sweep_ACDC_full(t_snap=None, t_sim=None, t_step=None, sample_step=
         block.parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0, block_id=ScanBlocks_id[idx])
         ScanBlocksTool.append(Scanblock(block, block.parameters()['Name'], int(block.parameters()['block_id'])))
         if verbose: print(" Scan block type ",block.defn_name[1])
+        for area_id, blocks in enumerate(cc_new):
+            if ScanBlocksTool[-1].name in [block_names_Y[num][:-2] for num in blocks] and ScanBlocksTool[-1].type == "AC":
+                ScanBlocksTool[-1].area = area_id
         ScanBlocksTool[idx].perturbation_data = {i: {} for i in range(f_points)}  # Dict of dicts
         ScanBlocksTool_names.append(ScanBlocksTool[idx].name)
-        if verbose: print(" Scan block names",ScanBlocksTool[idx].name)
+        if verbose:
+            if ScanBlocksTool[idx].type == "AC":
+                print(" Scan block",ScanBlocksTool[idx].name,"at area",ScanBlocksTool[idx].area)
+            else:
+                print(" Scan block", ScanBlocksTool[idx].name, 'with block_id', int(block.parameters()['block_id']))
         # The following lines identify the ACDC scan points
         # ScanBlocks_type.append(ScanBlocksTool[idx].type)  # List with block's scan type
         # Alternative: if "DC" in block.defn_name[1]: ScanBlocks_type.append("DC") # No need for AC or DC in block name
@@ -221,61 +300,16 @@ def frequency_sweep_ACDC_full(t_snap=None, t_sim=None, t_step=None, sample_step=
         #         # If two buses have the same number, then it is an ACDC bus
         #         ScanBlocks_type[idx] = "ACDC"
         #         ScanBlocks_type[idx - 1] = "ACDC"
+        # Retrieve the indexes of ScanBlocksTool for each network based on ScanBlocksTool_names
 
-    # Read the topology matrix
-    Ytopology = np.loadtxt(topology, skiprows=1, comments=["#","%","!"])
-    # len(ScanBlocksTool)*2 by len(ScanBlocksTool)*2 # nameA-1 nameA-2 nameB-1 nameB-2 ... x nameA-1 nameA-2 nameB-1 ...
-    # 0 means no interconnection, 1 means connection between the edges: diagonals are single-sided / shunt
-    with open(topology, 'r') as f:
-        block_names_Y = f.readline().strip('\n').split()
-    if verbose: print(block_names_Y)
-
-    # Create the undirected graph - adjacent matrix but diagonals can be 1
-    g = Graph(len(Ytopology))
-    for row, name in enumerate(block_names_Y):
-        if verbose: print("Block names based on topology file", name)
-        for col, edge in enumerate(Ytopology[row]):
-            if int(edge) == 1: g.addEdge(row, col)
-
-    # Obtain the connected components of the graph
-    cc = g.connectedComponents()  # List of lists with blocks # involved in each scan
-
-    # Extract the interconnected blocks for network scan (remove shunts a.k.a. unconnected vertices)
-    scans_network = [c for c in cc if len(c) != 1]  # List of lists with blocks # in each scan with more than 1 block
-    # After this for loop, the list is filtered & enhanced by a network scans object: num of runs, names, adj matrix...
-    passive_networks_scans = []  # This variable stores said lists
-    for idx, net in enumerate(scans_network):
-        network_names = [block_names_Y[element] for element in net]
-        if len(net) > 2:
-            # Multiterminal network
-            if network_names[0][:-2] in ScanBlocksAC_names:
-                passive_networks_scans.append(Network(network_names, "AC", Ytopology[net, :][:, net]))
-                if verbose: print("   AC network scan involving",network_names)
-            else:
-                passive_networks_scans.append(Network(network_names, "DC", Ytopology[net, :][:, net]))
-                if verbose: print("   DC network scan involving", network_names)
-        else:
-            # Point to point: it needs to check that it is not a AC/DC converter
-            types = []
-            for name in network_names:
-                if name[:-2] in ScanBlocksAC_names:
-                    types.append("AC")
-                else:
-                    types.append("DC")
-            if types[0] == types[1]:
-                # If the block type are the same, then they are interconnecting a AC or DC network
-                passive_networks_scans.append(Network(network_names, types[0], Ytopology[net, :][:, net]))
-                if verbose: print("   "+types[0]+" network scan involving", network_names)
-
-    # Retrieve the indexes of ScanBlocksTool for each network based on ScanBlocksTool_names
     for net in passive_networks_scans:
-        net.blocks_idx = {name: ScanBlocksTool_names.index(name[:-2]) for name in net.names}  # Assumes no name duplicate
+        net.blocks_idx = {name: ScanBlocksTool_names.index(name[:-2]) for name in
+                          net.names}  # Assumes no equal names
 
     runs = [net.runs for net in passive_networks_scans]
-    max_runs = max(runs)
-    bottleneck_scan = passive_networks_scans[runs.index(max_runs)]
-
-    del scans_network  # Clean some useless variables here!
+    if len(passive_networks_scans) != 0: max_runs = max(runs)
+    # bottleneck_scan = passive_networks_scans[runs.index(max_runs)]
+    input("Press Enter to continue...")
 
     if component_parameters is not None:
         Parameters = [main.find('master:const', 'Param1'), main.find('master:const', 'Param2'),
@@ -443,8 +477,8 @@ def frequency_sweep_ACDC_full(t_snap=None, t_sim=None, t_step=None, sample_step=
             initial_row = find_nearest(ScanBlocksTool[0].snapshot_data["time"], t_snap_internal)
             if verbose: print("Snapshot w/o time offset",ScanBlocksTool[0].snapshot_data["time"][initial_row],t_snap_internal)
             ScanBlocksTool[0].snapshot_data["time"] = ScanBlocksTool[0].snapshot_data["time"][initial_row:] - ScanBlocksTool[0].snapshot_data["time"][initial_row]
-
             for block in ScanBlocksTool:
+                if block.type == "AC": block.theta = block.snapshot_data["theta"][initial_row]  # Save the voltage angle
                 for name in list(block.out_vars_names.values()):
                     block.snapshot_data[name] = block.snapshot_data[name][initial_row:]
         print(' Unperturbed simulation results collected in', round((t.time() - t1), 2), 'seconds')
@@ -721,7 +755,7 @@ def frequency_sweep_ACDC_full(t_snap=None, t_sim=None, t_step=None, sample_step=
                                          zblocks=[ScanBlocksTool[ind] for ind in idx_selected_blocks],
                                          file_name=simset_task.overrides()['save_channels_file'][:-4])
                 print(' Results collected in', round((t.time() - t2), 2), 'seconds\n')
-
+        print(' Passive network scans completed in', round((t.time() - t1), 2), 'seconds\n')
         # Compute the admittance for each network individually
         for network_scan in passive_networks_scans:
             t2 = t.time()
@@ -742,7 +776,14 @@ def frequency_sweep_ACDC_full(t_snap=None, t_sim=None, t_step=None, sample_step=
 
             print('  Admittance matrix involving'," ".join(network_scan.names),'computed in',round((t.time() - t2), 2), 'seconds')
 
-    # project.save()  # Save the project changes
+    if stability_analsyis:
+        # Transformation to a global dq-reference frame at each AC-area (if there is more than one)
+        if len(cc_new) > 1:
+            for block in ScanBlocksTool:
+                if block.type == "AC":
+                    block.theta = block.snapshot_data["theta"][initial_row]  # Save the voltage angle
+        # Build edge and nodal admittance matrices
+
     print(' Quitting PSCAD')
     wait4pscad(time=1, pscad=pscad)
     pscad.quit()  # Quit PSCAD

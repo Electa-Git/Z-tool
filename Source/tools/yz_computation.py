@@ -82,7 +82,7 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
         # End degub
 
         if results_folder is not None:
-            filename = results_folder + '\\' + results_name + '_Y_' + zblocks.name + sides
+            filename = results_folder + '\\' + results_name + '_Y_' + zblocks.name +"-"+ sides
             np.savetxt(filename+'.txt',
                        np.stack((frequencies, Y[:, 0, 0], Y[:, 0, 1], Y[:, 1, 0], Y[:, 1, 1]), axis=1), delimiter='\t',
                        header="f\td-d\td-q\tq-d\tq-q", comments='')
@@ -104,7 +104,7 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
             ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
             ax[0].set_ylabel('Magnitude [dB]')
             ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
-            ax[0].legend(loc='upper right',fancybox=True, shadow=True, ncol=2)
+            ax[0].legend(loc='upper right', ncol=2)
 
             ax[1].scatter(frequencies, np.angle(Y[:, 0, 0], deg=True), marker='o', facecolors='none', edgecolors='b',
                           linewidths=1.5, label=r'$Y_{dd}$')
@@ -146,7 +146,7 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
         Y = deltaI / deltaV
 
         if results_folder is not None:
-            filename = results_folder + '\\' + results_name + '_Ydc_' + zblocks.name + sides
+            filename = results_folder + '\\' + results_name + '_Ydc_' + zblocks.name + "-" + sides
             np.savetxt(filename+'.txt', np.stack((frequencies, Y), axis=1), delimiter='\t', header="f\tdc", comments='')
             fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
             ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y)), marker='o', facecolors='none', edgecolors='b',
@@ -208,8 +208,7 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
             Y[sim, ...] = np.matmul(deltaI[sim, ...], np.linalg.inv(deltaV[sim, ...]))
 
         if results_folder is not None:
-            filename = results_folder + '\\' + results_name + '_Yacdc_' + zblocks[0].name + sides[0] + '_' + zblocks[
-                1].name + sides[1]
+            filename = results_folder + '\\' + results_name + '_Yacdc_' + zblocks[0].name+"-"+sides[0] + '_' + zblocks[1].name+"-"+ sides[1]
             np.savetxt(filename+'.txt',
                        np.stack((frequencies, Y[:, 0, 0], Y[:, 0, 1], Y[:, 0, 2], Y[:, 1, 0], Y[:, 1, 1], Y[:, 1, 2],
                                  Y[:, 2, 0], Y[:, 2, 1], Y[:, 2, 2]), axis=1),  delimiter='\t',
@@ -232,7 +231,7 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
             ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
             ax[0].set_ylabel('Magnitude [dB]')
             ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
-            ax[0].legend(loc='upper right',fancybox=True, shadow=True, ncol=2)
+            ax[0].legend(loc='upper right', ncol=2)
 
             ax[1].scatter(frequencies, np.angle(Y[:, 1, 1], deg=True), marker='o', facecolors='none', edgecolors='b',
                           linewidths=1.5, label=r'$Y_{dd}$')
@@ -251,10 +250,9 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
             ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
             ax[1].set_ylabel('Phase [°]')
             ax[1].set_xlabel('Frequency [Hz]')
-            ax[1].legend(loc='upper right',fancybox=True, shadow=True, ncol=2)
+            ax[1].legend(loc='upper right', ncol=2)
             fig.savefig(
-                results_folder + '\\' + results_name + '_Yac_' + zblocks[0].name + sides[0] + '_' + zblocks[1].name +
-                sides[1] + ".pdf",
+                results_folder + '\\' + results_name + '_Yac_' + zblocks[0].name + "-" + sides[0] + '_' + zblocks[1].name + "-" + sides[1] + ".pdf",
                 format="pdf", bbox_inches="tight")
             fig.clear()
 
@@ -269,7 +267,7 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
             ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
             ax[0].set_ylabel('Magnitude [dB]')
             ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
-            ax[0].legend(loc='upper right',fancybox=True, shadow=True, ncol=2)
+            ax[0].legend(loc='upper right', ncol=2)
 
             ax[1].scatter(frequencies, np.angle(Y[:, 0, 0], deg=True), marker='o', facecolors='none', edgecolors='b',
                           linewidths=1.5, label=r'$Y_{dc}$')
@@ -282,9 +280,9 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
             ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
             ax[1].set_ylabel('Phase [°]')
             ax[1].set_xlabel('Frequency [Hz]')
-            ax[1].legend(loc='upper right',fancybox=True, shadow=True, ncol=2)
+            ax[1].legend(loc='upper right', ncol=2)
             fig.savefig(
-                results_folder + '\\' +results_name+'_Ydc_' + zblocks[0].name + sides[0] + '_' + zblocks[1].name + sides[1] + ".pdf",
+                results_folder + '\\' +results_name+'_Ydc_' + zblocks[0].name + "-"+sides[0] + '_' + zblocks[1].name +"-"+ sides[1] + ".pdf",
                 format="pdf", bbox_inches="tight")
             fig.clear()
 
@@ -305,7 +303,7 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
             ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
             ax[0].set_ylabel('Magnitude [dB]')
             ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
-            ax[0].legend(loc='upper right',fancybox=True, shadow=True, ncol=2)
+            ax[0].legend(loc='upper right', ncol=2)
 
             ax[1].scatter(frequencies, np.angle(Y[:, 0, 1], deg=True), marker='o', facecolors='none', edgecolors='b',
                           linewidths=1.5, label=r'$Y_{dc-d}$')
@@ -324,10 +322,9 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
             ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
             ax[1].set_ylabel('Phase [°]')
             ax[1].set_xlabel('Frequency [Hz]')
-            ax[1].legend(loc='upper right',fancybox=True, shadow=True, ncol=2)
+            ax[1].legend(loc='upper right', ncol=2)
             fig.savefig(
-                results_folder + '\\' +results_name+'_Ycoup_' + zblocks[0].name + sides[0] + '_' + zblocks[1].name + sides[
-                    1] + ".pdf",
+                results_folder + '\\' +results_name+'_Ycoup_' + zblocks[0].name +"-"+sides[0] + '_' + zblocks[1].name +"-"+sides[1] + ".pdf",
                 format="pdf", bbox_inches="tight")
 
     else:
@@ -376,23 +373,23 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
 
             if network.enforce:
                 # Enforce network connectivity
+                Yextended = network.adj_matrix  # Matrix indicating the connectivity
+                np.fill_diagonal(Yextended, 1)  # Fill the diagonal with ones (shunt or self admittance)
                 if network.scan_type == "AC":
-                    Yextended = np.kron(network.adj_matrix,np.ones((2,2),dtype=int))  # Extend the matrix with dq-axes
-                else:
-                    Yextended = network.adj_matrix  # No extension needed
+                    Yextended = np.kron(Yextended,np.ones((2,2),dtype=int))  # Extend the matrix with dq-axes
                 # Yextended[m,n] = 1 <-> y[m,n] =/= 0, so we force the rest to zero
                 Y[sim, ...] = np.matmul(Yextended * deltaI[sim, ...], np.linalg.inv(deltaV[sim, ...]))
             else:
                 Y[sim, ...] = np.matmul(deltaI[sim, ...], np.linalg.inv(deltaV[sim, ...]))
 
         if results_folder is not None:
-            filename = results_folder+'\\'+results_name+'_Y_'+network.scan_type+"_".join([zblocks[idx].name+sides[idx] for idx in range(len(sides))])
+            filename = results_folder+'\\'+results_name+'_Y_'+network.scan_type+"_"+"_".join([zblocks[idx].name+"-"+sides[idx] for idx in range(len(sides))])
             results = [Y[:, row, col] for row in range(N) for col in range(N)]
             results.insert(0, frequencies)
             elements = [str(row)+"-"+str(col) for row in range(N) for col in range(N)]
             results = tuple(results)
-            header = "f\t"+"\t".join(elements)
-            np.savetxt(filename+'.txt',np.stack(results, axis=1),  delimiter='\t', header=header, comments="\n"+"\t".join(network.all_scans))
+            header = "\nf\t"+"\t".join(elements)
+            np.savetxt(filename+'.txt',np.stack(results, axis=1),  delimiter='\t', header=header, comments="\t".join(network.all_scans))
 
             fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
             for row in range(N):
@@ -410,8 +407,8 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
             ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
             ax[0].set_ylabel('Magnitude [dB]')
             ax[0].set_title('DUT admittance ― ' + str(len(frequencies)) + ' scanned frequencies')
-            ax[0].legend(loc='upper right',fancybox=True, shadow=True, ncol=4)
-
+            ax[0].legend(loc='upper right', ncol=4)
+            # ,fancybox=True, shadow=True,
             for row in range(N):
                 for col in range(N):
                     if network.enforce:
