@@ -900,7 +900,7 @@ def read_one_line(file_path, nline):
     return selected_data
 
 
-frequency_sweep_ACDC_full.__doc__ = """
+frequency_sweep.__doc__ = """
 Author: Francisco Javier Cifuentes García
 V0.1 [03/08/2022]
 PSCAD automation
