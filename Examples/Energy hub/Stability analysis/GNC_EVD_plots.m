@@ -1,4 +1,4 @@
-%% GNC and EVD MATLAB plots from frequency-domain data
+%% GNC and EVD MATLAB plots from frequency domain data
 % Author: Francisco Javier Cifuentes Garcia
 close all;clear all;clc
 set(0,'defaulttextinterpreter','latex');
@@ -8,7 +8,7 @@ set(0,'defaultAxesFontSize',16)
 format compact; format long
 
 %% Import the GNC data and define standard colors
-filename = 'stable_GNC.txt';
+filename = '../Results stable/ISGT_stable_GNC.txt';
 num_vars = 16; % Number of variables: matrix size is num_vars x num_vars
 lambdas = importmatrix(filename, num_vars, "\t");
 f = real(lambdas(:,1)); % Extract the frequency at the 1st column
@@ -18,6 +18,7 @@ c = []; % Standard colors as needed
 for i = 1:ceil(N/12)
     c = [c;colororder("gem12")];
 end
+close
 
 %% Nyquist plot
 figure('Name','Nyquist')
@@ -32,10 +33,11 @@ end
 for L =1:N
 plot(real(lambdas(:,L)),-imag(lambdas(:,L)),"-",'Color',c(L,:),"LineWidth",2)
 end
-plot(-1,0,'kx','MarkerSize',10,'LineWidth',1);grid on
-plot(cos(-pi:1e-3:pi),sin(-pi:1e-3:pi),'k--','Linewidth',1)
+plot(-1,0,'kx','MarkerSize',10,'LineWidth',1);grid on; % Critical point
+plot(cos(-pi:1e-3:pi),sin(-pi:1e-3:pi),'k--','Linewidth',1) % Unit circle
 
-axes('position',[.62 .3 .25 .3]);box on;hold on
+% Critical point detail
+axes('position',[.62 .3 .30 .33]);box on;hold on
 for L =1:N
 plot(real(lambdas(:,L)),imag(lambdas(:,L)),"-",'Color',c(L,:),"LineWidth",2);hold on
 end
@@ -45,11 +47,11 @@ end
 plot(-1,0,'kx')
 plot(cos(-pi:1e-3:pi),sin(-pi:1e-3:pi),'k--','Linewidth',1)
 xlim([-2 2]);ylim([-2 2]);xticks(-2:1:2);yticks(-2:1:2)
-title('Critical point','interpreter','latex');
+title('Critical point detail','interpreter','latex');
 
 
 %% Import the EVD data and define standard colors
-filename = 'stable_EVD.txt';
+filename = '../Results stable/ISGT_stable_EVD.txt';
 num_vars = 16; % Number of variables: matrix size is num_vars x num_vars
 evd = importmatrix(filename, num_vars, "\t");
 f = real(evd(:,1)); % Extract the frequency
