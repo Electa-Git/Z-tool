@@ -9,7 +9,7 @@ The following features are currently implemented and validated:
 - [x] Oscillation mode identification via eigenvalue decomposition (EVD) and bus participation factors
 - [x] Passivity assessment and Singular Value Decomposition functions
 
-The flowchart below summarizes a common usage of the tool for stability studies, including frequency-domain system identification ([frequency_sweep](Source/frequency_sweep.py)) and several stability analysis functions([stability_analysis](Source/tools/stability.py)):
+The flowchart below summarizes a common usage of the tool for stability studies, including frequency-domain system identification ([frequency_sweep](Source/frequency_sweep.py)) and several stability analysis functions ([stability_analysis](Source/tools/stability.py)):
 
 ![Tool flowchart](Doc/flowchart.png)
 
