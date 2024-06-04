@@ -1,0 +1,16 @@
+<workspace name="Test_case" version="5.0.0" crc="121387681">
+  <projects>
+    <project type="library" name="Z_tool" filepath="..\..\..\Source\Scan\Z_tool.pslx" />
+    <project type="project" name="Energy_hub" filepath=".\Energy_hub.pscx" />
+  </projects>
+  <simulations>
+  </simulations>
+  <pmr />
+  <messagegrid expanded="">
+    <column name="Icon" />
+    <column name="Id" />
+    <column name="Component" />
+    <column name="Namespace" />
+    <column name="Description" />
+  </messagegrid>
+</workspace>

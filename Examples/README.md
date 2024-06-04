@@ -43,12 +43,12 @@ See the example below for the previous point-to-point HVDC link. This table can 
 
 ![topology](../Doc/topology.png)
 
-The next step is to introduce the scan parameters in the python script _test_P2P.py_.
+The next step is to introduce the scan parameters in the corresponding python script.
 The parameters, which are self-descriptive, are provided to the frequency_sweep function which performs the frequency-domain characterization.
 
 ![example_script](../Doc/example_script.png)
 
-After running the file _test_P2P.py_, the status of the process can be seen in real time.
+After running the script, the status of the process can be seen in real time.
 
 ![Printed information about the scanning](../Doc/img_6.png)
 
