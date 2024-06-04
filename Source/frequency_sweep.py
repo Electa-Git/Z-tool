@@ -1,4 +1,4 @@
-""" Documentation is not updated """
+""" This script contains the function frequency_sweep to perform the frequency scan of the system """
 
 import time as t  # Relative time
 from os import listdir, chdir, getcwd, path, makedirs
