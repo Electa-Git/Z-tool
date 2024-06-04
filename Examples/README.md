@@ -54,7 +54,7 @@ After running the script, the status of the process can be seen in real time.
 
 When the scan is finished, we can access the results in the specificed results folder.
 The admittances are ploted in _.pdf_ and saved as _.txt_ tab-separated files.
-If the _stability_analysis_ function is called, then the results also include the application of the GNC and EVD to assess the system stability properties.
+If the _stability_analysis_ function is called, then the results also include detailed system stability properties, which include the application of the GNC to determine system stability, the EVD of the closed-loop impedance matrix to reveal the system oscillatory modes and participating buses, and the computation of the passivity index of the different system matrices.
 
 ![Results](../Doc/pdf_out.png)
 
