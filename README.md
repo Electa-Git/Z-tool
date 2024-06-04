@@ -6,8 +6,10 @@ The analysis relies on an existing system model in the EMT simulation software [
 The following features are currently implemented and validated:
 - [x] Voltage perturbation-based admittance scan at several nodes, including MMC-based systems and black-box components
 - [x] Stability assessment via Generalized Nyquist Criteria applicable to standalone-stable MIMO systems
-- [x] Passivity assessment and Singular Value Decomposition functions
 - [x] Oscillation mode identification via eigenvalue decomposition (EVD) and bus participation factors
+- [x] Passivity assessment and Singular Value Decomposition functions
+
+![Tool flowchart](Doc/flowchart.png)
 
 ## Installation
 To use the tool, the following pre-requisites are needed.
