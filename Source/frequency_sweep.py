@@ -122,7 +122,7 @@ def visualize_graph(G, node_names, save_dir, file_name):
 def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_perturb_mag=None,freq=None, f_points=None,
                     f_base=None, f_min=None, f_max=None, working_dir=None, freq_text_file='frequencies.txt',
                     snapshot_file=None, dedicated_SS_sim=False, take_snapshot=True, dt_injections=None,
-                    topology=None, project_name='DUT', workspace_name='DUTscan',fortran_ext=r'.gf46', num_parallel_sim=8,
+                    topology=None, project_name=None, workspace_name=None,fortran_ext=r'.gf46', num_parallel_sim=8,
                     scan_passives=True, edge_dq_sym=False, edge_sym=False, component_parameters=None,
                     results_folder=None, output_files='Perturbation', compute_yz=True, save_td=False,
                     fft_periods=1, start_fft=None, pscad_plot=0, show_powerflow=False, visualize_network=False):
@@ -132,7 +132,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     verbose = False
     """ --- Input data handling --- """
     # CHECK the following if: it does not work... "or" operator gives a bool as output not None
-    if (t_snap or t_step or start_fft or v_perturb_mag or ((f_points or f_base or f_max or f_min) and freq)) is None:
+    if (t_snap or t_step or start_fft or v_perturb_mag or project_name or workspace_name or ((f_points or f_base or f_max or f_min) and freq)) is None:
         print('One or more required arguments are missing!! \n Check the function documentation by typing help(frequency_sweep) \n')
         return
 
@@ -144,7 +144,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         if f_max is None: f_max = max(freq)
         sample_step = round(t_step * np.floor((1e6 * 0.5 * 0.5 / f_max + t_step / 2) / t_step), 3)  # [us]
     if t_sim is None: t_sim = start_fft + fft_periods / f_base
-    if dt_injections is None: dt_injections = start_fft  # Time to reach steady-state after the system decoupling
+    if dt_injections is None: dt_injections = start_fft  # dt_injections
     if working_dir is None:
         working_dir = getcwd() + '\\'  # Location of the PSCAD workspace
     else:
@@ -890,7 +890,6 @@ def find_nearest(array, value):  # Efficient function to find the nearest value 
     else:
         return idx
 
-
 def read_one_line(file_path, nline):
     with open(file_path, 'r') as file:
         for line_number, line in enumerate(file):
@@ -899,44 +898,57 @@ def read_one_line(file_path, nline):
             if line_number == nline + 1: selected_data = line.split()
     return selected_data
 
-
 frequency_sweep.__doc__ = """
 Author: Francisco Javier Cifuentes García
-V0.1 [03/08/2022]
+V0.2 [04/06/2024]
 PSCAD automation
 The values of the frequency list are multiples of the base frequency.
-The simulation configuration is set to perform one snapshot and then the frequency sweeps.
-The function accepts several input arguments to customize the frequency sweep:
+The default simulation configuration is set to perform one snapshot and then the frequency sweeps.
+The function accepts several input arguments to customize the frequency scan:
 
 Required
+        workspace_name  Name of the PSCAD workspace (only the name, no path and without the extension)
+        project_name    Name of the PSCAD project under study 
         t_snap          Time when the snapshot is taken [s].
-        take_snapshot		Bool: Does the user want to take a snapshot? Default = True. A previous snapshot can still be used for the Y computation.
-                                The snapshot simulation runs for t_snap_internal + t_sim_internal so as to save the steady-state unperturbed waveforms.
         t_sim			Duration of each frequency injection simulation [s].
         t_step			Simulation time step [us].
-        sample_step		Sample time of the output channels [us].
-        v_perturb_mag	Voltage perturbation in per unit [pu]
-        freq			Frequencies to perform the injections [Hz]. Alternatively, the user can provide info to compute the list.
-        dt_injections   Time to reach steady-state after a perturbation [s]. Alternatively, start_fft can be provided
+        start_fft		Time for the system to reach the sinusoidal steady-state after the injections [s]. 
+        v_perturb_mag	Voltage perturbation in per unit w.r.t. the steady-state fundamental value, e.g. 0.01
+        f_points		Number of frequency perturbation points.
+        f_base		 	Base frequency (determines frequency resolution) [Hz].
+        f_min			Start frequency [Hz].
+        f_max			End frequency [Hz].
+        topology        .txt absolute path and file name of the network topology between scan blocks (see examples for instructions on how to build it).
+        output_files    Name root of the scan results output files.
       
 Optional
-        f_points			    Number of frequency perturbation points.
-        f_base		 	        Base frequency [Hz].
-        f_min			        Start frequency [Hz].
-        f_max			        End frequency [Hz].
-        fft_periods 		    Number of periods used to compute the FFT. Default = 1.
-        start_fft		        Time for the DUT to reach the new steady-state (injections) [s] . 
-        freq_text_file	 	    File name with the perturbation frequencies. Default = 'frequencies.txt'.
-        project_name	 	    Name of the project. Default 'Impedance_testing_single_frequ'.
-        workspace_name	 	    Name of the workspace. Default 'STATCOM_Worksace'.
-        fortran_ext	 	        Fortran extension. Default r'.gf46'.
-        num_parallel_sim 	    Number of parallel simulations. Default 8.
-	    component_parameters	List of two-value lists containing the component parameter name and value to be modified in PSCAD. E.g. [["BRK_time", 2.50], ["P_load", 50,]]
-	    working_dir	 	        Working directory (in case the python file is not in the same folder as the PSCAD project).
-        snapshot_file		    Name of the snapshot so it can be re-used.
+        working_dir	 	        Absolute path of the PSCAD workspace in case the python file is not in the same folder as the PSCAD project.
         output_files	 	    Root name of the output files
-        results_folder	 	    Absolute path where the formated results will be stored. If not specified, they are saved in the working directory.
-        compute_yz	 	        Compute the admittance and save the results. If no results folder is specified then it saves the data in working_dir.
-        save_td  		        Bool: If set to True, the several files of time domain data are saved into more compact .txt files for each independent
+        results_folder	 	    Absolute path where the tool results want to be stored. If not specified, they are saved in the working directory.
+        fortran_ext	 	        Fortran extension. Default r'.gf46'.
+        num_parallel_sim 	    Number of parallel simulations. Default = 8.
+        
+        sample_step		        Sample time of the output channels [us]. The default value is computed based on the Nyquist frequency.
+        snapshot_file		    Name of the snapshot file so it can be re-used or in case a previous snapshot is used.
+        take_snapshot	        Bool: Does the user want to take a snapshot? Default = True. A previous snapshot can still be used if snapshot_file is specified.
+                                The snapshot simulation runs for t_snap_internal + t_sim_internal so as to also save the steady-state unperturbed waveforms.
+        dedicated_SS_sim        Bool flag to perform a dedicated simulation just to record the steady-state waveforms
+        
+        scan_passives           Bool flag to scan the passive networks. Default = True. It can be set to False in case the topology does not change so as to re-use previous scan.
+        edge_dq_sym             Bool to consider the symmetry of passive AC networks so as to halve the necessary perturbations and thus their computation time.
+        
+        freq			        Frequency list to perform the injections [Hz]. Alternatively, the user can provide info to compute the list.
+        fft_periods 		    Number of periods used to compute the FFT. Default = 1.
+        freq_text_file	 	    File name with the perturbation frequencies as an alternative to freq or f_points, f_base, etc. Default = 'frequencies.txt'.
+        dt_injections           Additional simulation time in seconds after the system decoupling (steady-state). 
+        
+        show_powerflow          Bool: do you want to print the power flow after the snapshot (steady-state)? Default = False.
+        visualize_network       Bool: create a primitive graph representing the provided network topology. Default = False.
+        
+	    component_parameters	List of two-value lists containing the component parameter name and value to be modified in PSCAD. E.g. [["BRK_time", 2.50], ["P_load", 50]]
+	    
+        pscad_plot              Binary to disable PSCAD plots so as to speed-up the simulations. Default = 0 i.e. no plots
+        compute_yz	 	        Compute the admittance and save the results. If no results folder is specified then it saves the data in working_dir. Default = True
+        save_td  		        Bool: If set to True, many files of time domain data are saved into more compact .txt files for each independent
                                 perturbation. The format is [time Vd(f1) Vq(f1) Id(f1) Iq(f1) ... Vd(f_max) Vq(f_max) Id(f_max) Iq(f_max)].
 """
