@@ -7,7 +7,7 @@ from os import getcwd, system
 """ -------------------- PSCAD PROJECT ---------------------- """
 pscad_folder = getcwd() + r"\PSCAD model"  # Absolute location of the PSCAD workspace
 topology = getcwd() + r'\topology.txt'  # Topology file
-workspace_name = "Test_case"  # Name of the PPSCAD workspace
+workspace_name = "Test_case"  # Name of the PSCAD workspace
 project_name="Energy_hub"  # Name of the project
 
 """ -------------------- SCAN SETTINGS ---------------------- """
@@ -40,13 +40,13 @@ stability_analysis(topology=topology, results_folder=results_folder, file_root=o
 print("\n Unstable case re-using previous snapshot \n")
 output_files = 'ISGT_unstable'  # Desired name for the output files
 results_folder = getcwd() + r'\Results unstable'  # Location of the folder to store the results (if it doesn't exit, it is created)
-
+# component_parameters=[["Name1", Value1], ["Name1", Value1]] is a list of ["Name",Value] where "Name" is the name of a constant in PSCAD to be set to Value
 frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, snapshot_file="Snapshot_stable",
                 f_points=perturbations, f_base=f_base, f_max=f_max, f_min=f_min, start_fft=start_fft, fft_periods=fft_periods,v_perturb_mag=v_perturb_mag,
                 working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name, results_folder=results_folder, output_files=output_files,
                 topology=topology, scan_passives=False, show_powerflow=True, visualize_network=True, component_parameters=[["Control_switch", 1]])
 
-stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files+"_unstable")
+stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files)
 
 
 print("\n ALL CASES COMPLETED!! \n")
