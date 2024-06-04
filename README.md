@@ -33,13 +33,17 @@ If PYTHONPATH does not exit, it needs to be created. This should be done automat
 ## Usage
 Follow the example described [here](Examples). The GUI is currently under development.
 
+## Contact Details
+For queries about the package or related work please feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512)
+
+## License
+This is a free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Z-tool is distributed in the hope that it will be useful, but without any warranty; without even the implied warranty of merchantability or fitness for a particular purpose. See the GNU General Public License for more details.
+
 ## Contributors
 * Fransciso Javier Cifuentes Garcia (KU Leuven / EnergyVille): Main developer
 * Thomas Roose (KU Leuven / EnergyVille): Initial stability analysis functions
 * Eros Avdiaj and Özgür Can Sakinci (KU Leuven / EnergyVille): Validation and support
 
-## Contact Details
-For queries about the package or related work please feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512)
 ## Future work
 - [ ] Support for non-topology specification: inefficient but easy to use
 - [ ] Minimum simulation time before starting FFT (does it need to be at least as long as the period of the perturbation or could it be smaller?)

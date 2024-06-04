@@ -1,3 +1,26 @@
+"""
+This program contains several functions that can be used for the stability analysis in the frequency-domain, including:
+    1) Basic Generalized Nyquist Criterion (GNC) application to determine system stability margines
+    2) Eigenvalue Decomposition (EVD) over the frequency to determine oscillatory modes and participation factors
+    3) Passivity and singular values of target matrices
+    4) A main stability_analysis function to apply all the previously described to a specific system
+
+Copyright (C) 2024  Francisco Javier Cifuentes Garcia
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 __all__ = ['stability_analysis']
 import numpy as np
 from scipy.optimize import linear_sum_assignment
