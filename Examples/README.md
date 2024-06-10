@@ -32,7 +32,7 @@ If you are using the tool for the first time in a given project, then add the li
 ![add_library](../Doc/add_library.png)
 
 Next, copy the scan blocks from the library and paste them at the desired analysis buses of your system. It is necessary to give them a name so the results can be related to actual system components.
-In addition, the base frequency and steady-state voltage amplitude can be specified, altought it is not needed.
+In addition, the base frequency and steady-state voltage amplitude can be specified, although it is not needed.
 
 ![block_location](../Doc/P2P_blocks.png)
 
