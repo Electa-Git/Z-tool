@@ -41,22 +41,6 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
         for sim, frequency in enumerate(frequencies):
             idx = int(round(frequency * fft_periods * 1 / f_base))  # Index of the target frequency
             for col, sim_type in enumerate(["_d", "_q"]):
-                # Debug
-                # if sim == 21:
-                #     for name in names:
-                #         # Current and voltages
-                #         fig, ax = plt.subplots()
-                #         t = np.arange(len(zblocks.perturbation_data[sim][name + sim_type][start_idx:])) * dt
-                #         ax.plot(t, zblocks.snapshot_data[name][start_idx:], 'b', linewidth=2, label="Snapshot")
-                #         ax.plot(t, zblocks.perturbation_data[sim][name + sim_type][start_idx:], 'r', linewidth=2,
-                #                 label="Perturbation")
-                #         ax.set(xlabel='Time (s)', ylabel=name)
-                #         ax.grid()
-                #         ax.legend(loc='upper right', ncol=1)
-                #         fig.savefig("test.png")
-                #         plt.show()
-                # End degub
-
                 for name in names:
                     delta = zblocks.perturbation_data[sim][name+sim_type][start_idx:] - zblocks.snapshot_data[name][start_idx:]
                     delta_FD = np.fft.rfft(delta, n=L, axis=0) * 2 / L
@@ -68,37 +52,6 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
                         deltaI[sim, row[name], col] = delta_FD[idx]
             Y[sim,...] = np.matmul(deltaI[sim,...], np.linalg.inv(deltaV[sim,...]))
 
-        # Debugging
-        # FFT
-        # sim = 20
-        # for sim_type in ["_d", "_q"]:
-        #     fig, ax = plt.subplots(nrows=2, ncols=1)
-        #     colors = {names[0]: 'b', names[1]: 'r', names[2]: 'm', names[3]: 'g'}
-        #     for name in names:
-        #         delta = zblocks.perturbation_data[sim][name + sim_type][start_idx:] - zblocks.snapshot_data[name][start_idx:]
-        #         delta_FD = np.fft.rfft(delta, n=L, axis=0) * 2 / L
-        #         ax[0].plot(freq_FD, np.abs(delta_FD), colors[name], linewidth=2, label=name)
-        #         ax[1].plot(freq_FD, np.angle(delta_FD, deg=True), colors[name], linewidth=2, label=name)
-        #     ax[0].legend(loc='upper right', ncol=1)
-        #     ax[0].set_title(zblocks.name+' - Sim type: '+sim_type+' perturbation')
-        #     ax[0].set(xlabel='Frequency [Hz]', ylabel="Magnitude")
-        #     ax[0].set_xscale("log")
-        #     ax[0].set_yscale("log")
-        #     ax[0].grid()
-        #     ax[0].minorticks_on()
-        #     ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
-        #     ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-',
-        #                linewidth=0.5)
-        #     ax[1].set(xlabel='Frequency [Hz]', ylabel="Phase [°]")
-        #     ax[1].set_xscale("log")
-        #     ax[1].grid()
-        #     ax[1].minorticks_on()
-        #     ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
-        #     ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-',
-        #                linewidth=0.5)
-        #     fig.savefig("FFT.png")
-            #plt.show()
-        # End degub
 
         if results_folder is not None:
             filename = results_name + '#Y_AC#' + zblocks.name + "-" + sides
@@ -228,14 +181,8 @@ def admittance(f_base=None, frequencies=None, fft_periods=1, scantype="AC", side
 
         if results_folder is not None:
             filename = results_name + '#Y_ACDC#' + zblocks[0].name+"-"+sides[0]+"#"+zblocks[1].name+"-"+sides[1]
-            if zblocks[0].type == "AC":
-                header = "f\t" + zblocks[1].name + "-" + sides[1] + "_dc\t" + zblocks[0].name + "-" + sides[0] + "_d\t" + zblocks[0].name + "-" + sides[0] + "_q"
-            else:
-                header = "f\t" + zblocks[0].name + "-" + sides[0] + "_dc\t" + zblocks[1].name + "-" + sides[1] + "_d\t" + zblocks[1].name + "-" + sides[1] + "_q"
-            np.savetxt(results_folder + '\\' + filename+'#.txt',
-                       np.stack((frequencies, Y[:, 0, 0], Y[:, 0, 1], Y[:, 0, 2], Y[:, 1, 0], Y[:, 1, 1], Y[:, 1, 2],
-                                 Y[:, 2, 0], Y[:, 2, 1], Y[:, 2, 2]), axis=1), delimiter='\t',header=header,comments='')
-            # "f\tdc-dc\tdc-d\tdc-q\td-dc\td-d\td-q\tq-dc\tq-d\tq-q"
+            header = "f\tdc-dc\tdc-d\tdc-q\td-dc\td-d\td-q\tq-dc\tq-d\tq-q"
+            np.savetxt(results_folder + '\\' + filename+'#.txt', np.c_[frequencies, Y.reshape(Y.shape[0],-1)], delimiter='\t',header=header,comments='')
             fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
             ax[0].scatter(frequencies, 20 * np.log10(np.abs(Y[:, 1, 1])), marker='o', facecolors='none', edgecolors='b',
                           linewidths=1.5, label=r'$Y_{dd}$')
