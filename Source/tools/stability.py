@@ -1,9 +1,10 @@
 """
 This program contains several functions that can be used for the stability analysis in the frequency-domain, including:
     1) Basic Generalized Nyquist Criterion (GNC) application to determine system stability margins
-    2) Eigenvalue Decomposition (EVD) over the frequency to determine oscillatory modes and participation factors
+    2) Eigenvalue Decomposition (EVD) over the frequency to determine oscillatory modes, controllability, observability and participation factors
     3) Passivity and singular values of target matrices
-    4) A main stability_analysis function to apply all the previously described to a specific system
+    4) Sensitivity of the main state-space modes w.r.t. node admittance elements (ongoing)
+    5) A main stability_analysis function to apply all the previously described to a specific system
 
 Copyright (C) 2024  Francisco Javier Cifuentes Garcia
 
@@ -111,6 +112,21 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
         # print("Bus names", bus_names)
         admittances.append(read_admittance(path=results_folder, involved_blocks=bus_names[-1], file_root=file_root))
 
+    # for col, block in enumerate(block_names_Y):
+    #     if sum(Ytopology[:,col]) != 0:
+    #         involved_blocks = [block]  # Initialize with the block connected to what is added in the for loop below
+    #         for idx in np.nonzero(Ytopology[:,col])[0]: involved_blocks.append(block_names_Y[idx])
+    #         if not any(x in [item for row in bus_names for item in row] for x in involved_blocks):
+    #             # Only read the admittance if it has not been read already (unpack the list of bus_names and check)
+    #             if len(list(set(involved_blocks))) == len(involved_blocks):
+    #                 # No repetitions: admittance between different buses
+    #                 bus_names.append(involved_blocks)
+    #             else:
+    #                 # Repetitions: shunt admittance (e.g. single-side AC)
+    #                 bus_names.append([involved_blocks[0]])  # Shunt admittance
+    #             # Admittance of involved_blocks
+    #             admittances.append(read_admittance(path=results_folder, involved_blocks=list(set(involved_blocks)),file_root=file_root))
+
     # 3) Update bus_names to be ordered as the variables in the individual admittance matrices and build the node matrix
     node_matrix = []  # Create the node matrix with the active components (block diagonal)
     node_variables = []  # List of variable names = the current/voltage vectors
@@ -127,9 +143,10 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
             # Update the aux edge matrix and its variables
             for var in y.vars: edge_aux_variables.append(var)
             edge_aux_matrix.append(y)
-    print("Node vars \n",node_variables,"\nEdge vars \n",edge_aux_variables)
+
     edge_ordering = []  # List to re-sort the edge matrix acording to the node matrix variables
     for var in node_variables: edge_ordering.append(edge_aux_variables.index(var))
+    # print("Node vars \n",node_variables,"\nEdge vars \n",edge_aux_variables)
     # print("\nSorted edge variables \n",sorted(edge_aux_variables,key=node_variables.index))
 
     # 4) Create the node and edge matrices with the frequency domain data
@@ -138,10 +155,16 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     Yedge_aux = np.zeros((len(frequencies),len(node_variables),len(node_variables)),dtype='cdouble')  # Or dtype='csingle'
     y_edge_idx = 0
     for idx, yedge in enumerate(edge_aux_matrix):
+        # # Eliminate too small elements: related to PSCAD accuracy when the topology is not enforced
+        # for col in range(np.size(yedge.y, 1)):
+        #     for row in range(np.size(yedge.y, 2)):
+        #         if max(abs(yedge.y[:, row, col])) < 1e-6:  # The threshold is system and time-step dependent
+        #             yedge.y[:, row, col] = np.zeros(yedge.y[:, row, col].shape)
         Yedge_aux[:, y_edge_idx:y_edge_idx + len(yedge.vars), y_edge_idx:y_edge_idx + len(yedge.vars)] = yedge.y
         y_edge_idx = y_edge_idx + len(yedge.vars)  # Update the matrix index for the next admittance block
 
     # Sparsity plot for verification at the lowest frequency
+    np.seterr(divide='ignore')
     plt.imshow(20 * np.log10(np.abs(Yedge_aux[0, :, :])), cmap='spring', interpolation='nearest')
     plt.colorbar()
     plt.xticks(ticks=np.arange(0, len(edge_aux_variables), step=1))
@@ -205,6 +228,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     plt.title('Node admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
     plt.savefig(results_folder + '\\' + file_root + "_Node.pdf", format="pdf", bbox_inches="tight")
     plt.close()
+    np.seterr(divide='warn')
 
     # Perform stability analysis
     L = np.matmul(np.linalg.inv(Yedge),Ynode)  # Loop gain matrix
@@ -235,6 +259,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
                header="f\t" + "\t".join(node_variables), comments='')
 
     # Compute the passivity and SVD of the system matrices
+    # passivity(G=Yedge_aux, frequencies=frequencies, results_folder=results_folder, filename=file_root + "_Yedge_aux",variables=edge_aux_variables)
     passivity(G=Ynode,frequencies=frequencies,results_folder=results_folder,filename=file_root+"_Ynode",variables=node_variables)
     passivity(G=Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root + "_Yedge")
     passivity(G=Ynode+Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root+"_Ynode_+_Yedge")
@@ -352,6 +377,14 @@ def nyquist(L, frequencies, results_folder=None, filename=None, check_conditioni
         ax[0].plot(x[:,idx], -y[:,idx], color=colors[idx], linestyle='dashed', linewidth=2.0, label='_nolegend_')
         ax[1].plot(x[:,idx],y[:,idx], color=colors[idx],linestyle='solid',linewidth=2.0,label=r'$\lambda_{' + format(idx+1,'.0f')+r'}$')
         ax[1].plot(x[:,idx], -y[:,idx], color=colors[idx], linestyle='dashed', linewidth=2.0, label='_nolegend_')
+        # # Draw an arrow showing the direction of the eigenloci
+        # arrox_idx = eigenvalues.shape[0]//2
+        # dx = x[arrox_idx+1,idx] - x[arrox_idx,idx]
+        # dy = y[arrox_idx+1,idx] - y[arrox_idx,idx]
+        # if dx < 0:
+        #     plt.arrow(x[arrox_idx,idx],y[arrox_idx,idx],-dx/2,-dy/2,color=colors[idx], lw=0, length_includes_head=True,head_width=.05)
+        # else:
+        #     plt.arrow(x[arrox_idx,idx],y[arrox_idx,idx],dx/2,dy/2,color=colors[idx], lw=0, length_includes_head=True,head_width=.05)
 
         # Count the number of (-1, 0j) encirclements by this eigenvalue locus
         cwi = 0  # Initialize the counters
@@ -398,11 +431,11 @@ def nyquist(L, frequencies, results_folder=None, filename=None, check_conditioni
     # print("CC: ",cw,"\nCCW: ",ccw)
     N = sum(cw) - sum(ccw)  # Net number of clockwise encirclements
     if N > 0:
-        print("\n Stability assessment: unstable closed-loop system \n")
+        print("\n GNC stability assessment: unstable closed-loop system \n")
     elif N < 0:
-        print("\n Stability assessment: unstable subsystem \n")
+        print("\n GNC stability assessment: unstable subsystem \n")
     else:
-        print("\n Stability assessment: stable closed-loop system if subsystems are stable \n")
+        print("\n GNC stability assessment: stable closed-loop system if subsystems are stable \n")
 
     # Plot the unit circle and the critical point
     th = np.linspace(-np.pi * 1.01, np.pi * 1.01, 314)
@@ -496,13 +529,8 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
         # Solve the linear sum assignment problem to find the minimum variation and thus the correct order
         col_ind = linear_sum_assignment(d_abs)[1]  # The absolute distance is the cost matrix
         eigenvalues_sorted[idx, :] = eigenvalues[idx, col_ind]  # Sort the eigenvalues
-        right_eigenvectors[idx, :] = right_eigenvectors[idx,:,col_ind]  # Sort the eigenvectors
+        right_eigenvectors[idx, :] = right_eigenvectors[idx][:,col_ind]  # Sort the eigenvectors
 
-    # Eigenvectors normalization
-    for i in range(eigenvalues.shape[0]):
-        for j in range(eigenvalues.shape[1]):
-            N = 1/np.sqrt(np.transpose(right_eigenvectors[i][:,j])@right_eigenvectors[i][:,j])
-            right_eigenvectors[i][:, j] = N * right_eigenvectors[i][:, j]
     left_eigenvectors = np.linalg.inv(right_eigenvectors)
 
     # 2) Oscillation modes identification
@@ -510,39 +538,46 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
     lambda_imag = np.real(eigenvalues_sorted)  # Imaginary part
     lambda_abs = np.abs(eigenvalues_sorted)  # Absolute value (magnitude)
 
-    # 2.1) Oscillation mode identification based on the magnitude peaks
+    # Oscillation mode identification based on the magnitude peaks (assumes that G = closed-loop impedance matrix)
     idx_lambda_max = np.argmax(lambda_abs,axis=0)  # Frequency index of the maximum magnitude of each eigenvalue
     idx_lambda_max_max = np.argmax([lambda_abs[idx_lambda_max[idx],idx] for idx in range(eigenvalues.shape[1])])  # Critical mode = the highest mag peak
     freq_idx = idx_lambda_max[idx_lambda_max_max]  # Oscillation frequency index; or also freq_indices[idx_lambda_min]
-    print("The main oscillation frequency is",round(frequencies[freq_idx],2),"Hz based on the magnitude of eigenvalue",idx_lambda_max_max+1)
-    print(" Eigenvalue",idx_lambda_max_max+1,"=",round(eigenvalues_sorted[idx_lambda_max[idx_lambda_max_max],idx_lambda_max_max], 5))
+    print("The main oscillation frequency is",round(frequencies[freq_idx],2),"Hz based on the magnitude of eigenvalue",idx_lambda_max_max+1,"=",round(eigenvalues_sorted[idx_lambda_max[idx_lambda_max_max],idx_lambda_max_max], 5))
 
-    # 2.2) Based on the minimum real part at imaginary zero-crossing (used in the Positive Net Damping criterion)
-    sign_changes = np.diff(np.sign(lambda_imag),axis=0)
-    critical_points = np.nonzero(sign_changes)  # Frequency of sign change from + to - or viceversa of the imaginary parts
-    freq_indices = critical_points[0]
-    lambda_indices = critical_points[1]
-    # Frequency index of the minimum real part of each eigenvalue over the critical frequencies
-    critical_lambdas = [lambda_re[freq_indices[idx], lambda_indices[idx]] for idx in range(len(freq_indices))]  # Real part at the critical frequencies
-    idx_lambda_min = np.argmin(critical_lambdas)
-    print("According to the PND, the critical mode is at",round(frequencies[freq_indices[idx_lambda_min]],3),"Hz based on the minimum real part of eigenvalue",lambda_indices[idx_lambda_min]+1)
-    print(" Eigenvalue",lambda_indices[idx_lambda_min]+1, "=",round(eigenvalues_sorted[freq_indices[idx_lambda_min],lambda_indices[idx_lambda_min]],5))
-    print(" The slope of its imaginary part is",round(lambda_imag[freq_indices[idx_lambda_min],lambda_indices[idx_lambda_min]]-lambda_imag[freq_indices[idx_lambda_min]-1,lambda_indices[idx_lambda_min]],5))
-
-    # 3) Compute the participation factors (PFs) of the critical eigenvalue at the oscillation frequency given by the magnitude peak
-    PF = np.zeros((eigenvalues.shape[1],eigenvalues.shape[1]), dtype='double')
-    # i (mode) = column, j (bus) = row
-    for i in range(eigenvalues.shape[1]):
-        for j in range(eigenvalues.shape[1]):
-            PF[j,i] = np.abs(right_eigenvectors[freq_idx,j,i] * left_eigenvectors[freq_idx,i,j])
-        sum_abs = np.sum(PF[:,i])  # For normalization
-        for j in range(eigenvalues.shape[1]): PF[j,i] = PF[j,i]/sum_abs  # Normalize the PFs so their sum is 1
-    PF_mode = np.round(PF[idx_lambda_max_max,:],decimals=3)
-    print("The participation factors of the critical mode at each bus:")
+   
+    # 3) Compute the bus participation factors (PFs) of the critical eigenvalue at the oscillation frequency
+    # Controllability (right eigenvectors) and observability (transpose of left eigenvectors)
+    Obs = right_eigenvectors[freq_idx, :]
+    Cont = np.transpose(left_eigenvectors[freq_idx, :])
+    # PF[row = bus, column = mode]
+    PF = right_eigenvectors[freq_idx, :] * np.transpose(left_eigenvectors[freq_idx, :])  # Element-wise product
+    PF_mode = PF[:,idx_lambda_max_max]  # Select the target mode
+    # The controllability, observability and PF of the critical mode at each bus
+    print("Bus"+(max([len(bus) for bus in bus_names])-3)*" "+"\t","Cont.\t","Obs.\t","PF")  # Header
     for idx, bus in enumerate(bus_names):
-        print(bus+"\t",PF_mode[idx])
+        print(bus+"\t", f"{np.abs(Cont[idx,idx_lambda_max_max]) / np.sum(np.abs(Cont[:,idx_lambda_max_max])):.4f}"+"\t", f"{np.abs(Obs[idx,idx_lambda_max_max]) / np.sum(np.abs(Obs[:,idx_lambda_max_max])):.4f}"+"\t",f"{np.abs(PF_mode[idx]) / np.sum(np.abs(PF_mode)):.4f}")
 
-    # 4) Plot the eigenvalues over frequency
+
+    # 4) Root-cause analysis: sensitivity of the dominant state-space mode w.r.t. nodal admittance elements
+    # The derivation for the formulas used in this section can be found in the two following papers:
+    # Y. Zhu, Y. Gu, Y. Li and T. C. Green, "Impedance-Based Root-Cause Analysis: Comparative Study of Impedance Models
+    # and Calculation of Eigenvalue Sensitivity," in IEEE Transactions on Power Systems, March 2023.
+    # C. Zhang, H. Zong, X. Cai and M. Molinas, "On the Relation of Nodal Admittance- and Loop Gain-Model Based
+    # Frequency-Domain Modal Methods for Converters-Dominated Systems," in IEEE Transactions on Power Systems, March 2023.
+    
+    # Note: The following lines implement the formulas in said papers but have not been fully tested yet
+    # Previously computed impedance matrix PF are the same as for the addmitance because they share the eigenvectors
+    # Compute the derivative of the closed-loop admittance's determinant at the mode via backwards differentiation
+    # delta_Ydet_delta_s = 1/(2*np.pi*1j)*(1/np.prod(eigenvalues_sorted[freq_idx,:]) - 1/np.prod(eigenvalues_sorted[freq_idx-1,:]))/(frequencies[freq_idx]-frequencies[freq_idx-1])
+    # adjoint_Y = G[freq_idx,:]/np.prod(eigenvalues_sorted[freq_idx,:])  # inv(Y) = adj(Y)/|Y| -> adj(Y) = Z*|Y| = Z/|Z|
+    # print("\nThe sensitivity of the critical state-space eigenvalue w.r.t. the diagonal admittance elements:")
+    # for idx, bus in enumerate(bus_names): print(bus+"\t",np.round(-adjoint_Y[idx,idx_lambda_max_max] / delta_Ydet_delta_s,decimals=4))  # np.diag()[idx]
+    # xi = - np.trace(adjoint_Y)/delta_Ydet_delta_s  # Relation between frequency-domain PF and time-domain eigenvalue sensitivity
+    # print("\nxi =",xi,"\ndYdet_ds =",delta_Ydet_delta_s)
+    # print("\nThe sensitivity of the critical state-space eigenvalue w.r.t. the diagonal admittance elements:")
+    # for idx, bus in enumerate(bus_names): print(bus+"\t", np.round(PF[idx,idx_lambda_max_max]*xi, decimals=4))
+
+    # 5) Plot the eigenvalues over frequency
     fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(6, 8))  # Create the figure and get the colors cycle
     colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
     for col in plt.rcParams['axes.prop_cycle'].by_key()['color']: colors.append(col)  # Triplicate colour cycle
@@ -557,7 +592,7 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
         ax[2].plot(frequencies, lambda_imag[:, idx], color=colors[idx], linestyle='solid', linewidth=2.0,
                    label=r'$\lambda_{' + format(idx + 1, '.0f') + r'}$')
 
-    # Plot settings and save
+    # Figure settings and save to pdf
     ax[0].minorticks_on()
     ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
     ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
