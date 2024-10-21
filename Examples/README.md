@@ -27,7 +27,7 @@ The tool usage can be summarized in the following steps:
 5. Run the frequency scan and small-signal stability analysis functions
 
 
-If you are using the tool for the first time in a given project, then add the library to your workspace and move it before your project files.
+If you are using the tool for the first time in a given project, then add the PSCAD library to your workspace and move it before your project files. In case you open an existing project from a different PC, the library will appear grayed-out so simply delete it, add it again with the correct path and move it before your project files.
 
 ![add_library](../Doc/add_library.png)
 
@@ -37,7 +37,7 @@ In addition, the base frequency and steady-state voltage amplitude can be specif
 ![block_location](../Doc/P2P_blocks.png)
 
 Then, the system topology information needs to be provided so as to scan the system as efficiently as possible, and later study its stability.
-This is done via the network undirected graph, i.e. adjacent matrix but diagonals are 1 when there is no other scan block from that node to ground. Furthermore, each node/block X has two points of connection labed as X-1 and X-2, where the number corresponds to that of the PSCAD block. In other words, the topology is specified via a matrix with 1s and 0s, where 1s indicate interconnection between the different blocks at their corresponding side, which can be 1 or 2. See the example below for the previous point-to-point HVDC link. This table can be pasted into a .txt file as input for.
+This is done via the network undirected graph, i.e. adjacent matrix but diagonals are 1 when there is no other scan block from that node to ground. Furthermore, each node/block X has two points of connection labed as X-1 and X-2, where the number corresponds to that of the PSCAD block. In other words, the topology is specified via a matrix with 1s and 0s, where 1s indicate interconnection between the different blocks at their corresponding side, which can be 1 or 2. See the example below for the previous point-to-point HVDC link. This table can just pasted into a .txt file which path is an input to the ([frequency_sweep](Source/frequency_sweep.py)) and stability analysis function ([stability_analysis](Source/tools/stability.py)).
 
 ![topology](../Doc/topology.png)
 
