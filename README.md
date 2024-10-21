@@ -12,6 +12,7 @@ The following features are currently implemented and validated:
 The flowchart below summarizes a common usage of the tool for stability studies, including frequency-domain system identification ([frequency_sweep](Source/frequency_sweep.py)) and several stability analysis functions ([stability_analysis](Source/tools/stability.py)):
 
 ![Tool flowchart](Doc/flowchart.png)
+![Tool summary](Doc/Ztool_summary.png)
 
 ## Installation
 To use the tool, the following pre-requisites are needed.
