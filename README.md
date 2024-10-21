@@ -46,13 +46,13 @@ This is a free software: you can redistribute it and/or modify it under the term
 * Eros Avdiaj and Özgür Can Sakinci (KU Leuven / EnergyVille): Validation and support
 
 ## Future work
-- [ ] Support for non-topology specification: inefficient but easy to use
-- [ ] Minimum simulation time before starting FFT (does it need to be at least as long as the period of the perturbation or could it be smaller?)
-- [ ] Exploit the symmetric properties of the admittance matrix for AC (and DC) systems to reduce the scans (less simulation time)
+- [x] Exploit the symmetric properties of the admittance matrix for AC (and DC) systems to reduce the scans (less simulation time)
 - [x] Allow a previous snapshot to be re-used
-- [ ] Switch between current and voltage perturbation, e.g. for the scan of voltage-controlling devices
+- [ ] Support for non-topology specification: inefficient but easier to use
+- [ ] Minimum simulation time before starting FFT (does it need to be at least as long as the period of the perturbation or could it be smaller?)
 - [ ] Option to clear the temporary PSCAD files
 - [ ] Allow for different computation of the PFs, e.g. admittance PFs
+- [ ] Switch between current and voltage perturbation
 - [ ] Transformation to positive and negative sequence representation
 - [ ] Frequency scan and stability analysis optimization based on the passivity properties of the converters
 - [ ] Computation of stability margins: phase, gain and vector margins
