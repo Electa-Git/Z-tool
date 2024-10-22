@@ -1,9 +1,9 @@
 """
 This program contains several functions that can be used for the stability analysis in the frequency-domain, including:
     1) Basic Generalized Nyquist Criterion (GNC) application to determine system stability margins
-    2) Eigenvalue Decomposition (EVD) over the frequency to determine oscillatory modes, controllability, observability and participation factors
+    2) Eigenvalue Decomposition (EVD) over the frequency to determine oscillatory modes and participation factors
     3) Passivity and singular values of target matrices
-    4) Sensitivity of the main state-space modes w.r.t. node admittance elements (ongoing)
+    4) Sensitivity of the state-space oscillatory mode w.r.t. admittance elements (ongoing)
     5) A main stability_analysis function to apply all the previously described to a specific system
 
 Copyright (C) 2024  Francisco Javier Cifuentes Garcia
@@ -22,10 +22,12 @@ Copyright (C) 2024  Francisco Javier Cifuentes Garcia
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-__all__ = ['stability_analysis']
+__all__ = ['stability_analysis','passivity','nyquist','small_gain','EVD']
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 import matplotlib.pyplot as plt
+from os import getcwd
+import pickle
 from Source.tools.read_admittance import read_admittance
 
 from matplotlib import rcParams  # Text's parameters for plots
@@ -172,6 +174,8 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
     plt.title('Auxiliary edge admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
     plt.savefig(results_folder + '\\' + file_root + "_Edge_aux.pdf", format="pdf", bbox_inches="tight")
+    with open(results_folder + '\\' + file_root + "_Edge_aux.pickle", 'wb') as f:
+        pickle.dump(plt.gcf(), f)
     plt.close()
 
     # Re-sort the edge matrix acording to the node matrix variables
@@ -187,6 +191,8 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
     plt.title('Edge admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
     plt.savefig(results_folder + '\\' + file_root + "_Edge.pdf", format="pdf", bbox_inches="tight")
+    with open(results_folder + '\\' + file_root + "_Edge.pickle", 'wb') as f:
+        pickle.dump(plt.gcf(), f)
     plt.close()
 
     # Node admittance matrix and associated edge matrix
@@ -227,6 +233,8 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
     plt.title('Node admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
     plt.savefig(results_folder + '\\' + file_root + "_Node.pdf", format="pdf", bbox_inches="tight")
+    with open(results_folder + '\\' + file_root + "_Node.pickle", 'wb') as f:
+        pickle.dump(plt.gcf(), f)
     plt.close()
     np.seterr(divide='warn')
 
@@ -263,18 +271,19 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     passivity(G=Ynode,frequencies=frequencies,results_folder=results_folder,filename=file_root+"_Ynode",variables=node_variables)
     passivity(G=Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root + "_Yedge")
     passivity(G=Ynode+Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root+"_Ynode_+_Yedge")
-    small_gain(np.linalg.inv(Yedge), Ynode, frequencies, results_folder, file_root)
+    small_gain(np.linalg.inv(Yedge), Ynode, frequencies, results_folder, file_root,variables=node_variables)
 
-def passivity(G, frequencies, results_folder=None, filename=None, variables=None):
-    # Passivity is computed as the minimum real part of the eigenvalues at each frequency
+def passivity(G, frequencies, results_folder=None, filename=None, variables=None, Yedge=None):
+    # The passivity index is computed as half of the minimum eigenvalue of the matrix plus its conjugate transpose
+    # min{eig(A + A')}/2
     # A passive system has its Nyquist plot in the RHP: increased stability margins if connected to a passive system
-    eigenvalues = np.linalg.eig(G)[0]
-    passivity_index = np.min(np.real(eigenvalues), axis=1)
-
+    passivity_index = np.real(np.min(np.linalg.eig(G + G.swapaxes(-1, -2).conj())[0], axis=1))/2  # min{eig(A + A')}/2
+    # The eigenvalues of a Hermitian matrix are always real but floating-point arithmetic renders a small complex part
+    # and thus we take the real value at the end to get rid of the spurious numerical artifact.
     # Plot the passivity index over the frequency range
     if variables is None:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 6))
-        ax.plot(frequencies, passivity_index, color='blue', linestyle='solid', linewidth=2.0)
+        ax.plot(frequencies, passivity_index, color='blue', linestyle='solid', linewidth=2.0,label=r"$Y_{node}$")
         ax.set_xscale("log")
         ax.minorticks_on()
         ax.grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
@@ -283,6 +292,13 @@ def passivity(G, frequencies, results_folder=None, filename=None, variables=None
         ax.set_title('Passivity evaluation for ' + str(len(frequencies)) + ' frequencies')
         ax.set_xlim([frequencies[0], frequencies[-1]])
         ax.set_xlabel('Frequency [Hz]')
+        if Yedge is not None:
+            passivity_index_Yedge = np.real(np.min(np.linalg.eig(Yedge+Yedge.swapaxes(-1, -2).conj())[0], axis=1))/2
+            ax.plot(frequencies, passivity_index_Yedge, color='red', linestyle='solid', linewidth=2.0,label=r"$Y_{edge}$")
+            ax.plot(frequencies, passivity_index + passivity_index_Yedge, color='green', linestyle='dashed', linewidth=2.0,label=r"$\rho + \nu$")
+            ax.plot(frequencies, np.real(np.min(np.linalg.eig(G + G.swapaxes(-1, -2).conj() + Yedge + Yedge.swapaxes(-1, -2).conj())[0],axis=1))/2, color='black', linestyle='dotted',linewidth=2.0, label=r"$Y_{node}+Y_{edge}$")
+
+            ax.legend(loc='upper left', fancybox=True, shadow=True, ncol=2)
     else:
         # Find the position of the block diagonal matrices as they are surrounded by zeros
         indices = []  # Tuple of start and end indeces of each matrix
@@ -298,7 +314,8 @@ def passivity(G, frequencies, results_folder=None, filename=None, variables=None
         for block_pos in range(len(indices)):
             start_idx = indices[block_pos][0]
             end_idx = indices[block_pos][1] + 1
-            passivity_index_block = np.min(np.real(np.linalg.eig(G[:, start_idx:end_idx, start_idx:end_idx])[0]), axis=1)
+            A = G[:, start_idx:end_idx, start_idx:end_idx]
+            passivity_index_block = np.real(np.min(np.linalg.eig(A + A.swapaxes(-1, -2).conj())[0], axis=1))/2
             ax[0].plot(frequencies, passivity_index_block, linestyle='solid', linewidth=2.0,label=", ".join(variables[start_idx:end_idx]))
 
         ax[0].set_xscale("log")
@@ -322,11 +339,13 @@ def passivity(G, frequencies, results_folder=None, filename=None, variables=None
 
     if (results_folder is not None) and (filename is not None):
         fig.savefig(results_folder+'\\'+filename + "_passivity.pdf", format="pdf", bbox_inches="tight")
+        with open(results_folder + '\\' + filename + "_passivity.pickle", 'wb') as f:
+            pickle.dump(fig, f)
         np.savetxt(results_folder+'\\'+filename+'_passivity.txt', np.stack((frequencies, passivity_index), axis=1), delimiter='\t',
                    header="f\t" + "Passivity_index", comments='')
-    fig.clear()
-
-def nyquist(L, frequencies, results_folder=None, filename=None, check_conditioning=False,condition_number_th=0.01/5e-9):
+    plt.close(fig)
+    # fig.clear()
+def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, check_conditioning=False,condition_number_th=0.01/5e-9):
     # Stability assessment: aplication of Generalized Nyquist Criteria (GNC)
     # N: Net number of clockwise encirclements by the loop gain eigenloci = # clockwise - # counter-clockwise
     # P: Number of RHP poles of the loop gain
@@ -374,9 +393,9 @@ def nyquist(L, frequencies, results_folder=None, filename=None, check_conditioni
     for idx in range(eigenvalues_sorted.shape[1]):
         # Plot the eigenvalue locus
         ax[0].plot(x[:,idx], y[:,idx], color=colors[idx], linestyle='solid', linewidth=2.0, label=r'$\lambda_{'+format(idx+1,'.0f')+r'}$')
-        ax[0].plot(x[:,idx], -y[:,idx], color=colors[idx], linestyle='dashed', linewidth=2.0, label='_nolegend_')
+        ax[0].plot(x[:,idx], -y[:,idx], color=colors[idx], linestyle='solid', linewidth=2.0, label='_nolegend_')
         ax[1].plot(x[:,idx],y[:,idx], color=colors[idx],linestyle='solid',linewidth=2.0,label=r'$\lambda_{' + format(idx+1,'.0f')+r'}$')
-        ax[1].plot(x[:,idx], -y[:,idx], color=colors[idx], linestyle='dashed', linewidth=2.0, label='_nolegend_')
+        ax[1].plot(x[:,idx], -y[:,idx], color=colors[idx], linestyle='solid', linewidth=2.0, label='_nolegend_')
         # # Draw an arrow showing the direction of the eigenloci
         # arrox_idx = eigenvalues.shape[0]//2
         # dx = x[arrox_idx+1,idx] - x[arrox_idx,idx]
@@ -396,7 +415,7 @@ def nyquist(L, frequencies, results_folder=None, filename=None, check_conditioni
                 # If the cross product of vectors (x2-x1, y2-y1) and (-1-x1, 0-y1) is < 0, then (-1,0) is to the right
                 if (x[j,idx] - x[j-1,idx])*(0 - y[j-1,idx]) - (y[j,idx] - y[j-1,idx])*(-1 - x[j-1,idx]) < 0:
                     cwi += 1
-                    print("CW crossing at ",str(frequencies[j])," Hz by lambda =",str(idx))
+                    if verbose: print("CW crossing at ",str(frequencies[j])," Hz by lambda =",str(idx))
                     fig1, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(6, 7))
                     ax1.plot([x[j-1,idx],x[j,idx]],[y[j-1,idx],y[j,idx]], color='red', linestyle='solid', linewidth=2.0, label='_nolegend_')
                     ax1.scatter(x[j - 1, idx], y[j - 1, idx], color='green', label=str(frequencies[j-1]))
@@ -407,6 +426,9 @@ def nyquist(L, frequencies, results_folder=None, filename=None, check_conditioni
                     ax1.grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
                     ax1.grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
                     # fig1.show()  # Visualize the plot interactively
+                    with open(results_folder + '\\' + filename + "_GNC_lambda_"+str(idx)+"_cw_"+str(cwi)+".pickle", 'wb') as f: pickle.dump(fig1, f)
+                    plt.close(fig1)
+                    # fig1.clf()
 
             # Only consider counter-clockwise crossings of the imaginary axis beyond (-1,0j)
             elif y[j - 1, idx] > 0 > y[j, idx] and (x[j-1,idx] < -1 or x[j,idx] < -1):
@@ -414,7 +436,7 @@ def nyquist(L, frequencies, results_folder=None, filename=None, check_conditioni
                     # If the cross product of vectors (x2-x1, y2-y1) and (-1-x1, 0-y1) is > 0, then (-1,0) is to the left
                     # if (x[j,idx] - x[j-1,idx])*(0 - y[j-1,idx]) - (y[j,idx] - y[j-1,idx])*(-1 - x[j-1,idx]) > 0:
                     ccwi += 1
-                    print("CCW crossing at ",str(frequencies[j])," Hz by lambda =",str(idx))
+                    if verbose: print("CCW crossing at ",str(frequencies[j])," Hz by lambda =",str(idx))
                     fig1, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(6, 7))
                     ax1.plot([x[j-1,idx],x[j,idx]],[y[j-1,idx],y[j,idx]], color='red', linestyle='solid', linewidth=2.0, label='_nolegend_')
                     ax1.scatter(x[j - 1, idx], y[j - 1, idx], color='green', label=str(frequencies[j-1]))
@@ -425,17 +447,22 @@ def nyquist(L, frequencies, results_folder=None, filename=None, check_conditioni
                     ax1.grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
                     ax1.grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
                     # fig1.show()  # Visualize the plot interactively
+                    with open(results_folder + '\\' + filename + "_GNC_lambda_"+str(idx)+"_ccw_"+str(ccwi)+".pickle", 'wb') as f: pickle.dump(fig1, f)
+                    plt.close(fig1)
 
         cw.append(cwi)  # Add the counters to the list
         ccw.append(ccwi)
     # print("CC: ",cw,"\nCCW: ",ccw)
     N = sum(cw) - sum(ccw)  # Net number of clockwise encirclements
     if N > 0:
-        print("\n GNC stability assessment: unstable closed-loop system \n")
+        return_value = False
+        if verbose: print("\n GNC stability assessment: unstable closed-loop system \n")
     elif N < 0:
-        print("\n GNC stability assessment: unstable subsystem \n")
+        return_value = False
+        if verbose: print("\n GNC stability assessment: unstable subsystem \n")
     else:
-        print("\n GNC stability assessment: stable closed-loop system if subsystems are stable \n")
+        return_value = True
+        if verbose: print("\n GNC stability assessment: stable closed-loop system if subsystems are stable \n")
 
     # Plot the unit circle and the critical point
     th = np.linspace(-np.pi * 1.01, np.pi * 1.01, 314)
@@ -453,13 +480,16 @@ def nyquist(L, frequencies, results_folder=None, filename=None, check_conditioni
 
     ax[1].plot(np.cos(th), np.sin(th), color='black', linestyle='dotted', linewidth=2.0, label='Unit circle')
     ax[1].scatter(-1, 0,s=4*rcParams['lines.markersize'] ** 2, marker="+", c='blue', label=r'$( -1, 0j )$')
-    ax[1].set_xlim([-2.5, 0.5])
-    ax[1].set_ylim([-1.5, 1.5])
+    ax[1].set_xlim([-2.0, 2.0])
+    ax[1].set_ylim([-2.0, 2.0])
     ax[1].minorticks_on()
     ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
     ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
     # plt.show()  # Visualize the plot interactively
     fig.savefig(results_folder + '\\' + filename + "_GNC.pdf", format="pdf", bbox_inches="tight")
+    with open(results_folder + '\\' + filename + "_GNC.pickle", 'wb') as f:
+        pickle.dump(fig, f)
+    plt.close(fig)
 
     # Save the eigenloci
     loci = [eigenvalues_sorted[:, idx] for idx in range(eigenvalues_sorted.shape[1])]
@@ -468,29 +498,49 @@ def nyquist(L, frequencies, results_folder=None, filename=None, check_conditioni
     np.savetxt(results_folder + '\\' + filename + '_GNC.txt', np.stack(loci, axis=1), delimiter='\t',
                header="Frequency [Hz]\tEigenvalues", comments='')
 
-def small_gain(G1, G2, frequencies, results_folder=None, filename=None):
+    return return_value
+
+def small_gain(G1, G2, frequencies, results_folder=None, filename=None, variables=None):
     # Applies a conservative version of the small-gain theorem as |G1*G2| <= |G1|*|G2| < 1
     # The loop gain is L = G1*G2
-    S1 = np.linalg.svd(G1, full_matrices=True, compute_uv=False)
-    S2 = np.linalg.svd(G2, full_matrices=True, compute_uv=False)
+    S1 = np.linalg.svd(G1, compute_uv=False)
+    S2 = np.linalg.svd(G2, compute_uv=False)
     fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6))
-    ax[0].plot(frequencies, np.max(S1,axis=1), color='blue', linestyle='solid', linewidth=2.0, label=r"max $\sigma (\mathbf{Z}_e)$")
-    ax[0].plot(frequencies, np.max(S2,axis=1), color='red', linestyle='solid', linewidth=2.0, label=r"max $\sigma (\mathbf{Y}_n)$")
+    ax[0].plot(frequencies, 1.0/np.max(S1, axis=1), color='blue', linestyle='solid', linewidth=2.0, label=r"1 / max $\sigma (\mathbf{G}_1)$")
+    if variables is not None:
+        # Find the position of the block diagonal matrices as they are surrounded by zeros
+        indices = []  # Tuple of start and end indeces of each matrix
+        start_index = 0
+        for index in range(G2.shape[1] - 1):
+            if G2[0, index, start_index] == 0:  # If the next element is zero, then boundary of block matrix if defined
+                indices.append((start_index, index - 1))  # There is a block matrix between start_index and index
+                start_index = index  # Initialize start index of next matrix
+        indices.append((start_index, G2.shape[1] - 1))  # Last block matrix
+
+        # Plot the maximum singular values of the different block matrices and the whole matrix
+        for block_pos in range(len(indices)):
+            start_idx = indices[block_pos][0]
+            end_idx = indices[block_pos][1] + 1
+            S2_block = np.max(np.linalg.svd(G2[:,start_idx:end_idx,start_idx:end_idx], compute_uv=False), axis=1)
+            ax[0].plot(frequencies, S2_block, linestyle='solid',linewidth=2.0, label=", ".join(variables[start_idx:end_idx]))
+    ax[0].plot(frequencies, np.max(S2, axis=1), color='red', linestyle='dashed', linewidth=2.0,label=r"max $\sigma (\mathbf{G}_2)$")
+
+    # Setings for upper plot
     ax[0].set_xscale("log")
     ax[0].set_yscale("log")
     ax[0].minorticks_on()
     ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
     ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
-    ax[0].set_ylabel(r'max $\sigma ( \mathbf{G} )$')
+    ax[0].set_ylabel(r'max $\sigma ( \cdot )$')
     ax[0].set_title('Maximum singular values over ' + str(len(frequencies)) + ' frequencies')
     ax[0].set_xlim([frequencies[0], frequencies[-1]])
     # ax[0].set_xlabel('Frequency [Hz]')
     ax[0].legend(loc='upper left', fancybox=True, shadow=True, ncol=1)
 
-    S12 = np.linalg.svd(np.matmul(G1,G2), full_matrices=True, compute_uv=False)
-    ax[1].plot(frequencies, np.max(S12, axis=1), color='black', linestyle='solid', linewidth=2.0, label=r"max $\sigma (\mathbf{Z}_e  \mathbf{Y}_n)$")
-    ax[1].plot(frequencies, np.multiply(np.max(S1, axis=1), np.max(S2, axis=1)), color='green', linestyle='solid',
-               linewidth=2.0, label=r"max $\sigma (\mathbf{Z}_e) \cdot $ max $\sigma (\mathbf{Y}_n)$")
+    S12 = np.linalg.svd(np.matmul(G1,G2), compute_uv=False)
+    ax[1].plot(frequencies, np.max(S12, axis=1), color='black', linestyle='solid', linewidth=2.0, label=r"max $\sigma (\mathbf{G}_1  \mathbf{G}_2)$")
+    ax[1].plot(frequencies, np.multiply(np.max(S1, axis=1), np.max(S2, axis=1)), color='green', linestyle='dashed',
+               linewidth=2.0, label=r"max $\sigma (\mathbf{G}_1) \cdot $ max $\sigma (\mathbf{G}_2)$")
     ax[1].plot([frequencies[0], frequencies[-1]],[1, 1], color='grey', linestyle='dashed',linewidth=2.0, label='_nolegend_')
     ax[1].set_xscale("log")
     ax[1].set_yscale("log")
@@ -503,10 +553,13 @@ def small_gain(G1, G2, frequencies, results_folder=None, filename=None):
     ax[1].legend(loc='upper right', fancybox=True, shadow=True, ncol=1)
     if (results_folder is not None) and (filename is not None):
         fig.savefig(results_folder + '\\' + filename + "_gain.pdf", format="pdf", bbox_inches="tight")
+        with open(results_folder + '\\' + filename + "_gain.pickle", 'wb') as f:
+            pickle.dump(fig, f)
         np.savetxt(results_folder + '\\' + filename + '_gain.txt',
                    np.stack((frequencies, np.min(S1, axis=1), np.min(S2, axis=1), np.max(S12, axis=1)), axis=1),
-                   delimiter='\t', header="f\t" + "min_s_G1\t" + "min_s_G2\t" + "min_s_G1G2", comments='')
-    fig.clear()
+                   delimiter='\t', header="f\t" + "max_sigma_G1\t" + "max_sigma_G2\t" + "max_sigma_G1_G2", comments='')
+    plt.close(fig)
+    # fig.clear()
 
 def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
     if bus_names is None: bus_names = [str(bus+1) for bus in range(G.shape[1])]  # Sorted numbers if names not provided
@@ -538,13 +591,25 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
     lambda_imag = np.real(eigenvalues_sorted)  # Imaginary part
     lambda_abs = np.abs(eigenvalues_sorted)  # Absolute value (magnitude)
 
-    # Oscillation mode identification based on the magnitude peaks (assumes that G = closed-loop impedance matrix)
+    # 2.1) Oscillation mode identification based on the magnitude peaks (assumes that G = closed-loop impedance matrix)
     idx_lambda_max = np.argmax(lambda_abs,axis=0)  # Frequency index of the maximum magnitude of each eigenvalue
     idx_lambda_max_max = np.argmax([lambda_abs[idx_lambda_max[idx],idx] for idx in range(eigenvalues.shape[1])])  # Critical mode = the highest mag peak
     freq_idx = idx_lambda_max[idx_lambda_max_max]  # Oscillation frequency index; or also freq_indices[idx_lambda_min]
     print("The main oscillation frequency is",round(frequencies[freq_idx],2),"Hz based on the magnitude of eigenvalue",idx_lambda_max_max+1,"=",round(eigenvalues_sorted[idx_lambda_max[idx_lambda_max_max],idx_lambda_max_max], 5))
 
-   
+    # # 2.2) Based on the minimum real part at imaginary zero-crossing (used in the Positive Net Damping criterion)
+    # sign_changes = np.diff(np.sign(lambda_imag),axis=0)
+    # critical_points = np.nonzero(sign_changes)  # Frequency of sign change from + to - or viceversa of the imaginary parts
+    # freq_indices = critical_points[0]
+    # lambda_indices = critical_points[1]
+    # # Frequency index of the minimum real part of each eigenvalue over the critical frequencies
+    # critical_lambdas = [lambda_re[freq_indices[idx], lambda_indices[idx]] for idx in range(len(freq_indices))]  # Real part at the critical frequencies
+    # idx_lambda_min = np.argmin(critical_lambdas)
+    # print("According to the PND, the critical mode is at",round(frequencies[freq_indices[idx_lambda_min]],3),"Hz based on the minimum real part of eigenvalue",lambda_indices[idx_lambda_min]+1)
+    # print(" Eigenvalue",lambda_indices[idx_lambda_min]+1, "=",round(eigenvalues_sorted[freq_indices[idx_lambda_min],lambda_indices[idx_lambda_min]],5))
+    # print(" The slope of the imaginary part is",round(lambda_imag[freq_indices[idx_lambda_min],lambda_indices[idx_lambda_min]]-lambda_imag[freq_indices[idx_lambda_min]-1,lambda_indices[idx_lambda_min]],5))
+    # freq_idx = freq_indices[idx_lambda_min] # Oscillation frequency index or also round(critical_lambdas[idx_lambda_min],5)
+
     # 3) Compute the bus participation factors (PFs) of the critical eigenvalue at the oscillation frequency
     # Controllability (right eigenvectors) and observability (transpose of left eigenvectors)
     Obs = right_eigenvectors[freq_idx, :]
@@ -555,8 +620,12 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
     # The controllability, observability and PF of the critical mode at each bus
     print("Bus"+(max([len(bus) for bus in bus_names])-3)*" "+"\t","Cont.\t","Obs.\t","PF")  # Header
     for idx, bus in enumerate(bus_names):
-        print(bus+"\t", f"{np.abs(Cont[idx,idx_lambda_max_max]) / np.sum(np.abs(Cont[:,idx_lambda_max_max])):.4f}"+"\t", f"{np.abs(Obs[idx,idx_lambda_max_max]) / np.sum(np.abs(Obs[:,idx_lambda_max_max])):.4f}"+"\t",f"{np.abs(PF_mode[idx]) / np.sum(np.abs(PF_mode)):.4f}")
+        print(bus+"\t", f"{np.abs(Cont[idx,idx_lambda_max_max]) / np.sum(np.abs(Cont[:,idx_lambda_max_max])):.4f}"+"\t",
+              f"{np.abs(Obs[idx,idx_lambda_max_max]) / np.sum(np.abs(Obs[:,idx_lambda_max_max])):.4f}"+"\t",
+              f"{np.abs(PF_mode[idx]) / np.sum(np.abs(PF_mode)):.4f}")
 
+    # print("The participation factors of the critical mode at each bus:")
+    # for idx, bus in enumerate(bus_names): print(bus+"\t", np.round(np.abs(PF_mode[idx]) / np.sum(np.abs(PF_mode)), decimals=4))
 
     # 4) Root-cause analysis: sensitivity of the dominant state-space mode w.r.t. nodal admittance elements
     # The derivation for the formulas used in this section can be found in the two following papers:
@@ -564,14 +633,15 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
     # and Calculation of Eigenvalue Sensitivity," in IEEE Transactions on Power Systems, March 2023.
     # C. Zhang, H. Zong, X. Cai and M. Molinas, "On the Relation of Nodal Admittance- and Loop Gain-Model Based
     # Frequency-Domain Modal Methods for Converters-Dominated Systems," in IEEE Transactions on Power Systems, March 2023.
-    
-    # Note: The following lines implement the formulas in said papers but have not been fully tested yet
+
     # Previously computed impedance matrix PF are the same as for the addmitance because they share the eigenvectors
     # Compute the derivative of the closed-loop admittance's determinant at the mode via backwards differentiation
-    # delta_Ydet_delta_s = 1/(2*np.pi*1j)*(1/np.prod(eigenvalues_sorted[freq_idx,:]) - 1/np.prod(eigenvalues_sorted[freq_idx-1,:]))/(frequencies[freq_idx]-frequencies[freq_idx-1])
-    # adjoint_Y = G[freq_idx,:]/np.prod(eigenvalues_sorted[freq_idx,:])  # inv(Y) = adj(Y)/|Y| -> adj(Y) = Z*|Y| = Z/|Z|
+    delta_Ydet_delta_s = (1/np.prod(eigenvalues_sorted[freq_idx,:]) - 1/np.prod(eigenvalues_sorted[freq_idx-1,:]))/(2*np.pi*1j*frequencies[freq_idx]-2*np.pi*1j*frequencies[freq_idx-1])
+    adjoint_Y = G[freq_idx,:]/np.prod(eigenvalues_sorted[freq_idx,:])  # inv(Y) = adj(Y)/|Y| -> adj(Y) = Z*|Y| = Z/|Z|
+    S = -adjoint_Y / delta_Ydet_delta_s
     # print("\nThe sensitivity of the critical state-space eigenvalue w.r.t. the diagonal admittance elements:")
     # for idx, bus in enumerate(bus_names): print(bus+"\t",np.round(-adjoint_Y[idx,idx_lambda_max_max] / delta_Ydet_delta_s,decimals=4))  # np.diag()[idx]
+    # Computation from the frequency-domain participation factors
     # xi = - np.trace(adjoint_Y)/delta_Ydet_delta_s  # Relation between frequency-domain PF and time-domain eigenvalue sensitivity
     # print("\nxi =",xi,"\ndYdet_ds =",delta_Ydet_delta_s)
     # print("\nThe sensitivity of the critical state-space eigenvalue w.r.t. the diagonal admittance elements:")
@@ -623,6 +693,9 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
 
     # plt.show()  # Visualize the plot interactively
     fig.savefig(results_folder + '\\' + filename + "_EVD.pdf", format="pdf", bbox_inches="tight")
+    with open(results_folder + '\\' + filename + "_EVD.pickle", 'wb') as f:
+        pickle.dump(plt.gcf(), f)
+    plt.close(fig)
 
     # Save the EVD into a text file
     evd_results = [eigenvalues_sorted[:,idx] for idx in range(eigenvalues_sorted.shape[1])]
