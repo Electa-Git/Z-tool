@@ -28,9 +28,7 @@ The general tool usage can be summarized in the following steps:
 5. Run the frequency scan and small-signal stability analysis functions
 
 
-If you are using the tool for the first time in a given project, then add the PSCAD library to your workspace and move it before your project files. In case you open an existing project from a different PC, like the [Single_bus_example.pswx](Single_bus_example.pswx), the library will appear grayed-out so simply delete it, add it again with the correct path in your PC and move it before your project files.
-
-![add_library](../../Doc/add_library.png)
+If you are using the tool for the first time in a given project, then add the PSCAD library to your workspace and move it before your project files. In case you open an existing project from a different PC, like the [Single_bus_example.pswx](Single_bus_example.pswx), the library will appear grayed-out so simply delete it, add it again with the correct path in your PC and move it up before your project files.
 
 Next, copy the scan blocks from the library and paste them at the desired analysis buses of your system. It is necessary to give them a name so the results can be related to actual system components.
 Optionally, the base frequency and steady-state voltage amplitude can be specified.
