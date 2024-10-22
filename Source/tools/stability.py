@@ -283,20 +283,20 @@ def passivity(G, frequencies, results_folder=None, filename=None, variables=None
     # Plot the passivity index over the frequency range
     if variables is None:
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 6))
-        ax.plot(frequencies, passivity_index, color='blue', linestyle='solid', linewidth=2.0,label=r"$Y_{node}$")
+        ax.plot(frequencies, passivity_index, color='blue', linestyle='solid', linewidth=2.0,label=r"$\mathbf{Y}_{node}$")
         ax.set_xscale("log")
         ax.minorticks_on()
         ax.grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
         ax.grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
-        ax.set_ylabel(r'min $\{ \lambda (\mathbf{G}_i + \mathbf{G}_i^*) \}/2$')
+        ax.set_ylabel(r'min $\{ \lambda (\mathbf{G} + \mathbf{G}^H) \}/2$')
         ax.set_title('Passivity evaluation for ' + str(len(frequencies)) + ' frequencies')
         ax.set_xlim([frequencies[0], frequencies[-1]])
         ax.set_xlabel('Frequency [Hz]')
         if Yedge is not None:
             passivity_index_Yedge = np.real(np.min(np.linalg.eig(Yedge+Yedge.swapaxes(-1, -2).conj())[0], axis=1))/2
-            ax.plot(frequencies, passivity_index_Yedge, color='red', linestyle='solid', linewidth=2.0,label=r"$Y_{edge}$")
-            ax.plot(frequencies, passivity_index + passivity_index_Yedge, color='green', linestyle='dashed', linewidth=2.0,label=r"$\rho + \nu$")
-            ax.plot(frequencies, np.real(np.min(np.linalg.eig(G + G.swapaxes(-1, -2).conj() + Yedge + Yedge.swapaxes(-1, -2).conj())[0],axis=1))/2, color='black', linestyle='dotted',linewidth=2.0, label=r"$Y_{node}+Y_{edge}$")
+            ax.plot(frequencies, passivity_index_Yedge, color='red', linestyle='solid', linewidth=2.0,label=r"$\mathbf{Y}_{edge}$")
+            ax.plot(frequencies, passivity_index + passivity_index_Yedge, color='green', linestyle='dashed', linewidth=2.0,label=r'min $\{ \lambda (\mathbf{Y}_{node} + \mathbf{Y}_{node}^H) \}/2$+min $\{ \lambda (\mathbf{Y}_{edge} + \mathbf{Y}_{edge}^H) \}/2$')
+            ax.plot(frequencies, np.real(np.min(np.linalg.eig(G + G.swapaxes(-1, -2).conj() + Yedge + Yedge.swapaxes(-1, -2).conj())[0],axis=1))/2, color='black', linestyle='dotted',linewidth=2.0, label=r"$\mathbf{Y}_{node}+\mathbf{Y}_{edge}$")
 
             ax.legend(loc='upper left', fancybox=True, shadow=True, ncol=2)
     else:
@@ -322,7 +322,7 @@ def passivity(G, frequencies, results_folder=None, filename=None, variables=None
         ax[0].minorticks_on()
         ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
         ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
-        ax[0].set_ylabel(r'min $\{ \lambda (\mathbf{G}_i + \mathbf{G}_i^*) \}/2$')
+        ax[0].set_ylabel(r'min $\{ \lambda (\mathbf{G}_i + \mathbf{G}_i^H) \}/2$')
         ax[0].set_title('Passivity analysis for ' + str(len(frequencies)) + ' frequencies')
         ax[0].set_xlim([frequencies[0], frequencies[-1]])
         ax[0].legend(loc='upper left', fancybox=True, shadow=True, ncol=1)
@@ -332,7 +332,7 @@ def passivity(G, frequencies, results_folder=None, filename=None, variables=None
         ax[1].minorticks_on()
         ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
         ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
-        ax[0].set_ylabel(r'min $\{ \lambda (\mathbf{G} + \mathbf{G}^*) \}/2$')
+        ax[0].set_ylabel(r'min $\{ \lambda (\mathbf{G} + \mathbf{G}^H) \}/2$')
         ax[1].legend(loc='upper left', fancybox=True, shadow=True, ncol=1)
         ax[1].set_xlim([frequencies[0], frequencies[-1]])
         ax[1].set_xlabel('Frequency [Hz]')
