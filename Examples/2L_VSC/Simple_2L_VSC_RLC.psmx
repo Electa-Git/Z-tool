@@ -1,0 +1,26 @@
+<Meta name="Simple_2L_VSC_RLC">
+  <messagelist>
+    <message status="normal" label="clean" groupid="100000" scope="Simple_2L_VSC_RLC" id="778338831" classid="MessageObj"><![CDATA[Removed 0 files]]></message>
+    <message status="normal" label="clean" groupid="100000" scope="Simple_2L_VSC_RLC" id="95153220" classid="MessageObj"><![CDATA[Completed cleaning of temporary files and data.]]></message>
+  </messagelist>
+  <ViewContext>
+    <Window defn="Simple_2L_VSC_RLC:Main" call="0" />
+  </ViewContext>
+  <List classid="View">
+    <View name="Main" zoomscale="1.5" scrollx="0" scrolly="0" />
+    <View name="VSC2L" zoomscale="1.5" scrollx="0" scrolly="0" />
+  </List>
+  <Output device="EMTDC" version="2010" date="2024/10/22" time="20:22:42.000000">
+    <Domain name="Time" unit="s" mult="0.0" skew="0.0">
+      <Sample rate="25000.0" end="625000" />
+    </Domain>
+    <List classid="Analog">
+      <Analog name="Main(0):v_abc" index="1" gindex="100663297" id="431408548:0" label="" dim="3" unit="" min="-2.0" max="2.0" />
+      <Analog name="Main(0):p_PCC" index="4" gindex="100663300" id="356542758:0" label="" dim="1" unit="" min="-2.0" max="2.0" />
+      <Analog name="Main(0):v_mag" index="5" gindex="100663301" id="46969987:0" label="" dim="1" unit="" min="-2.0" max="2.0" />
+      <Analog name="Main(0):q_PCC" index="6" gindex="100663302" id="1625536428:0" label="" dim="1" unit="" min="-2.0" max="2.0" />
+      <Analog name="Main(0)\VSC2L(IBR equivalent):idq" index="7" gindex="100663303" id="77290067:0" label="" dim="2" unit="" min="-2.0" max="2.0" />
+    </List>
+    <List classid="Digital" />
+  </Output>
+</Meta>

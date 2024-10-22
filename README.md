@@ -20,7 +20,7 @@ To use the tool, the following pre-requisites are needed.
    * [Numpy](https://numpy.org/), [Scipy](https://scipy.org/), and [Matplotlib](https://matplotlib.org/) (included in common python installations such as Anaconda)
    * [PSCAD automation library]([url](https://www.pscad.com/webhelp-v5-al/index.html))
    
-   See the example [here](Examples) for information on how to install the previous in a MS Windows operating system.
+   See the examples [here](Examples) for more information on how to install the previous in a MS Windows operating system.
 
 2. PSCAD v5 or higher
 
@@ -32,7 +32,7 @@ Environment Variables... -> System variables -> PYTHONPATH -> Directory where _S
 If PYTHONPATH does not exit, it needs to be created. This should be done automatically if installing the package.
 
 ## Usage
-Follow the example described [here](Examples). The GUI is currently under development.
+Follow the example(s) described [here](Examples). The GUI is currently under development.
 
 ## Contact Details
 For queries about the package or related work please feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512)

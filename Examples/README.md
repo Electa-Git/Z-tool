@@ -1,5 +1,5 @@
 # Usage example
-The basic functionality of the Z-tool is demonstrated with a simple point-to-point HVDC link.
+The basic functionality of the Z-tool is demonstrated below with a simple point-to-point HVDC link.
 ## Installation
 To use the tool, the following pre-requisites are needed
 1. Python 3.7 or higher together with

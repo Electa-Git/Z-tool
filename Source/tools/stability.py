@@ -114,21 +114,6 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
         # print("Bus names", bus_names)
         admittances.append(read_admittance(path=results_folder, involved_blocks=bus_names[-1], file_root=file_root))
 
-    # for col, block in enumerate(block_names_Y):
-    #     if sum(Ytopology[:,col]) != 0:
-    #         involved_blocks = [block]  # Initialize with the block connected to what is added in the for loop below
-    #         for idx in np.nonzero(Ytopology[:,col])[0]: involved_blocks.append(block_names_Y[idx])
-    #         if not any(x in [item for row in bus_names for item in row] for x in involved_blocks):
-    #             # Only read the admittance if it has not been read already (unpack the list of bus_names and check)
-    #             if len(list(set(involved_blocks))) == len(involved_blocks):
-    #                 # No repetitions: admittance between different buses
-    #                 bus_names.append(involved_blocks)
-    #             else:
-    #                 # Repetitions: shunt admittance (e.g. single-side AC)
-    #                 bus_names.append([involved_blocks[0]])  # Shunt admittance
-    #             # Admittance of involved_blocks
-    #             admittances.append(read_admittance(path=results_folder, involved_blocks=list(set(involved_blocks)),file_root=file_root))
-
     # 3) Update bus_names to be ordered as the variables in the individual admittance matrices and build the node matrix
     node_matrix = []  # Create the node matrix with the active components (block diagonal)
     node_variables = []  # List of variable names = the current/voltage vectors
@@ -396,14 +381,6 @@ def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, ch
         ax[0].plot(x[:,idx], -y[:,idx], color=colors[idx], linestyle='solid', linewidth=2.0, label='_nolegend_')
         ax[1].plot(x[:,idx],y[:,idx], color=colors[idx],linestyle='solid',linewidth=2.0,label=r'$\lambda_{' + format(idx+1,'.0f')+r'}$')
         ax[1].plot(x[:,idx], -y[:,idx], color=colors[idx], linestyle='solid', linewidth=2.0, label='_nolegend_')
-        # # Draw an arrow showing the direction of the eigenloci
-        # arrox_idx = eigenvalues.shape[0]//2
-        # dx = x[arrox_idx+1,idx] - x[arrox_idx,idx]
-        # dy = y[arrox_idx+1,idx] - y[arrox_idx,idx]
-        # if dx < 0:
-        #     plt.arrow(x[arrox_idx,idx],y[arrox_idx,idx],-dx/2,-dy/2,color=colors[idx], lw=0, length_includes_head=True,head_width=.05)
-        # else:
-        #     plt.arrow(x[arrox_idx,idx],y[arrox_idx,idx],dx/2,dy/2,color=colors[idx], lw=0, length_includes_head=True,head_width=.05)
 
         # Count the number of (-1, 0j) encirclements by this eigenvalue locus
         cwi = 0  # Initialize the counters
@@ -561,7 +538,7 @@ def small_gain(G1, G2, frequencies, results_folder=None, filename=None, variable
     plt.close(fig)
     # fig.clear()
 
-def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
+def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None, verbose=True):
     if bus_names is None: bus_names = [str(bus+1) for bus in range(G.shape[1])]  # Sorted numbers if names not provided
 
     # 1) Eigenvalue decomposition over the frequency
@@ -595,7 +572,7 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
     idx_lambda_max = np.argmax(lambda_abs,axis=0)  # Frequency index of the maximum magnitude of each eigenvalue
     idx_lambda_max_max = np.argmax([lambda_abs[idx_lambda_max[idx],idx] for idx in range(eigenvalues.shape[1])])  # Critical mode = the highest mag peak
     freq_idx = idx_lambda_max[idx_lambda_max_max]  # Oscillation frequency index; or also freq_indices[idx_lambda_min]
-    print("The main oscillation frequency is",round(frequencies[freq_idx],2),"Hz based on the magnitude of eigenvalue",idx_lambda_max_max+1,"=",round(eigenvalues_sorted[idx_lambda_max[idx_lambda_max_max],idx_lambda_max_max], 5))
+    if verbose: print("The main oscillation frequency is",round(frequencies[freq_idx],2),"Hz based on the magnitude of eigenvalue",idx_lambda_max_max+1,"=",round(eigenvalues_sorted[idx_lambda_max[idx_lambda_max_max],idx_lambda_max_max], 5))
 
     # # 2.2) Based on the minimum real part at imaginary zero-crossing (used in the Positive Net Damping criterion)
     # sign_changes = np.diff(np.sign(lambda_imag),axis=0)
@@ -618,36 +595,14 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None):
     PF = right_eigenvectors[freq_idx, :] * np.transpose(left_eigenvectors[freq_idx, :])  # Element-wise product
     PF_mode = PF[:,idx_lambda_max_max]  # Select the target mode
     # The controllability, observability and PF of the critical mode at each bus
-    print("Bus"+(max([len(bus) for bus in bus_names])-3)*" "+"\t","Cont.\t","Obs.\t","PF")  # Header
+    if verbose: print("Bus"+(max([len(bus) for bus in bus_names])-3)*" "+"\t","Cont.\t","Obs.\t","PF")  # Header
     for idx, bus in enumerate(bus_names):
-        print(bus+"\t", f"{np.abs(Cont[idx,idx_lambda_max_max]) / np.sum(np.abs(Cont[:,idx_lambda_max_max])):.4f}"+"\t",
+        if verbose: 
+            print(bus+"\t", f"{np.abs(Cont[idx,idx_lambda_max_max]) / np.sum(np.abs(Cont[:,idx_lambda_max_max])):.4f}"+"\t",
               f"{np.abs(Obs[idx,idx_lambda_max_max]) / np.sum(np.abs(Obs[:,idx_lambda_max_max])):.4f}"+"\t",
               f"{np.abs(PF_mode[idx]) / np.sum(np.abs(PF_mode)):.4f}")
 
-    # print("The participation factors of the critical mode at each bus:")
-    # for idx, bus in enumerate(bus_names): print(bus+"\t", np.round(np.abs(PF_mode[idx]) / np.sum(np.abs(PF_mode)), decimals=4))
-
-    # 4) Root-cause analysis: sensitivity of the dominant state-space mode w.r.t. nodal admittance elements
-    # The derivation for the formulas used in this section can be found in the two following papers:
-    # Y. Zhu, Y. Gu, Y. Li and T. C. Green, "Impedance-Based Root-Cause Analysis: Comparative Study of Impedance Models
-    # and Calculation of Eigenvalue Sensitivity," in IEEE Transactions on Power Systems, March 2023.
-    # C. Zhang, H. Zong, X. Cai and M. Molinas, "On the Relation of Nodal Admittance- and Loop Gain-Model Based
-    # Frequency-Domain Modal Methods for Converters-Dominated Systems," in IEEE Transactions on Power Systems, March 2023.
-
-    # Previously computed impedance matrix PF are the same as for the addmitance because they share the eigenvectors
-    # Compute the derivative of the closed-loop admittance's determinant at the mode via backwards differentiation
-    delta_Ydet_delta_s = (1/np.prod(eigenvalues_sorted[freq_idx,:]) - 1/np.prod(eigenvalues_sorted[freq_idx-1,:]))/(2*np.pi*1j*frequencies[freq_idx]-2*np.pi*1j*frequencies[freq_idx-1])
-    adjoint_Y = G[freq_idx,:]/np.prod(eigenvalues_sorted[freq_idx,:])  # inv(Y) = adj(Y)/|Y| -> adj(Y) = Z*|Y| = Z/|Z|
-    S = -adjoint_Y / delta_Ydet_delta_s
-    # print("\nThe sensitivity of the critical state-space eigenvalue w.r.t. the diagonal admittance elements:")
-    # for idx, bus in enumerate(bus_names): print(bus+"\t",np.round(-adjoint_Y[idx,idx_lambda_max_max] / delta_Ydet_delta_s,decimals=4))  # np.diag()[idx]
-    # Computation from the frequency-domain participation factors
-    # xi = - np.trace(adjoint_Y)/delta_Ydet_delta_s  # Relation between frequency-domain PF and time-domain eigenvalue sensitivity
-    # print("\nxi =",xi,"\ndYdet_ds =",delta_Ydet_delta_s)
-    # print("\nThe sensitivity of the critical state-space eigenvalue w.r.t. the diagonal admittance elements:")
-    # for idx, bus in enumerate(bus_names): print(bus+"\t", np.round(PF[idx,idx_lambda_max_max]*xi, decimals=4))
-
-    # 5) Plot the eigenvalues over frequency
+    # 4) Plot the eigenvalues over frequency
     fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(6, 8))  # Create the figure and get the colors cycle
     colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
     for col in plt.rcParams['axes.prop_cycle'].by_key()['color']: colors.append(col)  # Triplicate colour cycle

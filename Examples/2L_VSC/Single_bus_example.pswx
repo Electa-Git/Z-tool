@@ -1,0 +1,15 @@
+<workspace name="Single_bus_example" version="5.0.0" crc="79127877">
+  <projects>
+    <project type="library" name="Z_tool" filepath="..\..\..\..\PycharmProjects\Z-tool\Source\Scan\Z_tool.pslx" />
+    <project type="project" name="Simple_2L_VSC_RLC" filepath=".\Simple_2L_VSC_RLC.pscx" />
+  </projects>
+  <simulations />
+  <pmr />
+  <messagegrid expanded="">
+    <column name="Icon" />
+    <column name="Id" />
+    <column name="Component" />
+    <column name="Namespace" />
+    <column name="Description" />
+  </messagegrid>
+</workspace>
