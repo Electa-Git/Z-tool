@@ -1,5 +1,5 @@
 # Usage example
-The basic functionality of the Z-tool is demonstrated below with a simple point-to-point HVDC link. For the case of a single AC-bus analysis see the example in [2L_VSC](2L_VSC).
+The basic functionality of the Z-tool is demonstrated below with a point-to-point HVDC link. For a more simple case of single AC-bus analysis see the example in [2L_VSC](2L_VSC).
 ## Installation
 To use the tool, the following pre-requisites are needed
 1. Python 3.7 or higher together with
