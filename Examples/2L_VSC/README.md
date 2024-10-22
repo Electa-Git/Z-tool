@@ -40,7 +40,7 @@ When the scan is finished, we can access the results in the specificed results f
 
 ![Admittances](../../Doc/pdf_out_2LVSC.png)
 
-For a detailed system stability analysis, we can simply call the different functions defined in [stability.py](../Source/tools/stability.py): _nyquist_ for the application of the Generalized Nyquist Criterion (GNC) to determine system stability, _EVD_ to reveal the closed-loop system oscillatory modes and participating buses via eigenvalue decomposition, _passivity_ for the computation of the passivity index of the different system matrices and the application of the small-gain theorem via small_gain. The GNC shows a stable interconnected system, the _EVD_ function indicates two main oscillatory modes and the passivity analysis points out that the VSC cannot be responsible for any instability above 45 Hz.
+For a detailed system stability analysis, we can simply call the different functions defined in [stability.py](../../Source/tools/stability.py): _nyquist_ for the application of the Generalized Nyquist Criterion (GNC) to determine system stability, _EVD_ to reveal the closed-loop system oscillatory modes and participating buses via eigenvalue decomposition, _passivity_ for the computation of the passivity index of the different system matrices and the application of the small-gain theorem via small_gain. The GNC shows a stable interconnected system, the _EVD_ function indicates two main oscillatory modes and the passivity analysis points out that the VSC cannot be responsible for any instability above 45 Hz.
 
 ![Stability](../../Doc/stability_2LVSC.png)
 
