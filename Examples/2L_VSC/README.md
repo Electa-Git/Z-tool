@@ -1,5 +1,5 @@
 # Usage example
-This example demonstrates the most simple usage case consisting of a single-bus analysis. The case study containes a basic averaged model of a two-level voltage source converter with constant DC-voltage connected to a Thevenin equivalent. The grid equivalent impedance can be increased until the SCR is too low and small-signal instability is reached. In addition, a series capacitor can be used to represent the series-compensated trasmission line which also represents a risky situation in terms of small-signal stability.
+This example demonstrates the most simple usage case consisting of a single-bus analysis. The case study contains a basic averaged model of a two-level voltage source converter with constant DC-voltage and grid-supporting controls connected to a Thevenin equivalent with SCR = 2 and X/R = 10. The grid equivalent impedance can be increased until the SCR is too low and small-signal instability is reached. In addition, a series capacitor can be used to represent the series-compensated trasmission line which also represents a risky situation in terms of small-signal stability.
 
 ## Installation
 To use the tool, the following pre-requisites are needed
@@ -20,10 +20,10 @@ Enviroment Variables... -> System variables -> PYTHONPATH -> Directory where _So
 ![Modify the path in system variables](../../Doc/img.png)
 
 ## Usage
-The tool usage can be summarized in the following steps:
+The general tool usage can be summarized in the following steps:
 1. Add the Z-tool library to your PSCAD project
-2. Place the tool's analysis blocks at the target buses and name them
-3. Define the resulting topology from the POV of the blocks' buses: in case of single-bus analysis this step is not needed
+2. Place the tool's analysis blocks at the target buses and name them uniquely
+3. Define the resulting topology from the POV of the blocks' buses: _in case of single-bus analysis this step is not needed_
 4. Speficy the basic simulation options and frequency range for the study
 5. Run the frequency scan and small-signal stability analysis functions
 

@@ -21,7 +21,7 @@ Enviroment Variables... -> System variables -> PYTHONPATH -> Directory where _So
 ## Usage
 The tool usage can be summarized in the following steps:
 1. Add the Z-tool library to your PSCAD project
-2. Place the tool's analysis blocks at the target buses and name them
+2. Place the tool's analysis blocks at the target buses and name them uniquely
 3. Define the resulting topology from the POV of the blocks' buses
 4. Speficy the basic simulation options and frequency range for the study
 5. Run the frequency scan and small-signal stability analysis functions
