@@ -53,4 +53,4 @@ Firstly, we can verify that the python version we call with **py** is the one we
 Then, the installation syntax looks like this: `py -m pip install NAMEofTHEpackage`. 
    * _Numpy_, _Scipy_ and _Matplotlib_. Numpy and Scipy packages contain the mathematical functions to handle the numerical data, such as rFFT, inverse matrix computations and EVD. Matplotlib is used to plot the results.
    * _PSCAD automation library_. It is automatically downloaded to your computed after installing PSCAD v5. It should be located in a directory similar to _C:\Users\Public\Documents\Manitoba Hydro International\Python\Packages_. Here there should be a file named _mhi_pscad-2.2.1-py3-none-any.whl_ or similar. Use the same cmd + _pip_ commands as before, but first go to the folder where the package is located using cmd commands.
-![Figure of the Numpy, matplotlib and PSCAD automation library installation](../Doc/img_8.png)
+![Figure of the Numpy, matplotlib and PSCAD automation library installation](../../Doc/img_8.png)
