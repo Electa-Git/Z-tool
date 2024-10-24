@@ -1,5 +1,5 @@
 #!python3.7
-""" Simple script to test the Z-tool for the energy hub """
+""" Simple script to test the Z-tool for a single-bus analysis """
 from Source.frequency_sweep import frequency_sweep
 from Source.tools import *
 from os import getcwd, system
