@@ -43,31 +43,36 @@ Y_grid = read_admittance.read_admittance(path=results_folder, involved_blocks="P
 
 """ -------------------- Stability analysis ---------------------- """
 print("\nAnalysis of the PSCAD case")
+# You can call stability.stability_analysis but this case is simple enough so we can do it step-by-step
 L = np.matmul(np.linalg.inv(Y_grid.y), Y_VSC.y)  # Loop gain matrix
-stability.nyquist(L, Y_VSC.f, results_folder=results_folder, filename="PSCAD_case")
-stability.EVD(G=np.linalg.inv(Y_grid.y + Y_VSC.y), frequencies=Y_VSC.f, results_folder=results_folder, filename="PSCAD_case")
-stability.passivity(G=Y_VSC.y, frequencies=Y_VSC.f, results_folder=results_folder, filename="PSCAD_case",Yedge=Y_grid.y)
-stability.small_gain(G1=np.linalg.inv(Y_grid.y),G2=Y_VSC.y, frequencies=Y_VSC.f, results_folder=results_folder, filename="PSCAD_case")
+stability.nyquist(L, Y_VSC.f, results_folder=results_folder, filename="PSCAD_case")  # Application of the Generalized Nyquist Criterion
+stability.EVD(G=np.linalg.inv(Y_grid.y + Y_VSC.y), frequencies=Y_VSC.f, results_folder=results_folder, filename="PSCAD_case") # Oscillation mode identification
+stability.passivity(G=Y_VSC.y, frequencies=Y_VSC.f, results_folder=results_folder, filename="PSCAD_case",Yedge=Y_grid.y) # Passivity index of all subsystems
+stability.small_gain(G1=np.linalg.inv(Y_grid.y),G2=Y_VSC.y, frequencies=Y_VSC.f, results_folder=results_folder, filename="PSCAD_case") # Evaluate the gain of all subsystems
 
 """ -------------------- Stability analysis with different series compensation values ---------------------- """
 print("\nAnalysis of different series compensation values using previously scanned converter admittance")
-Wpu = np.array([[0,1],[-1,0]])  # T*dT^(-1)/dt
-w0 = 2*np.pi*50
-Z_RL = np.linalg.inv(Y_grid.y)
+Wpu = np.array([[0,1],[-1,0]])  # Coupling matrix due to the abc-to-dq transformation T*dT^(-1)/dt
+w0 = 2*np.pi*50  # Fundamental angular frequency [Hz]
+Z_RL = np.linalg.inv(Y_grid.y)  # Grid-side impedance (RL in this case)
 X_g = np.real(Z_RL[1,0,1])  # Extract the grid-side fundamental frequency reactance from the scanned data
 print(" The grid-side inductance is",X_g/(2*np.pi*50),"H")
 comp_level = np.arange(0.05,0.7,0.01)  # Compensation level from 5% to 70% of the grid inductance
-Y_C = np.empty((len(Y_grid.f), 2, 2), dtype='cdouble')  # Initialize the capacitance admittance
-stability_assessment = []
+Y_C = np.empty((len(Y_grid.f), 2, 2), dtype='cdouble')  # Initialize the capacitance admittance matrix
+stability_assessment = []  # Stability analysis results
+# Iterate the compensation levels: (1) compute the capacitance, (2) compute the new grid-side admittance, (3) check the stability
 for case in range(len(comp_level)):
     C_g = 1/(w0*comp_level[case]*X_g)  # Xc = 1/(w*C) = 5-70% X_g
     for f_point, f in enumerate(Y_grid.f):
         Y_C[f_point,...] = 1j*2*np.pi*f*C_g*np.identity(2) + w0*C_g*Wpu  # dq-frame admittance matrix of a capacitor in SI
     Z_RLC = np.linalg.inv(Y_C) + Z_RL  # Series-capacitor compensated line
+    # Evaluate the stability via both the GNC using eigenvalue decomposition and also the determinant (equivalent)
     stable = stability.nyquist(np.matmul(Z_RLC, Y_VSC.y), Y_VSC.f, results_folder=results_folder+r"\Compensation", filename="PSCAD_case_"+str(case), verbose=False)
+    stability.nyquist_det(L=np.matmul(Z_RLC, Y_VSC.y), frequencies=Y_VSC.f, results_folder=results_folder+r"\Compensation", filename="PSCAD_case_"+str(case))
     stability_assessment.append(stable)
     if not stable:
         print(round(comp_level[case]*100,1),"% series compensation is small-signal unstable")
         stability.EVD(G=np.linalg.inv(np.linalg.inv(Z_RLC) + Y_VSC.y), frequencies=Y_VSC.f, results_folder=results_folder+r"\Compensation", filename="PSCAD_case_"+str(case),verbose=False)
+        stability.nyquist_det(L=np.matmul(Z_RLC, Y_VSC.y), frequencies=Y_VSC.f, results_folder=results_folder+r"\Compensation", filename="PSCAD_case_"+str(case))
 
 print("\nCompensation larger than",round(comp_level[sum(stability_assessment)]*100,1),"% might result in instability")

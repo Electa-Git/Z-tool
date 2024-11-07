@@ -22,7 +22,7 @@ Copyright (C) 2024  Francisco Javier Cifuentes Garcia
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-__all__ = ['stability_analysis','passivity','nyquist','small_gain','EVD']
+__all__ = ['stability_analysis','passivity','nyquist','small_gain','EVD','nyquist_det']
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 import matplotlib.pyplot as plt
@@ -658,3 +658,62 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None, verb
     evd_results = tuple(evd_results)
     np.savetxt(results_folder + '\\' + filename + '_EVD.txt', np.stack(evd_results, axis=1), delimiter='\t',
                header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
+
+def nyquist_det(L, frequencies, results_folder=None, filename=None, verbose=True, offset=0.0, draw_arrows=True, show_plot=False):
+    # Stability assessment based on the determinant of I + L
+    # Theorem 4.14 in J. Maciejowski, Multivariable feedback design. Addison-Wesley, 1989, the stability conditions are:
+    # a) Zero net number of clockwise encirclements of (0,j0) by det[I+L(s)] as s travels the imaginary axis from 0 to +j*infinity
+    # b) No crossings of the orgin by by det[I + L(s)] as s travels the imaginary axis from 0 to +j*infinity
+    # Assuming standalone stable subsystems, i.e. L does not have any open-loop unstable poles
+
+    # The offset parameter can be used to look at other points in the real axis instead of 0, e.g. -1 as in the GNC
+    
+    det = np.linalg.det(np.identity(2) + L) + offset  
+    D_R = np.real(det)
+    D_I = np.imag(det)
+
+    fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(6, 7))  # Create the figure and get the colors cycle
+    # Plot the critical point
+    ax[0].scatter(offset, 0, marker="+", c='blue', label=r'$( '+str(round(offset,0))+', 0j )$')
+    ax[0].plot(D_R, D_I, color='red', linestyle='solid', linewidth=2.0)
+    if draw_arrows:
+        da = int(np.log(L.shape[0] + 1))  # decimate the number of arrows
+        ax[0].quiver(D_R[::da], D_I[::da], np.gradient(D_R)[::da], np.gradient(D_I)[::da], angles='xy', scale_units='xy',
+                    scale=da, linewidth=1, edgecolor='black', facecolor='green')
+    id0 = np.argmin(np.abs(frequencies - 50.0))
+    ax[0].text(D_R[id0], D_I[id0], str(round(frequencies[id0], 2)) + ' Hz', fontsize=12, color='blue', ha='right', va='bottom')
+    ax[0].text(D_R[-1], D_I[-1], str(round(frequencies[-1], 2)) + ' Hz', fontsize=12, color='blue', ha='right', va='bottom')
+    ax[0].text(D_R[0], D_I[0], str(round(frequencies[0], 2)) + ' Hz', fontsize=12, color='blue', ha='right', va='bottom')
+
+    ax[0].minorticks_on()
+    ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+    ax[0].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+    ax[0].set_title(str(offset)+r' + det[I + L(s)] between '+format(frequencies[0], '.1f')+' and ' + format(frequencies[-1], '.1f') + ' Hz')
+    ax[0].set_xlim([np.min(D_R, axis=None), np.max(D_R, axis=None)])
+    ax[0].set_ylim([np.min(D_I, axis=None), np.max(D_I, axis=None)])
+    ax[0].set_xlabel('Real axis')
+    ax[0].set_ylabel('Imaginary axis')
+    ax[0].legend(loc='upper right', ncol=1)
+
+    ax[1].plot(D_R, D_I, color='red', linestyle='solid', linewidth=2.0)
+    if draw_arrows:
+        ax[1].quiver(D_R, D_I, np.gradient(D_R), np.gradient(D_I), angles='xy', scale_units='xy',
+                    scale=1, linewidth=1, edgecolor='black', facecolor='green')
+    ax[1].scatter(offset, 0, s=4 * rcParams['lines.markersize'] ** 2, marker="+", c='blue', label=r'$( ' + str(offset) + ', 0j )$')
+    ax[1].set_xlim([-1.0+offset, 1.0+offset])
+    ax[1].set_ylim([-1.0+offset, 1.0+offset])
+    ax[1].minorticks_on()
+    ax[1].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
+    ax[1].grid(visible=True, which='minor', color='tab:gray', alpha=0.5, linestyle='-', linewidth=0.5)
+    ax[1].set_xlabel('Real axis')
+    ax[1].set_ylabel('Imaginary axis')
+
+    fig.savefig(results_folder + '\\' + filename + "_det.pdf", format="pdf", bbox_inches="tight")
+    with open(results_folder + '\\' + filename + "_det.pickle", 'wb') as f:
+        pickle.dump(fig, f)
+    if show_plot: plt.show()  # Visualize the plot interactively
+    plt.close(fig)
+
+    # Save the results
+    np.savetxt(results_folder + '\\' + filename + '_det.txt', np.stack((frequencies,det), axis=-1), delimiter='\t',
+               header="Frequency [Hz]\t"+str(offset)+"+det[I + L(s)]", comments='')
