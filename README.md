@@ -34,6 +34,20 @@ If PYTHONPATH does not exit, it needs to be created. This should be done automat
 ## Usage
 Follow the example(s) described [here](Examples). The GUI is currently under development.
 
+## Citing Z-tool
+If you find the Z-tool useful in your work, we kindly request that you cite the following publications:
+[paper ISGT 2024](https://lirias.kuleuven.be/4201452&lang=en):
+
+```bibtex
+@ARTICLE{Cifuentes2024,
+author = {Cifuentes Garcia, Francisco Javier and Roose, Thomas and Sakinci, Özgür Can and Lee, Dongyeong and Dewangan, Lokesh and Avdiaj, Eros and Beerten, Jef},
+title = {Automated Frequency-Domain Small-Signal Stability Analysis of Electrical Energy Hubs},
+journal = {IEEE PES Innovative Smart Grid Technologies Europe (ISGT Europe) 2024},
+publisher = {IEEE},
+pages={1-6},
+year = {2024}}
+```
+
 ## Contact Details
 For queries about the package or related work please feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512)
 
