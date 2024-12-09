@@ -91,7 +91,7 @@ class Scanblock:
         self.relative_cols = {}      # Dictionary of relative columns lists for each file; keys = files_to_open
         self.snapshot_data = dict()  # Snapshot recordings, the keys are the signal names out_vars_names[ch]
         self.perturbation_data = None  # Dict of dicts: 1-key = sim#, 2-keys = names out_vars_names[ch] +"_d","_q",...
-        if "AC" in self.pscad_block.defn_name[1]:
+        if "AC" in self.pscad_block.defn_name:
             self.type = "AC"
             self.var_names = ['VDUTac', 'IDUTacA1', 'IDUTacA2', 'theta']  # Root of the variable names
             self.group = "ACscan"
@@ -224,29 +224,11 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     ScanBlocksDC = []
     for identification in scanid:
         blocks = main.find_all(Name=identification)
-        blocks_tool = [block for block in blocks if "Z_tool" in block.defn_name[0]]  # Filter only Z-tool components
-        if "DC" in blocks_tool[0].defn_name[1]:
+        blocks_tool = [block for block in blocks if "Z_tool" in block.defn_name]  # Filter only Z-tool components
+        if "DC" in blocks_tool[0].defn_name:
             ScanBlocksDC.append(blocks_tool[0])
         else:
             ScanBlocksAC.append(blocks_tool[0])
-        # if len(blocks_tool) > 1:  # If more than one scan block shares name with
-        #     blocksname = blocks_tool[0].defn_name[1] + blocks_tool[1].defn_name[1]  # Second part of the block name
-        #     if "AC" in blocksname and "DC" in blocksname:
-        #         ScanBlocksACDC.append(blocks_tool[0])
-        #         ScanBlocksACDC.append(blocks_tool[1])
-        #         blocks_tool[0].parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0)
-        #         blocks_tool[1].parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0)
-        #     else:
-        #         print('Error: The list of scaning blocks is inconsistent. \n')
-        #         return
-        # elif "DC" in blocks_tool[0].defn_name[1]:
-        #     ScanBlocksDC.append(blocks_tool[0])
-        #     blocks_tool[0].parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0)
-        # else:
-        #     ScanBlocksAC.append(blocks_tool[0])
-        #     blocks_tool[0].parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0)
-    # ScanBlocksAC = list(set(ScanBlocksAC))
-    # ScanBlocksDC = list(set(ScanBlocksDC))
 
     ScanBlocksAC_names = [block.parameters()['Name'] for block in ScanBlocksAC]
 
@@ -344,7 +326,6 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         # Set snapshot parameters and block ID in the scan blocks
         block.parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0, block_id=ScanBlocks_id[idx])
         ScanBlocksTool.append(Scanblock(block, block.parameters()['Name'], int(block.parameters()['block_id'])))
-        # if verbose: print(" Scan block type ",block.defn_name[1])
         for area_id, blocks in enumerate(cc_new):
             if ScanBlocksTool[-1].name in [block_names_Y[num][:-2] for num in blocks] and ScanBlocksTool[-1].type == "AC":
                 ScanBlocksTool[-1].area = area_id  # Only for AC areas (so far)
@@ -355,16 +336,6 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                 print("AC scan block",ScanBlocksTool[idx].name,'with block_id',int(block.parameters()['block_id']),"at area",ScanBlocksTool[idx].area)
             else:
                 print("DC scan block",ScanBlocksTool[idx].name,'with block_id',int(block.parameters()['block_id']))
-        # The following lines identify the ACDC scan points
-        # ScanBlocks_type.append(ScanBlocksTool[idx].type)  # List with block's scan type
-        # Alternative: if "DC" in block.defn_name[1]: ScanBlocks_type.append("DC") # No need for AC or DC in block name
-        # if "AC" in block.defn_name[1]: ScanBlocks_type.append("AC")
-        # if idx > 0:
-        #     if block.parameters()['Name'][:-3] == ScanBlocks[idx - 1].parameters()['Name'][:-3]:
-        #         # If two buses have the same number, then it is an ACDC bus
-        #         ScanBlocks_type[idx] = "ACDC"
-        #         ScanBlocks_type[idx - 1] = "ACDC"
-        # Retrieve the indexes of ScanBlocksTool for each network based on ScanBlocksTool_names
 
     for net in passive_networks_scans:
         net.blocks_idx = {name: ScanBlocksTool_names.index(name[:-2]) for name in net.names}  # Assumes no equal names
