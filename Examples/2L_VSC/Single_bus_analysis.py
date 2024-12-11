@@ -27,7 +27,6 @@ t_step = 20.0  # Simulation time step [us]
 v_perturb_mag = 0.02  # In per unit w.r.t. the steady-state voltage at each bus
 
 output_files = 'single_bus_example'  # Desired name for the output files
-topology = getcwd() + r'\topology.txt'
 
 """ -------------------- Frequency scan ---------------------- """
 freq = create_freq.loglist(f_min=f_min, f_max=f_max, f_points=f_points, f_base=f_base)
@@ -35,7 +34,8 @@ freq = create_freq.loglist(f_min=f_min, f_max=f_max, f_points=f_points, f_base=f
 frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, f_base=f_base,
                 freq=freq, start_fft=start_fft, fft_periods=fft_periods, v_perturb_mag=v_perturb_mag,
                 working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name,
-                results_folder=results_folder, output_files=output_files, show_powerflow=True)
+                results_folder=results_folder, output_files=output_files, show_powerflow=True,
+                component_parameters=[["pq_tau_meas"],0.001]) # Note that you can change any Main canvas constants via the component_parameters argument for parametric sweeps
 
 # Retreive admittances
 Y_VSC = read_admittance.read_admittance(path=results_folder, involved_blocks="PCC-1", file_root=output_files)  # Side 1 of the PCC block is connected to the VSC
