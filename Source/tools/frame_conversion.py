@@ -99,9 +99,6 @@ the dq-Domain Impedance Definition for the Stability Analysis of AC Power Electr
 Emerging and Selected Topics in Power Electronics, vol. 4, no. 4, pp. 1383-1396, Dec. 2016, doi: 10.1109/JESTPE.2016.2588733.
 If the given matrix has q-axis lagging then it is firstly rotated to q-axis leading to match the referenced formula
 
-Note that the matrix in the MSD is no longer the response of a transfer function with real coeficients as the dq frame case.
-Therefore, its re-evaluation for negative frequencies is needed for frequency-domain analysis.
-
 Required arguments
         Y_old_frame     Numpy matrix of Nx2x2 to be transformed where N is the number of frequency points
 
@@ -116,9 +113,6 @@ Transformation from dc,d,q-frame admittance to the Modified Sequence Domain (MSD
 S. Shah and L. Parsa, "Sequence domain transfer matrix model of three-phase voltage source converters," 2016 IEEE
 Power and Energy Society General Meeting (PESGM), Boston, MA, USA, 2016, pp. 1-5, doi: 10.1109/PESGM.2016.7742009.
 If the given matrix has q-axis lagging then it is firstly rotated to q-axis leading to match the reference formula
-
-Note that the matrix in the MSD is no longer the response of a transfer function with real coeficients as the dq frame case.
-Therefore, its re-evaluation for negative frequencies is needed for frequency-domain analysis.
 
 Required arguments
         Y_old_frame     Numpy matrix of Nx2x2 to be transformed where N is the number of frequency points
