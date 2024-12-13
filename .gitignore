@@ -1,0 +1,10 @@
+**/__pycache__
+**/Results
+**/Scan_options
+*.out
+*.inf
+*.infx
+*.bat
+*.dta
+*.f
+*.snp

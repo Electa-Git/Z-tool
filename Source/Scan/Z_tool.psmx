@@ -6,8 +6,8 @@
   <List classid="View">
     <View name="Main" zoomscale="1.5" scrollx="0" scrolly="0" />
     <View name="ScanPoint" zoomscale="1.2" scrollx="0" scrolly="0" />
-    <View name="DCscan" zoomscale="0.96" scrollx="0" scrolly="405" />
-    <View name="ACscan" zoomscale="1.2" scrollx="88" scrolly="0" />
+    <View name="DCscan" zoomscale="0.96" scrollx="21" scrolly="343" />
+    <View name="ACscan" zoomscale="1.2" scrollx="88" scrolly="360" />
     <View name="DCscanPM" zoomscale="0.6144" scrollx="0" scrolly="8" />
     <View name="DCscanGND" zoomscale="0.96" scrollx="0" scrolly="0" />
   </List>
