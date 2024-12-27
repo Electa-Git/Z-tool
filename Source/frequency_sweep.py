@@ -19,7 +19,8 @@ import time as t  # Relative time
 from os import listdir, chdir, getcwd, path, makedirs
 import numpy as np  # Numerical python functions
 import matplotlib.pyplot as plt  # Plot library
-import pickle  # Hadle for interactive plots
+import pickle  # Handle for interactive plots
+from itertools import combinations  # Used to generate unique pairs of sets
 from mhi.pscad import launch  # PSCAD automation functions
 from Source.tools import *
 
@@ -29,7 +30,8 @@ DC_scan_variables = ['blockid', 'IDUTdcA1', 'IDUTdcA2','VDUTdc']
 
 class Network:
     def __init__(self, name_blocks_involved, scan_type, adj_matrix):
-        self.names = name_blocks_involved  # List with full names including the sides
+        self.names = name_blocks_involved  # List of names including the sides
+        self.names_wo_sides = [names[:-2] for names in self.names] # List of names without the sides
         self.scan_type = scan_type  # AC or DC scan
         self.adj_matrix = adj_matrix  # The adjacent matrix = zeros correspond to y = 0 (disconnection)
         if scan_type == "AC":
@@ -39,12 +41,10 @@ class Network:
             self.runs = len(name_blocks_involved)  # Number of needed runs for the network scan
             perturbations = ["_dc"]
         self.blocks_idx = None  # Dict key: self.names, pointing at the key of the associated blocks in ScanBlocksTool
-        self.remaining_scans = [sources+scan_type for sources in self.names for scan_type in perturbations]
-        self.all_scans = [sources + scan_type for sources in self.names for scan_type in perturbations]
+        self.all_scans = [names[:-2] + perturbation_type for names in self.names for perturbation_type in perturbations]  # Block name (without sides) + perturbation type
+        self.scan_per_run = {}  # Dictionary with the block+side+perturbation for the runs (keys) in runs_list
+        self.runs_list = []  # Keys to the scan_per_run dict indicating in which runs the scans of this subsystem are performed
         self.enforce = False  # Enforce network connectivity based on the topology file when computing the admittance
-
-    def updateScans(self,done):
-        self.remaining_scans.remove(done)
 
 class Graph:
     def __init__(self, V):
@@ -139,9 +139,76 @@ def visualize_graph(G, node_names, save_dir, file_name):
     with open(save_dir + r'\\' + file_name + "_network_visualization.pickle", 'wb') as f:
         pickle.dump(plt.gcf(), f)  # Save the file for allowing plot interaction
 
+def create_scan_schedule(passive_networks_scans):
+    # Avoid linearly-dependent perturbations of subsystems sharing scan blocks by defining a scan run schedule
+    all_scans = list(set(scan for network_aux in passive_networks_scans for scan in network_aux.all_scans))  # Name of the block with perturbation (no sides) 
+
+    # Greedy algorithm: check all scans one by one and add it to the first run without an existing scan of the same subsystem
+    scheduled_scans = [[] for i in range(len(all_scans))]  # Worst case: no scans can be done simultaneously
+    involved_networks = [[] for i in range(len(all_scans))]  # Involved networks in each scan run
+    
+    for scan in all_scans:
+        scan_scheduled = False
+
+        # Find the networks with the current scan block
+        networks_with_current_block = []
+        for network in passive_networks_scans:
+            # If the name of the block (no sides, no perturbation) is in the network, then add it to the networks_with_current_block list
+            if "_".join(scan.split("_")[:-1]) in network.names_wo_sides:
+                networks_with_current_block.append(network)
+
+        for run in range(len(scheduled_scans)):
+            if not scan_scheduled and not any(element in involved_networks[run] for element in networks_with_current_block):
+                # Schedule the scan/block to this run if it does not belong to a system with blocks in the current run already
+                scan_scheduled = True
+                scheduled_scans[run].append(scan)
+                # Update the involved networks' runs_list and scan_per_run
+                for network in networks_with_current_block:
+                    involved_networks[run].append(network)  # List to avoid overlapping (networks sharing perturbation blocks)
+                    if scan in network.all_scans:
+                        # Use the name without side and perturbation to access the corresponding list of names with sides
+                        index_of_name = network.names_wo_sides.index("_".join(scan.split("_")[:-1]))
+                        # Add the name with sides and perturbation to the scan per run list
+                        network.runs_list.append(run+1)
+                        network.scan_per_run[run+1] = network.names[index_of_name] + "_" + scan.split("_")[-1]
+                        
+
+    # if len(passive_networks_scans) >= 2:
+    #     # Union of the pair-wise intersection among the network blocks
+    #     common_scan_blocks = set().union(*(set(a) & set(b) for a, b in combinations(all_scans, 2)))
+
+    # if len(common_scan_blocks)>0:
+    #     for block_pos, block_name, in enumerate(common_scan_blocks):
+    #     # If there are shared/common blocks then create a schedule
+    #         nets_with_block = []  # Find pair-wise overlaps block by block and list by list
+    #         for passive_net in passive_networks_scans:
+    #             # Remove the "side" from the block names and check if this network contains it
+    #             if block_name in [name[:-2] for name in passive_net.names if name is not "None"]:
+    #                 nets_with_block.append(passive_net)
+        
+    #         # Schedule it to the maximum index of the first non-sorted position over both lists
+    #         first_non_sorted_net1 = min([i for i, elem in enumerate(nets_with_block[0].scheduled) if elem == False])
+    #         first_non_sorted_net2 = min([i for i, elem in enumerate(nets_with_block[1].scheduled) if elem == False])
+    #         index = max(first_non_sorted_net1,first_non_sorted_net2)
+
+
+    #         for net_with_block in nets_with_block:
+    #             for name in net_with_block.names: 
+    #                 if block_name == name[:-2]: full_block_name = name
+                
+    #             for pad in range(len(net_with_block.schedule)-index-1):
+    #                 net_with_block.scheduled.append(False)  # Padding as needed
+    #                 net_with_block.schedule.append("None")
+
+    #             if net_with_block.schedule[index] != full_block_name:
+    #                 net_with_block.schedule[net_with_block.schedule.index(full_block_name)] = net_with_block.schedule[index]
+
+    #             net_with_block.schedule[index] = full_block_name
+    #             net_with_block.scheduled[index] = True
+
 def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_perturb_mag=None,freq=None, f_points=None,
-                    f_base=None, f_min=None, f_max=None, working_dir=None, multi_freq_scan_edge=False, multi_freq_scan_node=False,
-                    snapshot_file=None, dedicated_SS_sim=False, take_snapshot=True, dt_injections=None,
+                    f_base=None, f_min=None, f_max=None, working_dir=None, multi_freq_scan=False,
+                    snapshot_file=None, dedicated_SS_sim=False, take_snapshot=True, dt_injections=None, scan_actives = True,
                     topology=None, project_name=None, workspace_name=None,fortran_ext=r'.gf46', num_parallel_sim=8,
                     scan_passives=True, edge_dq_sym=False, edge_sym=False, component_parameters=None,
                     results_folder=None, output_files='Perturbation', compute_yz=True, save_td=False,
@@ -252,7 +319,24 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
             ScanBlocksDC.append(blocks_tool[0])
         else:
             ScanBlocksAC.append(blocks_tool[0])
-
+        # if len(blocks_tool) > 1:  # If more than one scan block shares name with
+        #     blocksname = blocks_tool[0].defn_name[1] + blocks_tool[1].defn_name[1]  # Second part of the block name
+        #     if "AC" in blocksname and "DC" in blocksname:
+        #         ScanBlocksACDC.append(blocks_tool[0])
+        #         ScanBlocksACDC.append(blocks_tool[1])
+        #         blocks_tool[0].parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0)
+        #         blocks_tool[1].parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0)
+        #     else:
+        #         print('Error: The list of scaning blocks is inconsistent. \n')
+        #         return
+        # elif "DC" in blocks_tool[0].defn_name[1]:
+        #     ScanBlocksDC.append(blocks_tool[0])
+        #     blocks_tool[0].parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0)
+        # else:
+        #     ScanBlocksAC.append(blocks_tool[0])
+        #     blocks_tool[0].parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0)
+    # ScanBlocksAC = list(set(ScanBlocksAC))
+    # ScanBlocksDC = list(set(ScanBlocksDC))
 
     ScanBlocksAC_names = [block.parameters()['Name'] for block in ScanBlocksAC]
 
@@ -340,6 +424,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     cc_new = g_new.connectedComponents()  # List of lists with blocks in the same area
     if verbose: print("CC for area id: ",cc_new)
 
+    # TODO Asign the unique block id based on the names in the topology file, i.e. first block is 1, second is 2, etc
     ScanBlocks.sort(key=lambda x: x.parameters()['Name'][:-3], reverse=False)  # Sort the blocks by their "bus" number
     ScanBlocks_id = [i for i in range(1, len(ScanBlocksAC) + len(ScanBlocksDC) + 1)]  # Unique scan block_id signals
     # Create a list with the active scan block objects containing rich information about each block
@@ -360,21 +445,26 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                 print("AC scan block",ScanBlocksTool[idx].name,'with block_id',int(block.parameters()['block_id']),"at area",ScanBlocksTool[idx].area)
             else:
                 print("DC scan block",ScanBlocksTool[idx].name,'with block_id',int(block.parameters()['block_id']))
-
+        # The following lines identify the ACDC scan points
+        # ScanBlocks_type.append(ScanBlocksTool[idx].type)  # List with block's scan type
+        # Alternative: if "DC" in block.defn_name[1]: ScanBlocks_type.append("DC") # No need for AC or DC in block name
+        # if "AC" in block.defn_name[1]: ScanBlocks_type.append("AC")
+        # if idx > 0:
+        #     if block.parameters()['Name'][:-3] == ScanBlocks[idx - 1].parameters()['Name'][:-3]:
+        #         # If two buses have the same number, then it is an ACDC bus
+        #         ScanBlocks_type[idx] = "ACDC"
+        #         ScanBlocks_type[idx - 1] = "ACDC"
+        # Retrieve the indexes of ScanBlocksTool for each network based on ScanBlocksTool_names
 
     for net in passive_networks_scans:
         net.blocks_idx = {name: ScanBlocksTool_names.index(name[:-2]) for name in net.names}  # Assumes no equal names
         if edge_dq_sym and net.scan_type == "AC":
             # If the matrices are assummed dq-symetric, i.e. Ydq = -Yqd and Ydd = Yqq, then the number of runs is halved
-            net.remaining_scans = net.remaining_scans[::2]  # Only d-axis perturbations: int(net.runs / 2)
-            net.runs = len(net.remaining_scans)
+            net.all_scans = net.all_scans[::2]  # Only d-axis perturbations: int(net.runs / 2)
+            net.runs = len(net.all_scans)
         if edge_sym:
             # If the matrices are assummed symetric, i.e. Y = transpose(Y), then the number of runs is np.ceil((N+1)/2)
             net.runs = np.ceil((net.runs + 1)/2)  # TODO Perturbations and matrix computations for Y symmetric
-
-    runs = [net.runs for net in passive_networks_scans]
-    if len(passive_networks_scans) != 0: max_runs = max(runs)
-    # bottleneck_scan = passive_networks_scans[runs.index(max_runs)]
 
     # Set variable component parameters
     if component_parameters is not None:
@@ -530,8 +620,8 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     else:
         # Snapshot data contains both the cold-start data and the steady-state waveforms
         initial_row = find_nearest(ScanBlocksTool[0].snapshot_data["time"], t_snap_internal)
-        if verbose: print(" Snapshot w/o time offset",ScanBlocksTool[0].snapshot_data["time"][initial_row],t_snap_internal)
-        ScanBlocksTool[0].snapshot_data["time"] = ScanBlocksTool[0].snapshot_data["time"][initial_row:] - ScanBlocksTool[0].snapshot_data["time"][initial_row]
+        if verbose: print(" Snapshot w/o time offset", ScanBlocksTool[0].snapshot_data["time"][initial_row], t_snap_internal)
+        # ScanBlocksTool[0].snapshot_data["time"] = ScanBlocksTool[0].snapshot_data["time"][initial_row:] - ScanBlocksTool[0].snapshot_data["time"][initial_row]
 
     """ ---------- Save (and display) power flow ---------- """
     prec = 3  # Saving precision
@@ -553,8 +643,12 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
             P = V*block.snapshot_data["IDUTdcA2"][initial_row]
             powerflow.append(block.name + "\t" + format(V, f".{prec}f") + "\t" + format(P, f".{prec}f"))
 
-        for name in list(block.out_vars_names.values()):
-            block.snapshot_data[name] = block.snapshot_data[name][initial_row:]  # Remove snapshot time offset
+        for name in block.snapshot_data.keys():
+            # Remove snapshot time offset
+            if name == "time": 
+                block.snapshot_data[name] = block.snapshot_data[name][initial_row:] - block.snapshot_data[name][initial_row]
+            else:
+                block.snapshot_data[name] = block.snapshot_data[name][initial_row:]
 
     if show_powerflow: print(" ------ Power flow after the snapshot ------")
     with open(results_folder+r'\\'+output_files+"_power_flow.txt", 'w') as powerflowfile:
@@ -571,7 +665,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
             if block.type == "AC":
                 file.write('\t'.join(map(str,[block.name, block.area, block.theta]))+'\n')
 
-    if scantype == "AC":
+    if scantype == "AC" and scan_actives == True:
         # AC-type bus scan
         # d-axis injection
         print('\n Running single frequency d-axis injection simulations')
@@ -623,7 +717,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                                      file_name=simset_task.overrides()['save_channels_file'][:-4])
             print(' q-axis injection results collected in', round((t.time() - t2), 2), 'seconds\n')
 
-    elif scantype == "DC":
+    elif scantype == "DC" and scan_actives == True:
         # DC-side injection
         print(' Running single frequency DC-side injection simulations')
         t1 = t.time()
@@ -648,7 +742,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                                      file_name=simset_task.overrides()['save_channels_file'][:-4])
             print(' DC-side injection results collected in', round((t.time() - t2), 2), 'seconds\n')
 
-    else:
+    elif scan_actives == True:
         # ACDC-type scan
         # d-axis injection
         print('\n Running single frequency d-axis injection simulations')
@@ -675,7 +769,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         # q-axis injection
         print(' Running single frequency q-axis injection simulations')
         t1 = t.time()
-        for idx, block in enumerate(ScanBlocksTool):
+        for block in ScanBlocksTool:
             if block.type == "AC":
                 block.pscad_block.parameters(selector=2)  # q-axis injection
             else:
@@ -716,7 +810,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                                      file_name=simset_task.overrides()['save_channels_file'][:-4])
             print(' DC-side injection results collected in', round((t.time() - t2), 2), 'seconds\n')
 
-    if compute_yz:
+    if compute_yz and scan_actives == True:
         t2 = t.time()
         print(' Computing admittances')
         # Snapshot data time-aligment
@@ -729,15 +823,12 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         if t_0 != 0.0 and round(ScanBlocksTool[0].snapshot_data["time"][0],10) != round(t_0,10) and \
                 ScanBlocksTool[0].snapshot_data["time"].shape != ScanBlocksTool[0].perturbation_data["time"].shape:
             print("  Shifting snapshot")
-            ScanBlocksTool[0].snapshot_data["time"] = ScanBlocksTool[0].snapshot_data["time"][1:]
+            # ScanBlocksTool[0].snapshot_data["time"] = ScanBlocksTool[0].snapshot_data["time"][1:]
             for block in ScanBlocksTool:
-                for name in list(block.out_vars_names.values()):
+                for name in block.snapshot_data.keys():
                     block.snapshot_data[name] = block.snapshot_data[name][1:]  # Time has been modified already
 
         # Start FFT index and sampling time used in the FFT
-        # dt = ScanBlocksTool[0].perturbation_data["time"]  # Dummy variable time vector
-        # dt = np.mean([dt[i + 1] - dt[i] for i in range(min(len(dt)-1, 100))])  # Sampling time [s]
-        # TODO: modify and add argument to scan or not active components, dt, start_idx and ScanBlocksTool[0].perturbation_data["time"] are used but the latter does not exit for passive scans
         dt = round(sample_step * 1e-6, 12)  # Sampling time [s]
         if verbose: print(" Sampling time: ", sample_step, " [us]")
         start_idx = find_nearest(ScanBlocksTool[0].perturbation_data["time"], start_fft)
@@ -790,69 +881,49 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     """ Perform the simulations for the scan of the passive networks based on the topology information """
     # Shorter simulations can be set as EMT transients are usually faster, but for simplicity former settings are used
     # The PSCAD project folder (i.e. project_name.gf46) can be cleared here to decrease memory usage in large projects
-    sim_select = {"_d": 1, "_q": 2}  # Dict containing the AC simulation type based on the name ending
-    all_scans = [[netnames[:-2] for netnames in network_aux.names] for network_aux in passive_networks_scans]
+    sim_select = {"d": 1, "q": 2, "dc": 1}  # Dict containing the perturbation type based on the name ending
+
     if verbose: print("Passive network scans:",[network_aux.names for network_aux in passive_networks_scans])
     if (len(passive_networks_scans) != 0) and compute_yz and scan_passives:
         # Passive network scan
         print("\nScan of AC and/or DC networks")
         t1 = t.time()
 
-        if len(passive_networks_scans) > 1:
-            common_scan_blocks = set(all_scans[0])
-            for net in all_scans[1:]:
-                # Convert the sublist of block names to a set and find the intersection with the common elements set
-                common_scan_blocks.intersection_update(set(net))
-            print("Common scan blocks are",common_scan_blocks)
+        # Create a scan schedule based on blocks connected to the same vs different subsystems
+        create_scan_schedule(passive_networks_scans)
+        max_runs = max([max(net.runs_list) for net in passive_networks_scans])
 
         for run in range(1, max_runs + 1):
             # Disable all perturbations
             for block in ScanBlocksTool: block.pscad_block.parameters(V_perturb_mag=v_perturb_mag, selector=0)
             t2 = t.time()
             idx_selected_blocks = []  # This list changes every run so only the necessary blocks store the PSCAD results
-            # Configure every PSCAD block involved in the network scan according to the remaining scans
+            # Configure every PSCAD block involved in the network scan for this run
             for network_scan in passive_networks_scans:
-                if len(network_scan.remaining_scans) > 0:
-                    # There are still scans to perform: update the selected Z-blocks and iterate over the blocks & names
-                    for block_idx in list(network_scan.blocks_idx.values()):
-                        idx_selected_blocks.append(block_idx)
+                if run in network_scan.runs_list:                 
+                    # If this network is scanned during this run: update the selected Z-blocks and iterate over the blocks & names
+                    for block_idx in list(network_scan.blocks_idx.values()): idx_selected_blocks.append(block_idx)
 
-                    if network_scan.scan_type == "AC":
-                        # If the scan is AC then set up the d/q injection or no injection
-                        for name in network_scan.names:
-                            if network_scan.remaining_scans[0][:-2] == name:
-                                # Enable the perturbation at this block
-                                ScanBlocksTool[network_scan.blocks_idx[name]].pscad_block.parameters(selector=sim_select[network_scan.remaining_scans[0][-2:]])
-                                if verbose: print("  AC",network_scan.remaining_scans[0][-1:],"axis perturbation at",name)
-                            else:
-                                # Disable the rest of the blocks from this network
-                                ScanBlocksTool[network_scan.blocks_idx[name]].pscad_block.parameters(selector=0)
-                    else:
-                        # If the scan is DC then set up the dc injection or no injection
-                        for name in network_scan.names:
-                            if network_scan.remaining_scans[0][:-3] == name:
-                                if verbose: print("  DC perturbation at",name)
-                                # Enable the perturbation at this block
-                                ScanBlocksTool[network_scan.blocks_idx[name]].pscad_block.parameters(selector=1)
-                            else:
-                                # Disable the rest of the blocks from this network
-                                ScanBlocksTool[network_scan.blocks_idx[name]].pscad_block.parameters(selector=0)
-
-                    # Update the pending scans: remove the done scans
-                    network_scan.updateScans(network_scan.remaining_scans[0])
+                    # Enable the perturbation at the block of this run
+                    block_side_perturbation = network_scan.scan_per_run[run]
+                    block_name_w_side = "_".join(block_side_perturbation.split("_")[:-1])
+                    perturbation = block_side_perturbation.split("_")[-1]  # d, q, or dc perturbation
+                    ScanBlocksTool[network_scan.blocks_idx[block_name_w_side]].pscad_block.parameters(selector=sim_select[perturbation], single_frequency = 0 if multi_freq_scan else 1)
+                    if verbose: print("\t",perturbation,"perturbation at",block_name_w_side)
 
             # Perform the simulations and label the output data by using the "run" number
-            simset_task.parameters(volley=num_parallel_sim, affinity=1, ammunition=f_points)
+            simset_task.parameters(volley=num_parallel_sim, affinity=1, ammunition=f_points_per_file if multi_freq_scan else f_points)
             simset_task.overrides(duration=t_sim_internal, time_step=t_step, plot_step=sample_step,start_method=1,
                                   timed_snapshots=0, startup_inputfile=snapshot_file + '.snp',
                                   save_channels_file=output_files + "_" + str(run) + '.out', save_channels=1)
-            # if run_sim: simset.run()
-            simset.run()
+            
+            if run_sim: simset.run()
+
             print(' Run',str(run)+'/'+str(max_runs),'finished in', round((t.time() - t2), 2), 'seconds')
             if save_td or compute_yz:
                 wait4pscad(time=1, pscad=pscad)
                 t2 = t.time()
-                read_and_save.multiple_s(n_sim=f_points, out_folder=out_dir, save_folder=results_folder, save=save_td,
+                read_and_save.multiple_s(n_sim= f_points_per_file if multi_freq_scan else f_points, out_folder=out_dir, save_folder=results_folder, save=save_td,
                                          tar_files=all_files_to_open,
                                          zblocks=[ScanBlocksTool[ind] for ind in idx_selected_blocks],
                                          file_name=simset_task.overrides()['save_channels_file'][:-4])
@@ -863,6 +934,28 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         # Compute the admittance for each subnetwork individually
         for network_scan in passive_networks_scans:
             t2 = t.time()
+            print(' Computing admittances')
+            # Snapshot data time-aligment
+            idx0 = idx_selected_blocks[0]
+            t_0 = ScanBlocksTool[idx0].perturbation_data["time"][0]
+            if verbose:
+                print('  Simulation and snapshot initial time:', t_0, ScanBlocksTool[idx0].snapshot_data["time"][0])
+                print("  Shape snapshot:",ScanBlocksTool[idx0].snapshot_data["time"].shape,"perturb:",ScanBlocksTool[idx0].perturbation_data["time"].shape)
+
+            # Shift the snapshot data by one time-step if needed
+            if t_0 != 0.0 and round(ScanBlocksTool[idx0].snapshot_data["time"][0],10) != round(t_0,10) and \
+                    ScanBlocksTool[idx0].snapshot_data["time"].shape != ScanBlocksTool[idx0].perturbation_data["time"].shape:
+                print("  Shifting snapshot")
+                for block in ScanBlocksTool:
+                    for name in block.snapshot_data.keys():
+                        block.snapshot_data[name] = block.snapshot_data[name][1:] 
+
+            # Start FFT index and sampling time used in the FFT
+            dt = round(sample_step * 1e-6, 12)  # Sampling time [s]
+            if verbose: print(" Sampling time: ", sample_step, " [us]")
+            start_idx = find_nearest(ScanBlocksTool[idx0].perturbation_data["time"], start_fft)
+            if verbose: print(" FFT time: ", start_fft, "Time vector value: ", ScanBlocksTool[idx0].perturbation_data["time"][start_idx])
+
             idx_selected_blocks = []
             sides_selected_blocks = []
             for name in network_scan.names:
@@ -873,11 +966,19 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
             # if verbose:
             #     aux = [ScanBlocksTool[ind].name+"-"+sides_selected_blocks[idx] for idx, ind in enumerate(idx_selected_blocks)]
             #     print("  PSCAD blocks, name with side:",' '.join(aux))
-            yz_computation.admittance(f_base=f_base, frequencies=freq, fft_periods=fft_periods, dt=dt,
-                                      start_idx=start_idx, scantype="Network", results_folder=results_folder,
-                                      zblocks=[ScanBlocksTool[ind] for ind in idx_selected_blocks],
-                                      sides=[side for side in sides_selected_blocks], network=network_scan,
-                                      results_name=output_files, exploit_dq_sym=edge_dq_sym)
+
+            if multi_freq_scan:
+                yz_computation.admittance_multi_freq(f_base=f_base, freq_multi=freq_multi, fft_periods=fft_periods, dt=dt,
+                                                     start_idx=start_idx, scantype="Network", results_folder=results_folder,
+                                                     zblocks=[ScanBlocksTool[ind] for ind in idx_selected_blocks],
+                                                     sides=[side for side in sides_selected_blocks], network=network_scan,
+                                                     results_name=output_files, exploit_dq_sym=edge_dq_sym)
+            else:
+                yz_computation.admittance(f_base=f_base, frequencies=freq, fft_periods=fft_periods, dt=dt,
+                                        start_idx=start_idx, scantype="Network", results_folder=results_folder,
+                                        zblocks=[ScanBlocksTool[ind] for ind in idx_selected_blocks],
+                                        sides=[side for side in sides_selected_blocks], network=network_scan,
+                                        results_name=output_files, exploit_dq_sym=edge_dq_sym)
 
             print('  Admittance matrix involving',", ".join(network_scan.names),'computed in',round((t.time() - t2), 2), 'seconds')
 
@@ -911,7 +1012,7 @@ def read_one_line(file_path, nline):
 
 frequency_sweep.__doc__ = """
 Author: Francisco Javier Cifuentes García
-V0.2 [04/06/2024]
+V0.3 [12/12/2024]
 PSCAD automation
 The values of the frequency list are multiples of the base frequency.
 The default simulation configuration is set to perform one snapshot and then the frequency sweeps.
@@ -944,14 +1045,17 @@ Optional
         take_snapshot	        Bool: Does the user want to take a snapshot? Default = True. A previous snapshot can still be used if snapshot_file is specified.
                                 The snapshot simulation runs for t_snap_internal + t_sim_internal so as to also save the steady-state unperturbed waveforms.
         dedicated_SS_sim        Bool flag to perform a dedicated simulation just to record the steady-state waveforms
-        
-        scan_passives           Bool flag to scan the passive networks. Default = True. It can be set to False in case the topology does not change so as to re-use previous scan.
+
+        scan_actives            Bool flag to scan the active components, i.e. AC and/or DC components identified by 1 in the diagonal entries of the topology file and/or AC/DC converters. Default = True.
+        scan_passives           Bool flag to scan the passive networks. Default = True. It can be set to False in case the edge matrix does not need to be scanned.
         edge_dq_sym             Bool to consider the symmetry of passive AC networks so as to halve the necessary perturbations and thus their computation time.
         
         freq			        Frequency list to perform the injections [Hz]. Alternatively, the user can provide info to compute the list.
         fft_periods 		    Number of periods used to compute the FFT. Default = 1.
-        freq_text_file	 	    File name with the perturbation frequencies as an alternative to freq or f_points, f_base, etc. Default = 'frequencies.txt'.
-        dt_injections           Additional simulation time in seconds after the system decoupling (steady-state). 
+        multi_freq_scan         Bool: If set to True, it performs multi-sine injections to reduce the total computation time. Default = False.
+        dt_injections           Additional simulation time in seconds after the system decoupling (steady-state). It can be set to zero.
+        
+        multi_freq_scan
         
         show_powerflow          Bool: do you want to print the power flow after the snapshot (steady-state)? Default = False.
         visualize_network       Bool: create a primitive graph representing the provided network topology. Default = False.
@@ -962,6 +1066,6 @@ Optional
         compute_yz	 	        Compute the admittance and save the results. If no results folder is specified then it saves the data in working_dir. Default = True
         save_td  		        Bool: If set to True, many files of time domain data are saved into more compact .txt files for each independent
                                 perturbation. The format is [time Vd(f1) Vq(f1) Id(f1) Iq(f1) ... Vd(f_max) Vq(f_max) Id(f_max) Iq(f_max)].
-        run_sim                 Bool flag to run or not run PSCAD simulations. True = runs PSCAD, False = does NOT run PSCAD
+        run_sim                 Bool flag to run or not run all PSCAD simulations. True = runs PSCAD, False = does NOT run PSCAD
         verbose                 Bool flag to show detailed debugging and processing information.
 """

@@ -201,8 +201,8 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
             T = np.array([[1, 0, 0],[0, np.cos(theta), -np.sin(theta)],[0, np.sin(theta), np.cos(theta)]])
             T_1 = np.array([[1, 0, 0], [0, np.cos(theta), np.sin(theta)], [0, -np.sin(theta), np.cos(theta)]])
         else:
-            T = numpy.identity(len(ynode.vas))  # DC-side analysis only: does not need frame alignment
-            T_1 = numpy.identity(len(ynode.vars))
+            T = np.identity(len(ynode.vas))  # DC-side analysis only: does not need frame alignment
+            T_1 = np.identity(len(ynode.vars))
 
         # print('Matrix',idx,", nodal matrix start idx:",y_node_idx,"and end:",y_node_idx+len(ynode.vars))
         Ynode[:, y_node_idx:y_node_idx+len(ynode.vars), y_node_idx:y_node_idx+len(ynode.vars)] = T@ynode.y@T_1

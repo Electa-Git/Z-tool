@@ -17,7 +17,7 @@ Copyright (C) 2024  Francisco Javier Cifuentes Garcia
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 """
 
-__all__ = ['dq_lag2dq_lead','dq2MSD','dcdq2MSD','ab2pn']
+__all__ = ['dq_lag2dq_lead','dcdq_lag2dcdq_lead','dq2MSD','dcdq2MSD','ab2pn']
 
 from os import listdir
 import numpy as np  # Numerical python functions
@@ -55,6 +55,19 @@ def dq2MSD(Y_old_frame=None, frequencies=None, results_folder=None, file_name=No
                    delimiter='\t', header="f\t"+"\t".join(["pp","pn","np","nn"]), comments='')
     return Y_new_frame
 
+def dcdq_lag2dcdq_lead(Y_old_frame=None, frequencies=None, results_folder=None, file_name=None):
+    # Transformation from dc,d,q-frame matrices with q-axis lagging to q-axis leading
+    # The rotation matrix is the product of the abc-to-dq0 transform with q-axis lagging (T1) times the
+    # dq0-to-abc transform with q-axis leading (T2, i.e. inverse of the abc-to-dq0 transform with q-axis leading)
+    # then negglecting the zero-sequence component (last row and column), R = T1 @ T2, and considering dc-variables unaffected
+    R = np.array([[1, 0, 0],[0, 1, 0], [0, 0, -1]]) 
+    Y_new_frame = np.matmul(R,np.matmul(Y_old_frame, R))  # = R @ Y @ R is equivalent to multiplying the q-axis off-diagonals of Y by -1
+    # Save the new matrix
+    if file_name is not None and results_folder is not None and frequencies is not None:
+        np.savetxt(results_folder+'\\'+file_name+'_dq_leading.txt', np.c_[frequencies,Y_new_frame.reshape(Y_new_frame.shape[0], -1)],
+                   delimiter='\t', header ="f\tdc-dc\tdc-d\tdc-q\td-dc\td-d\td-q\tq-dc\tq-d\tq-q", comments='')
+    return Y_new_frame
+
 def dcdq2MSD(Y_old_frame=None, frequencies=None, results_folder=None, file_name=None, q_lagging=True):
     # Transformation from dc,d,q-frame admittance to the Modified Sequence Domain (MSD) as described in
     # S. Shah and L. Parsa, "Sequence domain transfer matrix model of three-phase voltage source converters," 2016 IEEE
@@ -76,6 +89,17 @@ def dcdq2MSD(Y_old_frame=None, frequencies=None, results_folder=None, file_name=
                    delimiter='\t', header="f\t"+"\t".join(["dc,dc","dc,p","dc,n","p,dc","p,p","p,n","n,dc","n,p","n,n"]), comments='')
     return Y_new_frame
 
+def ab2pn(Y_old_frame=None, frequencies=None, results_folder=None, file_name=None):
+    A = 0.5 * np.array([[1, 1j], [1, -1j]])  # Same rotation matrix as dq2MSD()
+    A_inv = R @ np.array([[1, 1], [-1j, 1j]])
+    Y_new_frame = np.matmul(A, np.matmul(Y_old_frame, A_inv))  # Y' = A @ Y @ A^(-1)
+    # Save the new matrix
+    if file_name is not None and results_folder is not None and frequencies is not None:
+        np.savetxt(results_folder + '\\' + file_name + '_pn_from_ab.txt',np.c_[frequencies, Y_new_frame.reshape(Y_new_frame.shape[0], -1)],
+                   delimiter='\t', header="f\t" + "\t".join(["pp", "pn", "np", "nn"]), comments='')
+    return Y_new_frame
+
+
 
 dq_lag2dq_lead.__doc__ = """
  Transformation from dq-frame matrices with q-axis lagging to leading
@@ -85,6 +109,22 @@ dq_lag2dq_lead.__doc__ = """
 
 Required arguments
         Y_old_frame     Numpy matrix of Nx2x2 to be transformed where N is the number of frequency points
+
+Optional arguments
+        frequencies     Numpy vector of frequency points. Only needed if the result is to be saved.
+        results_folder  Full path of the directory where the result is to be saved.
+        file_name       Root name of the saved text file. By default the code adds "dq_leading" to indicate that the matrix has been transformed.
+"""
+
+dcdq_lag2dcdq_lead.__doc__ = """
+ Transformation from dc,d,q-frame matrices with q-axis lagging to q-axis leading
+ The rotation matrix is the product of the abc-to-dq0 transform with q-axis lagging (T1) times
+ the dq0-to-abc transform with q-axis leading (T2, i.e. inverse of the abc-to-dq0 transform with
+ q-axis leading), then negglecting the zero-sequence component (last row and column): R = T1 @ T2
+ while the dc-variables are not afected.
+
+Required arguments
+        Y_old_frame     Numpy matrix of Nx3x3 to be transformed where N is the number of frequency points
 
 Optional arguments
         frequencies     Numpy vector of frequency points. Only needed if the result is to be saved.

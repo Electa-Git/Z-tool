@@ -23,7 +23,7 @@ from os import listdir
 import numpy as np  # Numerical python functions
 
 class Admittance:
-    def __init__(self, variables, admittance, f):
+    def __init__(self, variables, admittance, f, node=False):
         self.variables = variables  # Variable names including the block, side and d,q,dc
         self.vars = []  # Names of the variables without the block side for variable pairing
         self.y = admittance  # Admittance data
@@ -48,7 +48,7 @@ class Admittance:
         # print(self.blocks[-1],self.blocks_info[self.blocks[-1]])  # Only the name of the blocks as they appear in the matrix (.txt file)
         # print(self.vars)
         self.y_type = y_type[0]  # AC, DC or ACDC
-        if self.y_type == "ACDC" or (admittance.shape[1] == 2 and self.y_type == "AC") or (admittance.shape[1] == 1 and self.y_type == "DC"):
+        if node or self.y_type == "ACDC" or (admittance.shape[1] == 2 and self.y_type == "AC") or (admittance.shape[1] == 1 and self.y_type == "DC"):
             self.node = True
         else:
             self.node = False

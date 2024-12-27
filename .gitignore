@@ -1,6 +1,7 @@
 **/__pycache__
 **/Results
 **/Scan_options
+**/.vscode
 *.out
 *.inf
 *.infx
