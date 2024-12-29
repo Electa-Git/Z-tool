@@ -304,7 +304,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         # 0 means no interconnection, 1 means connection between the edges: diagonals are single-sided / shunt
         with open(topology, 'r') as f:
             block_names_Y = f.readline().strip('\n').split()
-        scanid = list(set([name[:-2] for name in block_names_Y]))  # List of PSCAD block names / identifiers
+        scanid = [name[:-2] for name in block_names_Y[::2]]  # List of PSCAD block names / identifiers
     if verbose:
         print("Detailed block names:",block_names_Y)
         print("PSCAD block names:", scanid)
