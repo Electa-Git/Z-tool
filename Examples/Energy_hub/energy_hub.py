@@ -1,8 +1,7 @@
-#!python3.7
 """ Simple script to test the Z-tool for the energy hub """
-from Source.frequency_sweep import frequency_sweep
-from Source.tools.stability import stability_analysis
-from os import getcwd, system
+from ztoolacdc.frequency_sweep import frequency_sweep
+from ztoolacdc.stability import stability_analysis
+from os import getcwd
 
 """ -------------------- PSCAD PROJECT ---------------------- """
 pscad_folder = getcwd() + r"\PSCAD model"  # Absolute location of the PSCAD workspace
@@ -23,14 +22,14 @@ dt_injections = 2  # [s] Time after the decoupling to reach steady-state
 t_snap = 28   # Time for the cold-start (snapshot) [s]
 t_sim = start_fft + fft_periods / f_base  # Simulation time during the sinusoidal perturbation [s]
 t_step = 10.0  # Simulation time step [us]
-v_perturb_mag = 0.02  # In per unit w.r.t. the steady-state voltage at each bus
+v_perturb_mag = 0.01  # In per unit w.r.t. the steady-state voltage at each bus
 
 output_files = 'ISGT_stable'  # Desired name for the output files
 results_folder = getcwd() + r'\Results stable'  # Location of the folder to store the results (if it doesn't exit, it is created)
 
 """ -------------------- RUN THE ANALYSIS ---------------------- """
 print("\n Stable case \n")
-frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections,
+frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, snapshot_file="Snapshot",
                 f_points=perturbations, f_base=f_base, f_max=f_max, f_min=f_min, start_fft=start_fft, fft_periods=fft_periods,v_perturb_mag=v_perturb_mag,
                 working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name, results_folder=results_folder, output_files=output_files,
                 topology=topology, edge_dq_sym=True, scan_passives=True, show_powerflow=True, visualize_network=True)
@@ -41,8 +40,8 @@ print("\n Unstable case re-using previous snapshot \n")
 output_files = 'ISGT_unstable'  # Desired name for the output files
 results_folder = getcwd() + r'\Results unstable'  # Location of the folder to store the results (if it doesn't exit, it is created)
 # component_parameters=[["Name1", Value1], ["Name1", Value1]] is a list of ["Name",Value] where "Name" is the name of a constant in PSCAD to be set to Value
-frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, snapshot_file="Snapshot_stable",
-                f_points=perturbations, f_base=f_base, f_max=f_max, f_min=f_min, start_fft=start_fft, fft_periods=fft_periods,v_perturb_mag=v_perturb_mag,
+frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, snapshot_file="Snapshot", take_snapshot=False,
+                f_points=perturbations, f_base=f_base, f_max=f_max, f_min=f_min, start_fft=start_fft, fft_periods=fft_periods, v_perturb_mag=v_perturb_mag,
                 working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name, results_folder=results_folder, output_files=output_files,
                 topology=topology, scan_passives=False, show_powerflow=True, visualize_network=True, component_parameters=[["Control_switch", 1]])
 

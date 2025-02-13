@@ -1,6 +1,7 @@
 """
-Function to read the addmittance as obtained with the tool
-
+Function to read the addmittance files as obtained with the tool
+"""
+"""
 Copyright (C) 2024  Francisco Javier Cifuentes Garcia
 
     This program is free software: you can redistribute it and/or modify
@@ -33,7 +34,7 @@ class Admittance:
         self.blocks = []
         y_type = []
         for name_loop in variables:
-            if "dc" in name_loop.split("_")[-1]:
+            if "dc" == name_loop.split("_")[-1]:
                 y_type.append("DC")
             else:
                 y_type.append("AC")
@@ -48,14 +49,13 @@ class Admittance:
         # print(self.blocks[-1],self.blocks_info[self.blocks[-1]])  # Only the name of the blocks as they appear in the matrix (.txt file)
         # print(self.vars)
         self.y_type = y_type[0]  # AC, DC or ACDC
-        if node or self.y_type == "ACDC" or (admittance.shape[1] == 2 and self.y_type == "AC") or (admittance.shape[1] == 1 and self.y_type == "DC"):
+        if node or self.y_type == "ACDC":
+            #  or (admittance.shape[1] == 2 and self.y_type == "AC") or (admittance.shape[1] == 1 and self.y_type == "DC")
             self.node = True
         else:
             self.node = False
 
 def read_admittance(path=None, involved_blocks=None, file_name=None, file_root=None):
-    # involved_blocks is a list of strings containing the names of the blocks with sides included
-    # Either admittance_type, involved_blocks and path (and name root) can be specified or full file_name
     if file_name is None:
         if (involved_blocks or path) is None:
             print('\nError: One or more required arguments are missing. \n')
@@ -64,7 +64,7 @@ def read_admittance(path=None, involved_blocks=None, file_name=None, file_root=N
             # Look for the text file involving the indicated blocks
             file_name = [file for file in listdir(path) if (file.endswith("#.txt") and all(x in file for x in involved_blocks))]
             if file_root is not None: file_name = [file for file in file_name if file.startswith(file_root+"#")]
-            # and (file.count("#Y_"+admittance_type+"#") > 0) indicated admittance type, admittance_type=None
+            file_name = file_name[0]
             # and (file.count("#") == len(involved_blocks)+2) Just as many blocks as involved
     else:
         if path is None:
@@ -72,26 +72,48 @@ def read_admittance(path=None, involved_blocks=None, file_name=None, file_root=N
             return
 
     # Read the variable names
-    with open(path + '\\' + file_name[0], 'r') as f:
+    with open(path + '\\' + file_name, 'r') as f:
         variables = f.readline().strip('\n').split()
 
     # Load the data
-    # print("Loading",path + '\\' + file_name[0])
-    data = np.loadtxt(path + '\\' + file_name[0], dtype='cdouble', skiprows=1)
+    data = np.loadtxt(path + '\\' + file_name, dtype='cdouble', skiprows=1)
     freq = np.real(data[:, 0])  # Extract frequency column
     data = data[:, 1:]  # Remove frequency column
 
     return Admittance(variables[1:], data.reshape(data.shape[0], int(np.sqrt(data.shape[1])), int(np.sqrt(data.shape[1]))), freq)
 
+read_admittance.__doc__ = """
+Function to read the addmittance text files as obtained with the tool.
 
-# # Testing code
-# pth = r"C:\Users\fcifuent\Desktop\KU Leuven\Projects\Z based analysis\Freq measurement\P2P test system\Tool_test\Results"
-# # name = "Ytest#Y_AC#3-AC-2#4-AC-1#.txt"
-# # y = read_admittance(path=pth, file_name=name)
-# block = ["4-AC-2"]
-# y = read_admittance(path=pth, involved_blocks=block)
-# print(y.y.shape[1])
-# print(y.variables)
-# print(y.blocks)
-# print(y.blocks_info)
-# print(y.node)
+The result is an Admittance object which contains the admittance matrix, frequencies, variable names, type of matrix, etc. See the Admittance class for more information.
+Either file_name or involved_blocks need to be specified.
+
+Required arguments
+        path                (string) Directory where the file is located.
+        file_name           (string) Full name of the file, including extension. Either this or the involved_blocks argument is required.
+
+Optional arguments
+        involved_blocks     (list of strings) It contains the names of the PSCAD blocks with the side at the end separated with a hyphen, e.g. ["BlockA-2","BlockB-1"] denotes the admittance between side 2 of BlockA and side 1 of BlockB.
+        file_root           (string) Starting part of the file name. It can be used when several study cases are performed with different names as the involved_blocks variable is the same.
+
+Returns
+        Admittance object.
+
+Examples
+# Using path and file_name
+pth = r"C:/Users/fcifuent/Desktop/Z-tool/Examples/Energy_hub/Results stable"
+file = "ISGT_stable#Y_AC#g2-2#g3-2#MMC2-1#MMC3-1#.txt"
+admittance = read_admittance(path=pth, file_name=file)
+
+# Using path and involved_blocks
+blocks = ["g2-2","MMC2-1","MMC3-1,"g3-2"]
+admittance = read_admittance(path=pth, involved_blocks=blocks)
+
+# Access the data
+print(admittance.y.shape)
+print(admittance.variables)
+print(admittance.blocks)
+print(admittance.blocks_info)
+print(admittance.node)
+
+"""

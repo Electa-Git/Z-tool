@@ -1,0 +1,4 @@
+numpy>=2.0.0
+matplotlib>=3.8
+scipy>=1.8
+mhi-pscad>=2.9.0

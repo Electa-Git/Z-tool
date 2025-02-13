@@ -1,7 +1,12 @@
 **/__pycache__
 **/Results
-**/Scan_options
+**/Simple_2L_VSC_RLC.gf46
+#**/Scan_options
 **/.vscode
+**/dist
+**/build
+**/ztool.egg-info
+
 *.out
 *.inf
 *.infx
@@ -9,3 +14,7 @@
 *.dta
 *.f
 *.snp
+distnotes.txt
+setup.py
+test.py
+ztool.egg-info

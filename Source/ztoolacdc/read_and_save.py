@@ -1,5 +1,3 @@
-__all__ = ['single_s', 'multiple_s']
-
 """
 This file contains a couple of functions to read and save the output files from PSCAD
 Warning: Documentation for this function is not updated
@@ -21,6 +19,7 @@ Copyright (C) 2024  Francisco Javier Cifuentes Garcia
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+__all__ = ['single_s', 'multiple_s']
 
 import numpy as np  # Numerical python functions
 from os import listdir
@@ -29,7 +28,7 @@ AC_scan_variables = ['IDUTacA1:1', 'IDUTacA1:2','VDUTac:1', 'VDUTac:2', 'IDUTacA
 DC_scan_variables = ['IDUTdcA1', 'IDUTdcA2','VDUTdc']
 scan_variables = AC_scan_variables + DC_scan_variables
 
-def single_s(out_files=None, save_folder=None, save=False, files=None, zblocks=None, new_file_name=None):
+def single_s(out_files=None, save_folder=None, save=False, files=None, zblocks=None, new_file_name=None, scan_vars=scan_variables):
     for file_num in files:
         # Load each target file and for each block related to the file asign the corresponding data to the block
         if file_num < 10:  # If the file number is less than 10, then it adds 0 before the file number
@@ -52,12 +51,12 @@ def single_s(out_files=None, save_folder=None, save=False, files=None, zblocks=N
         data = zblocks[0].snapshot_data["time"].reshape(-1, 1)  # Retreive the time vector data
         for block in zblocks:
             for name in list(block.out_vars_names.values()):
-                if name != "time":  # Do not save the time vector
+                if (name != "time") and (name in scan_vars):  # Only currents and voltages
                     data = np.append(data, block.snapshot_data[name].reshape(-1, 1), axis=1)
                     var_names.append(name)
         np.savetxt(new_file_name, data, delimiter='\t', header="\t".join(var_names))
 
-def multiple_s(n_sim=None, out_folder=None, file_name=None, save_folder=None, save=False, tar_files=None, zblocks=None):
+def multiple_s(n_sim=None, out_folder=None, file_name=None, save_folder=None, save=False, tar_files=None, zblocks=None, scan_vars=scan_variables):
     # # Filter the file names to identify the target multiple output files
     # files = [file for file in listdir(out_folder) if
     #          (file.endswith(".out") and (file.count(file_name) > 0))]  # end in .out and contain name
@@ -102,7 +101,7 @@ def multiple_s(n_sim=None, out_folder=None, file_name=None, save_folder=None, sa
                         for col in block.relative_cols[file_num]:
                             ch = col - 1 + 10 * (file_num - 1)  # Absolute output channel number for the column
                             # print(" Channel",ch,"variable",block.out_vars_names[ch],"initial value",values[0, col - 1])
-                            if block.out_vars_names[ch] in scan_variables:
+                            if block.out_vars_names[ch] in scan_vars:
                                 # Retrieve the currents and voltages
                                 block.perturbation_data[sim-1][block.out_vars_names[ch]+sim_type] = values[:, col - 1]
 
@@ -113,7 +112,7 @@ def multiple_s(n_sim=None, out_folder=None, file_name=None, save_folder=None, sa
             data = zblocks[0].perturbation_data["time"].reshape(-1, 1)  # Retreive the time vector data
             for block in zblocks:
                 for name in list(block.out_vars_names.values()):
-                    if (name != "time") and (name in scan_variables):  # Only currents and voltages
+                    if (name != "time") and (name in scan_vars):  # Only currents and voltages
                         data = np.append(data, block.perturbation_data[sim][name+sim_type].reshape(-1, 1), axis=1)
                         var_names.append(name)
             np.savetxt(file_name + "_" + str(sim) + '.txt', data, delimiter='\t', header="\t".join(var_names))

@@ -1,6 +1,7 @@
 """
 Functions to convert the addmittance matrices from one frame to another
-
+"""
+"""
 Copyright (C) 2024  Francisco Javier Cifuentes Garcia
 
     This program is free software: you can redistribute it and/or modify
@@ -19,7 +20,6 @@ Copyright (C) 2024  Francisco Javier Cifuentes Garcia
 
 __all__ = ['dq_lag2dq_lead','dcdq_lag2dcdq_lead','dq2MSD','dcdq2MSD','ab2pn']
 
-from os import listdir
 import numpy as np  # Numerical python functions
 
 def dq_lag2dq_lead(Y_old_frame=None, frequencies=None, results_folder=None, file_name=None):

@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name='ztoolacdc'
+version='0.1.20'
+description='Frequency domain analysis toolbox for EMT models'
+license = {text = "GNU GPL v3"}
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = ["numpy>=2.0.0","matplotlib>=3.8","scipy>=1.8","mhi-pscad>=2.9.0"]
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering"
+]
+keywords = ["stability", "frequency", "admittance", "impedance", "scan", "PSCAD"]
+
+[[project.authors]]
+name = "Francisco Javier Cifuentes Garcia"
+email = "franciscojavier.cifuentesgarcia@kuleuven.be"
+
+[project.urls]
+Homepage = "https://www.esat.kuleuven.be/electa/ztool"
+Documentation = "https://www.esat.kuleuven.be/electa/ztool"
+  
+[tool.setuptools.packages.find]
+where = ["Source"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"ztoolacdc" = ["Scan/**/*", "Scan/**/.*"]

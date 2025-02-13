@@ -1,3 +1,25 @@
+Metadata-Version: 2.2
+Name: ztoolacdc
+Version: 0.1.20
+Summary: Frequency domain analysis toolbox for EMT models
+Author-email: Francisco Javier Cifuentes Garcia <franciscojavier.cifuentesgarcia@kuleuven.be>
+License: GNU GPL v3
+Project-URL: Homepage, https://www.esat.kuleuven.be/electa/ztool
+Project-URL: Documentation, https://www.esat.kuleuven.be/electa/ztool
+Keywords: stability,frequency,admittance,impedance,scan,PSCAD
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Natural Language :: English
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Scientific/Engineering
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE.md
+Requires-Dist: numpy>=2.0.0
+Requires-Dist: matplotlib>=3.8
+Requires-Dist: scipy>=1.8
+Requires-Dist: mhi-pscad>=2.9.0
+
 # Z-tool
 Z-tool is a Python-based implementation for the frequendy-domain analysis of modern power systems.
 The core functionalities are admittance characterization and small-signal stability assessment.

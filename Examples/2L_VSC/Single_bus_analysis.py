@@ -1,8 +1,6 @@
-#!python3.7
 """ Simple script to test the Z-tool for a single-bus analysis """
-from Source.frequency_sweep import frequency_sweep
-from Source.tools import *
-from os import getcwd, system
+from ztoolacdc import *
+from os import getcwd
 import numpy as np
 
 """ -------------------- PSCAD PROJECT ---------------------- """
@@ -31,11 +29,12 @@ output_files = 'single_bus_example'  # Desired name for the output files
 """ -------------------- Frequency scan ---------------------- """
 freq = create_freq.loglist(f_min=f_min, f_max=f_max, f_points=f_points, f_base=f_base)
 
-frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, f_base=f_base,
-                freq=freq, start_fft=start_fft, fft_periods=fft_periods, v_perturb_mag=v_perturb_mag,
-                working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name,
-                results_folder=results_folder, output_files=output_files, show_powerflow=True,
-                component_parameters=[["pq_tau_meas"],0.001]) # Note that you can change any Main canvas constants via the component_parameters argument for parametric sweeps
+frequency_sweep.frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, f_base=f_base,
+                                freq=freq, start_fft=start_fft, fft_periods=fft_periods, v_perturb_mag=v_perturb_mag,
+                                working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name,
+                                results_folder=results_folder, output_files=output_files, show_powerflow=True,
+                                component_parameters=[["pq_tau_meas",0.001]])
+# Note that you can change any Main canvas constants via the component_parameters argument for parametric changes
 
 # Retreive admittances
 Y_VSC = read_admittance.read_admittance(path=results_folder, involved_blocks="PCC-1", file_root=output_files)  # Side 1 of the PCC block is connected to the VSC
