@@ -5,8 +5,7 @@
 **/.vscode
 **/dist
 **/build
-**/ztool.egg-info
-
+**/ztoolacdc.egg-info
 *.out
 *.inf
 *.infx

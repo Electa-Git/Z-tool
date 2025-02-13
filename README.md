@@ -24,7 +24,7 @@ To use the toolbox, the following pre-requisites are needed.
 
 ## Usage
 A generic usage of the package can be summarized in the following steps:
-1. Add the Z-tool PSCAD library to your PSCAD project[^1]
+1. Add the Z-tool PSCAD library to your PSCAD project
 2. Place the tool's analysis blocks at the target buses and name them uniquely
 3. Define the resulting connectivity of the scan blocks
 4. Specify the basic simulation settings and frequency range for your study
@@ -68,5 +68,3 @@ This is a free software: you can redistribute it and/or modify it under the term
 <!--- - [ ] Minimum simulation time before starting FFT (does it need to be at least as long as the period of the perturbation or could it be smaller?) --->
 <!--- - [ ] Transformation to positive and negative sequence representation 
 - [ ] Frequency scan and stability analysis optimization based on the passivity properties of the converters --->
-
-[^1] The Z-tool PSCAD library is in the _Scan_ folder within the package, use the cmd `py -m pip show ztoolacdc` to find its location.

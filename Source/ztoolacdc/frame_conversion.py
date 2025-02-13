@@ -18,7 +18,7 @@ Copyright (C) 2024  Francisco Javier Cifuentes Garcia
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 """
 
-__all__ = ['dq_lag2dq_lead','dcdq_lag2dcdq_lead','dq2MSD','dcdq2MSD','ab2pn']
+__all__ = ['dq_lag2dq_lead','dcdq_lag2dcdq_lead','dq2MSD','dcdq2MSD']
 
 import numpy as np  # Numerical python functions
 
@@ -87,16 +87,6 @@ def dcdq2MSD(Y_old_frame=None, frequencies=None, results_folder=None, file_name=
     if file_name is not None and results_folder is not None and frequencies is not None:
         np.savetxt(results_folder+'\\'+file_name+'_MSD_from_3x3.txt', np.c_[frequencies,Y_new_frame.reshape(Y_new_frame.shape[0], -1)],
                    delimiter='\t', header="f\t"+"\t".join(["dc,dc","dc,p","dc,n","p,dc","p,p","p,n","n,dc","n,p","n,n"]), comments='')
-    return Y_new_frame
-
-def ab2pn(Y_old_frame=None, frequencies=None, results_folder=None, file_name=None):
-    A = 0.5 * np.array([[1, 1j], [1, -1j]])  # Same rotation matrix as dq2MSD()
-    A_inv = R @ np.array([[1, 1], [-1j, 1j]])
-    Y_new_frame = np.matmul(A, np.matmul(Y_old_frame, A_inv))  # Y' = A @ Y @ A^(-1)
-    # Save the new matrix
-    if file_name is not None and results_folder is not None and frequencies is not None:
-        np.savetxt(results_folder + '\\' + file_name + '_pn_from_ab.txt',np.c_[frequencies, Y_new_frame.reshape(Y_new_frame.shape[0], -1)],
-                   delimiter='\t', header="f\t" + "\t".join(["pp", "pn", "np", "nn"]), comments='')
     return Y_new_frame
 
 
