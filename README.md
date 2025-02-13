@@ -19,7 +19,7 @@ To use the toolbox, the following pre-requisites are needed.
 1. Python 3.7 or higher together with
    * [Numpy](https://numpy.org/), [Scipy](https://scipy.org/), and [Matplotlib](https://matplotlib.org/) (included in common python installations such as Anaconda)
    * [PSCAD automation library]([url](https://www.pscad.com/webhelp-v5-al/index.html))
-2. PSCAD v5 or higher
+2. PSCAD v5 or higher is recommended.
 3. Install the Z-tool via cmd `py -m pip install ztoolacdc` or using the package files.
 
 ## Usage
@@ -32,21 +32,21 @@ A generic usage of the package can be summarized in the following steps:
 Follow the example(s) described [here](Examples/README.md) for more details. The GUI is currently under development.
 
 ## Citing Z-tool
-If you find the Z-tool useful in your work, we kindly request that you cite the following publications:
-[paper ISGT 2024](https://lirias.kuleuven.be/4201452&lang=en):
+If you find the Z-tool useful in your work, we kindly request that you cite the following publications which you can access [here](https://lirias.kuleuven.be/4201452&lang=en):
 
 ```bibtex
-@ARTICLE{Cifuentes2024,
-author = {Cifuentes Garcia, Francisco Javier and Roose, Thomas and Sakinci, Özgür Can and Lee, Dongyeong and Dewangan, Lokesh and Avdiaj, Eros and Beerten, Jef},
-title = {Automated Frequency-Domain Small-Signal Stability Analysis of Electrical Energy Hubs},
-journal = {IEEE PES Innovative Smart Grid Technologies Europe (ISGT Europe) 2024},
-publisher = {IEEE},
-pages={1-6},
-year = {2024}}
+@INPROCEEDINGS{Cifuentes2024,
+  author={Cifuentes Garcia, Francisco Javier and Roose, Thomas and Sakinci, Özgür Can and Lee, Dongyeong and Dewangan, Lokesh and Avdiaj, Eros and Beerten, Jef},
+  booktitle={2024 IEEE PES Innovative Smart Grid Technologies Europe (ISGT EUROPE)}, 
+  title={Automated Frequency-Domain Small-Signal Stability Analysis of Electrical Energy Hubs}, 
+  year={2024},
+  pages={1-6},
+  doi={10.1109/ISGTEUROPE62998.2024.10863484}}
+
 ```
 
 ## Contact Details
-For queries about the package or related work please feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512)
+For queries about the package or related work please feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512). You can find more open-source tools for power systems analysis in the [etch website](https://etch.be/en/research/open-source-tools).
 
 ## License
 This is a free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Z-tool is distributed in the hope that it will be useful, but without any warranty; without even the implied warranty of merchantability or fitness for a particular purpose. See the GNU General Public License for more details.

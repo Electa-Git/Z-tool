@@ -9,7 +9,7 @@ To use the tool, the following pre-requisites are needed
    * [PSCAD automation library]([url](https://www.pscad.com/webhelp-v5-al/index.html))
 
    Check the [end of the page](#basic-installation-of-python-dependencies) for instructions on how to install the previous packages.
-2. PSCAD v5 or higher
+2. PSCAD v5 or higher is recommeded.
 3. Install the Z-tool via cmd `py -m pip install ztoolacdc` 
 
 
@@ -30,7 +30,7 @@ Copy the scan blocks from the Z-tool PSCAD library and paste them in series at t
 3. Define the connectivity of the scan blocks: _for single-bus analysis this step is not needed_.
 
 If there is more than one scan block, then the topology information needs to be provided so as to scan the system as efficiently as possible, and later study its stability. Only the blocks specified in the topology file are considered for the scan and subsequent analysis while the others are ignored (by-passed).
-Each scan block has two series-connection points, shown in the canvas by the numbers 1 and 2. The topology is specified via a binary _2N×2N_ matrix where _N_ is the number of scan blocks involved, and 1 indicates no further connection to other blocks or interconnection between the different blocks at their corresponding side, which can be 1 or 2. The scan routine decouples the network at these points so each side, i.e. 1 or 2, connects to a different subsystem. When several blocks are interconnected via electrical components they define a _network_. The sides are labed as X-1 and X-2 in the topology file, where X corresponds to the user-defined PSCAD block name. For instance, the HVDC cable network of the point-to-point example is defined from the MMC1_DC block side 1 to the MMC2_DC block side 1. This is specified in the topology file as a 1 in the row MMC2_DC-1 and column MMC1_DC-1 (and vice-versa as this matrix is symetric). The other side of each DC scan block connects to a MMC which is also connected to an AC scan block at its AC-side. The special case of AC/DC converters is recognized by the package as these are always key components when studying system dynamics.
+Each scan block has two series-connection points, shown in the canvas by the numbers 1 and 2. The topology is specified via a binary _2N×2N_ matrix where _N_ is the number of scan blocks involved, and 1 indicates no further connection to other blocks or interconnection between the different blocks at their corresponding side, which can be 1 or 2. The scan routine decouples the network at these points so each side, i.e. 1 or 2, connects to a different subsystem. When several blocks are interconnected via electrical components they define a _network_. The sides are labed as X-1 and X-2 in the topology file, where X corresponds to the user-defined PSCAD block name. For instance, the HVDC cable network of the point-to-point example is defined from the MMC1_DC block side 1 to the MMC2_DC block side 1. This is specified in the topology file as a 1 in the row MMC2_DC-1 and column MMC1_DC-1 (and vice-versa as this matrix is symmetric). The other side of each DC scan block connects to a MMC which is also connected to an AC scan block at its AC-side. The special case of AC/DC converters is recognized by the package as these are always key components when studying system dynamics.
 This table can just be pasted into a text file which path is an argument to the [frequency sweep](../Source/ztoolacdc/frequency_sweep.py) and [stability analysis](../Source/ztoolacdc/stability.py) functions. To verify that the system topology is specified correctly, setting _visualize_network=True_ in the [frequency_sweep](../Source/ztoolacdc/frequency_sweep.py) function returns a simplified single-line diagram pdf file with ending __network_visualization.pdf_ to make sure the interconnections have been correctly defined.
 <!---This is done via the modified network undirected graph, i.e. adjacent matrix but diagonals are 1 when there is no other scan block from that node onwards.--->
 
@@ -55,10 +55,10 @@ workspace_name = "P2P_study"  # Name of the PSCAD workspace (.pswx file)
 project_name = "P2P"          # Name of the PSCAD project   (.pscx file)
 
 output_files = 'example'  # Desired name for the output files
-perturbations = 8 * 65   # Number of frequencies to be scanned
-f_base = 1  # Hz
-f_min = 1  # Hz
-f_max = 3000  # Hz
+perturbations = 8 * 65   # Number of scanned frequencies: ideally a multiple of the possible multi-core simulations number 
+f_base = 1  # Base frequency in Hz (determines the frequency resolution)
+f_min = 1  # Minimum frequency in Hz
+f_max = 3000   # Maximum frequency in Hz
 
 start_fft = 1  # [s] Time for the system to reach steady-state after every perturbation
 fft_periods = 1  # Number of periods used in the FFT for the lowest frequency

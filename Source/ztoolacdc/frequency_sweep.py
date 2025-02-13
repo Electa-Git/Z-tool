@@ -1326,7 +1326,7 @@ Required
         t_step			Simulation time step [us].
         start_fft		Time for the system to reach the sinusoidal steady-state after the injections [s]. 
         v_perturb_mag	Voltage perturbation in per unit w.r.t. the steady-state fundamental value, e.g. 0.01
-        f_points		Number of frequency perturbation points.
+        f_points		Number of frequency perturbation points. Ideally a multiple of the possible PSCAD multi-core simulations number.
         f_base		 	Base frequency (determines frequency resolution) [Hz]. The values of the frequency list are multiples of this base frequency.
         f_min			Start frequency [Hz].
         f_max			End frequency [Hz].
@@ -1383,7 +1383,7 @@ Required
         start_fft		Time for the system to reach the sinusoidal steady-state after the injections [s]. 
                         Currently, the same time is considered regardless of the perturbation frequency but this could be improved in the future.
         v_perturb_mag	Amplitude perturbation in per unit w.r.t. the steady-state average value, e.g. 0.01
-        f_points		Number of frequency perturbation points.
+        f_points		Number of frequency perturbation points. Ideally a multiple of the possible PSCAD multi-core simulations number.
         f_base		 	Base frequency (determines frequency resolution) [Hz]. The values of the frequency list are multiples of this base frequency.
         f_min			Start frequency [Hz].
         f_max			End frequency [Hz].
