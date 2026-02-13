@@ -91,7 +91,7 @@ If the [stability_analysis](../Source/ztoolacdc/stability.py) function is called
 
 ![Results](../Doc/pdf_out.png)
 
-We recommend reading [these](../README.md#citing-z-tool) openly available papers and checking the webinar [slides](../Doc/Z%20tool%20webinar%20slides%2013-02-2025.pdf) and [recording](https://www.youtube.com/watch?v=AqK5q3ediU0) to better understand the package's functioning principles. You can find three step-by-step examples in the following subfolders: [2L_VSC](2L_VSC), [parametric sweep](Parametric_sweep) and [Energy_hub](Energy_hub). Feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512) in case of questions!
+We recommend reading [these](../README.md#citing-z-tool) openly available papers and checking the webinar [slides](../Doc/Z_tool_webinar_slides_13-02-2025.pdf) and [recording](https://www.youtube.com/watch?v=AqK5q3ediU0) to better understand the package's functioning principles. You can find three step-by-step examples in the following subfolders: [2L_VSC](2L_VSC), [parametric sweep](Parametric_sweep) and [Energy_hub](Energy_hub). Feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512) in case of questions!
 
 ## Basic installation of Python dependencies
 After installing Python or using an exsiting Python version >3.7, you can add the necessary packages with the use of _pip_ following the steps below.
