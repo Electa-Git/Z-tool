@@ -1,8 +1,9 @@
 **/__pycache__
-**/Results
+# **/Results
 **/Simple_2L_VSC_RLC.gf46
 #**/Scan_options
 **/.vscode
+**/.github
 **/dist
 **/build
 **/ztoolacdc.egg-info
@@ -11,9 +12,12 @@
 *.infx
 *.bat
 *.dta
+*.pdf
 *.f
 *.snp
+*.pickle
 distnotes.txt
 setup.py
 test.py
+test_interactive.py
 ztool.egg-info

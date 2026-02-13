@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name='ztoolacdc'
-version='0.1.20'
-description='Frequency domain analysis toolbox for EMT models'
+version='0.1.29'
+description='Frequency domain small-signal analysis toolbox for EMT models'
 license = {text = "GNU GPL v3"}
 readme = "README.md"
 requires-python = ">=3.7"
-dependencies = ["numpy>=2.0.0","matplotlib>=3.8","scipy>=1.8","mhi-pscad>=2.9.0"]
+dependencies = ["numpy>=1.20.0","matplotlib>=3.5","scipy>=1.7","mhi-pscad>=2.9.0"]
 classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Natural Language :: English",
@@ -17,7 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Topic :: Scientific/Engineering"
 ]
-keywords = ["stability", "frequency", "admittance", "impedance", "scan", "PSCAD"]
+keywords = ["stability", "frequency", "admittance", "impedance", "scan", "PSCAD", "power systems"]
 
 [[project.authors]]
 name = "Francisco Javier Cifuentes Garcia"

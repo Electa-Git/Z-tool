@@ -1,0 +1,15 @@
+<workspace name="Parametric_study" version="5.0.2" crc="59933834">
+  <projects>
+    <project type="library" name="Z_tool" filepath="..\..\Source\ztoolacdc\Scan\Z_tool.pslx" />
+    <project type="project" name="Parametric_sweep" filepath=".\Parametric_sweep.pscx" />
+  </projects>
+  <simulations />
+  <pmr />
+  <messagegrid expanded="">
+    <column name="Icon" />
+    <column name="Id" />
+    <column name="Component" />
+    <column name="Namespace" />
+    <column name="Description" />
+  </messagegrid>
+</workspace>

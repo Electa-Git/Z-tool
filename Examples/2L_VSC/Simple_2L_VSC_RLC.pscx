@@ -1,7 +1,7 @@
 <project name="Simple_2L_VSC_RLC" version="5.0.2" schema="" Target="EMTDC">
   <paramlist name="Settings">
     <param name="creator" value="fcifuent,1728675196" />
-    <param name="time_duration" value="4" />
+    <param name="time_duration" value="3" />
     <param name="time_step" value="10" />
     <param name="sample_step" value="100" />
     <param name="chatter_threshold" value=".001" />
@@ -23,7 +23,7 @@
     <param name="Warn" value="0" />
     <param name="Check" value="0" />
     <param name="description" value="" />
-    <param name="revisor" value="fcifuent, 1733939477" />
+    <param name="revisor" value="fcifuent, 1770327088" />
     <param name="Debug" value="0" />
   </paramlist>
   <Layers />
@@ -53,7 +53,7 @@
       </path>
       <paramlist>
         <param name="xmin" value="0.0" />
-        <param name="xmax" value="4.0" />
+        <param name="xmax" value="0.478632478632" />
       </paramlist>
     </Settings>
     <Settings classid="OverlayGraphSettings" id="952635406" link="1555436947">
@@ -62,8 +62,8 @@
         <ref link="406903800" />
       </path>
       <paramlist>
-        <param name="ymin" value="-0.2" />
-        <param name="ymax" value="1.4" />
+        <param name="ymin" value="0.705785123967" />
+        <param name="ymax" value="1.2867768595" />
       </paramlist>
     </Settings>
     <Settings classid="TraceSettings" id="1054406310" link="1051017076">
@@ -90,7 +90,7 @@
       </path>
       <paramlist>
         <param name="xmin" value="0.0" />
-        <param name="xmax" value="2.25" />
+        <param name="xmax" value="3.0" />
       </paramlist>
     </Settings>
     <Settings classid="OverlayGraphSettings" id="168208090" link="844364043">
@@ -98,8 +98,8 @@
         <ref link="1391491652" />
       </path>
       <paramlist>
-        <param name="ymin" value="-300.0" />
-        <param name="ymax" value="300.0" />
+        <param name="ymin" value="-100.0" />
+        <param name="ymax" value="100.0" />
       </paramlist>
     </Settings>
     <Settings classid="GraphFrameSettings" id="1607963994" link="1240976721">
@@ -108,7 +108,7 @@
       </path>
       <paramlist>
         <param name="xmin" value="0.0" />
-        <param name="xmax" value="2.0" />
+        <param name="xmax" value="3.0" />
       </paramlist>
     </Settings>
     <Settings classid="OverlayGraphSettings" id="1989672531" link="1394317617">
@@ -116,8 +116,8 @@
         <ref link="1391491652" />
       </path>
       <paramlist>
-        <param name="ymin" value="-0.2" />
-        <param name="ymax" value="1.4" />
+        <param name="ymin" value="-1.0" />
+        <param name="ymax" value="1.5" />
       </paramlist>
     </Settings>
     <Settings classid="TraceSettings" id="1541666205" link="730757681">
@@ -187,6 +187,29 @@
       </path>
       <paramlist>
         <param name="active_1" value="true" />
+        <param name="visible_1" value="true" />
+        <param name="bold_1" value="false" />
+        <param name="style_1" value="false" />
+        <param name="count" value="1" />
+        <param name="name" value="i_mag" />
+      </paramlist>
+    </Settings>
+    <Settings classid="TraceSettings" id="2097983888" link="1363821728">
+      <path>
+        <ref link="1391491652" />
+        <ref link="406903800" />
+      </path>
+      <paramlist>
+        <param name="active_1" value="true" />
+        <param name="visible_1" value="true" />
+        <param name="bold_1" value="false" />
+        <param name="style_1" value="false" />
+        <param name="active_2" value="false" />
+        <param name="visible_2" value="false" />
+        <param name="bold_2" value="false" />
+        <param name="style_2" value="false" />
+        <param name="count" value="2" />
+        <param name="name" value="vdq" />
       </paramlist>
     </Settings>
   </List>
@@ -230,7 +253,7 @@
         </Wire>
       </schematic>
     </Definition>
-    <Definition classid="UserCmpDefn" name="Main" id="1327599605" group="" url="" version="" build="" crc="64672201" view="false" date="1733939433">
+    <Definition classid="UserCmpDefn" name="Main" id="1327599605" group="" url="" version="" build="" crc="1217155" view="false" date="1769967405">
       <paramlist name="">
         <param name="Description" value="" />
       </paramlist>
@@ -279,13 +302,13 @@
         </paramlist>
         <grouping />
         <User classid="UserCmp" id="406903800" name="DUT:VSC2L" x="270" y="270" w="69" h="59" z="20" orient="0" defn="Simple_2L_VSC_RLC:VSC2L" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="105300002">
+          <paramlist name="" link="-1" crc="51881530">
             <param name="Name" value="IBR equivalent" />
             <param name="p_ref" value="1.0" />
             <param name="Vbase" value="220" />
             <param name="f_sup" value="0" />
             <param name="v_sup" value="1" />
-            <param name="q_ref" value="0.0" />
+            <param name="q_ref" value="0.10" />
             <param name="v_ref" value="1.0" />
             <param name="w_ref" value="1.0" />
             <param name="Sbase" value="100" />
@@ -306,7 +329,7 @@
             <param name="untitled" value="1e-4" />
             <param name="Tf_cc" value="2e-4" />
             <param name="V_LG_RMS" value="220.0" />
-            <param name="V_LL_RMS" value="220" />
+            <param name="V_LL_RMS" value="66" />
             <param name="Lf" value="0.08" />
             <param name="Rf" value="0.01" />
             <param name="r_f" value="0.0008" />
@@ -314,9 +337,11 @@
             <param name="r_ff" value="0.01" />
             <param name="l_ff" value="0.08" />
             <param name="tau_pq_meas" value="tau_pq" />
+            <param name="t_delay" value="50e-6" />
+            <param name="i_max" value="1.15" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:source_3" id="1177891594" x="990" y="270" w="105" h="28" z="1" orient="2" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:source_3" id="1177891594" x="954" y="270" w="105" h="28" z="1" orient="2" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="111699524">
             <param name="Name" value="Source 1" />
             <param name="Type" value="3" />
@@ -353,21 +378,9 @@
             <param name="PF_QMAX" value="1.0" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:capacitor" id="134125489" x="702" y="306" w="46" h="34" z="1" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:capacitor" id="134125489" x="666" y="306" w="46" h="34" z="1" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="108275881">
-            <param name="C" value="30 [uF]" />
-            <param name="Name" value="" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" defn="master:resistor" id="971036842" x="378" y="270" w="68" h="33" z="1" orient="0" link="-1" q="4" disable="false">
-          <paramlist link="-1" name="" crc="10119665">
-            <param name="R" value="3.63 [ohm]" />
-            <param name="Name" value="" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" defn="master:inductor" id="2109072340" x="450" y="270" w="144" h="31" z="1" orient="6" link="-1" q="4" disable="false">
-          <paramlist link="-1" name="" crc="666653">
-            <param name="L" value="0.231092977369432 [H]" />
+            <param name="C" value="40 [uF]" />
             <param name="Name" value="" />
           </paramlist>
         </User>
@@ -406,7 +419,7 @@
           <paramlist link="-1" name="" crc="130641473">
             <param name="NUMS" value="1" />
             <param name="INIT" value="0" />
-            <param name="TO1" value="200 [s]" />
+            <param name="TO1" value="500 [s]" />
             <param name="TO2" value="1.05 [s]" />
             <param name="Name" value="" />
           </paramlist>
@@ -420,7 +433,7 @@
           <vertex x="0" y="0" />
           <vertex x="54" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:breaker3" id="774762409" x="720" y="270" w="92" h="41" z="150" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:breaker3" id="774762409" x="684" y="270" w="92" h="41" z="150" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="72525059">
             <param name="Ctrl" value="0" />
             <param name="OPCUR" value="0" />
@@ -433,8 +446,8 @@
             <param name="NAMEA" value="BRKA" />
             <param name="NAMEB" value="BRKB" />
             <param name="NAMEC" value="BRKC" />
-            <param name="ROFF" value="1.0e6 [ohm]" />
-            <param name="RON" value="0.005 [ohm]" />
+            <param name="ROFF" value="1.0e9 [ohm]" />
+            <param name="RON" value="0.00 [ohm]" />
             <param name="PRER" value="0.5 [ohm]" />
             <param name="TDA" value="0.0 [s]" />
             <param name="TDB" value="0.0 [s]" />
@@ -462,23 +475,19 @@
             <param name="InitStatus" value="0" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1153964625" name="" x="756" y="270" w="64" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1153964625" name="" x="720" y="270" w="64" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="54" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="643767317" name="" x="702" y="306" w="46" h="46" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="643767317" name="" x="666" y="306" w="46" h="46" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="-36" y="0" />
           <vertex x="-36" y="-36" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1374547642" name="" x="738" y="306" w="46" h="46" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1374547642" name="" x="702" y="306" w="46" h="46" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="36" y="0" />
           <vertex x="36" y="-36" />
-        </Wire>
-        <Wire classid="WireOrthogonal" id="627464859" name="" x="414" y="270" w="46" h="10" orient="0" disable="false">
-          <vertex x="0" y="0" />
-          <vertex x="36" y="0" />
         </Wire>
         <Wire classid="WireOrthogonal" id="840928759" name="" x="306" y="270" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
@@ -586,8 +595,8 @@
             <param name="minorgrids" value="false" />
             <param name="lockmarkers" value="false" />
             <param name="deltareadout" value="false" />
-            <param name="xmarker" value="4" />
-            <param name="omarker" value="4" />
+            <param name="xmarker" value="2.11782446797" />
+            <param name="omarker" value="2.14112841263" />
             <param name="xfont" value="Tahoma, 9pt" />
             <param name="xangle" value="0" />
             <param name="xtitle" value="sec" />
@@ -626,7 +635,7 @@
             <Curve classid="Curve" id="730757681" name="v_abc" link="431408548" color="0" bold="0" show="-1" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
               <path />
             </Curve>
-            <Curve classid="Curve" id="1175766374" name="v_mag" link="46969987" color="0" bold="1" show="-1" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
+            <Curve classid="Curve" id="1175766374" name="v_mag" link="46969987" color="0" bold="0" show="-1" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
               <path />
             </Curve>
           </Graph>
@@ -652,8 +661,8 @@
             <param name="minorgrids" value="false" />
             <param name="lockmarkers" value="false" />
             <param name="deltareadout" value="false" />
-            <param name="xmarker" value="4" />
-            <param name="omarker" value="4" />
+            <param name="xmarker" value="2.51119113598" />
+            <param name="omarker" value="2.53458597955" />
             <param name="xfont" value="Tahoma, 9pt" />
             <param name="xangle" value="0" />
             <param name="xtitle" value="sec" />
@@ -689,10 +698,10 @@
               <param name="ymin" value="-1" />
               <param name="ymax" value="1" />
             </paramlist>
-            <Curve classid="Curve" id="894264436" name="p_PCC" link="356542758" color="0" bold="1" show="-1" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
+            <Curve classid="Curve" id="894264436" name="p_PCC" link="356542758" color="0" bold="0" show="-1" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
               <path />
             </Curve>
-            <Curve classid="Curve" id="2079016890" name="q_PCC" link="1625536428" color="0" bold="1" show="-1" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
+            <Curve classid="Curve" id="2079016890" name="q_PCC" link="1625536428" color="0" bold="0" show="-1" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
               <path />
             </Curve>
           </Graph>
@@ -758,9 +767,9 @@
             <param name="fg_color" value="0" />
             <param name="bg_color" value="15792890" />
           </paramlist><![CDATA[The model parameters are such that the grid-side is SCR = 2.0, X/R = 10 after opening the enable_series_RL breaker
-Around 45% of series compensation can be inserted by opening the enable_series_C breaker.]]></Sticky>
-        <User classid="UserCmp" id="546001545" name="Z_tool:ACscan" x="594" y="270" w="117" h="63" z="40" orient="0" defn="Z_tool:ACscan" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="85327719">
+Around 33% of series-capacitor compensation can be inserted by opening the enable_series_C breaker.]]></Sticky>
+        <User classid="UserCmp" id="546001545" name="Z_tool:ACscan" x="558" y="270" w="117" h="63" z="40" orient="0" defn="Z_tool:ACscan" link="-1" q="4" disable="false">
+          <paramlist name="" link="-1" crc="113767866">
             <param name="Name" value="PCC" />
             <param name="f0" value="50" />
             <param name="Devices" value="1" />
@@ -779,33 +788,24 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Tdecoupling" value="1e8" />
             <param name="Vac_control" value="0" />
             <param name="single_frequency" value="1" />
+            <param name="f_control" value="1" />
           </paramlist>
         </User>
         <Wire classid="WireOrthogonal" id="1333325884" name="" x="360" y="270" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" id="1028912236" name="master:annotation" x="720" y="216" w="104" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1028912236" name="master:annotation" x="684" y="216" w="104" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="5338603">
             <param name="AL1" value="Grid equivalent -&gt;" />
             <param name="AL2" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1056688124" name="" x="486" y="270" w="64" h="10" orient="0" disable="false">
-          <vertex x="0" y="0" />
-          <vertex x="54" y="0" />
-        </Wire>
-        <User classid="UserCmp" id="16114620" name="master:annotation" x="468" y="216" w="128" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="5338603">
-            <param name="AL1" value="Equivalent transformer" />
-            <param name="AL2" value="" />
-          </paramlist>
-        </User>
-        <Wire classid="WireOrthogonal" id="355914830" name="" x="684" y="270" w="46" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="355914830" name="" x="648" y="270" w="46" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="-36" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:breaker3" id="1492412581" x="846" y="270" w="98" h="41" z="140" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:breaker3" id="1492412581" x="810" y="270" w="98" h="41" z="140" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="72525059">
             <param name="Ctrl" value="0" />
             <param name="OPCUR" value="0" />
@@ -818,8 +818,8 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="NAMEA" value="BRKA" />
             <param name="NAMEB" value="BRKB" />
             <param name="NAMEC" value="BRKC" />
-            <param name="ROFF" value="1.0e6 [ohm]" />
-            <param name="RON" value="0.005 [ohm]" />
+            <param name="ROFF" value="1.0e9 [ohm]" />
+            <param name="RON" value="0.00 [ohm]" />
             <param name="PRER" value="0.5 [ohm]" />
             <param name="TDA" value="0.0 [s]" />
             <param name="TDB" value="0.0 [s]" />
@@ -847,16 +847,16 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="InitStatus" value="0" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="2005710165" name="" x="882" y="270" w="82" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="2005710165" name="" x="846" y="270" w="82" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="72" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="105292830" name="" x="810" y="306" w="28" h="46" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="105292830" name="" x="774" y="306" w="28" h="46" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="-18" y="0" />
           <vertex x="-18" y="-36" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1886694708" name="" x="900" y="306" w="28" h="46" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1886694708" name="" x="864" y="306" w="28" h="46" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
           <vertex x="18" y="-36" />
@@ -865,7 +865,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <paramlist link="-1" name="" crc="130641473">
             <param name="NUMS" value="1" />
             <param name="INIT" value="0" />
-            <param name="TO1" value="1 [s]" />
+            <param name="TO1" value="0.2 [s]" />
             <param name="TO2" value="1.05 [s]" />
             <param name="Name" value="" />
           </paramlist>
@@ -879,47 +879,132 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="54" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:resistor" id="23468344" x="810" y="306" w="68" h="33" z="1" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:resistor" id="23468344" x="774" y="306" w="68" h="33" z="1" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="10119665">
             <param name="R" value="10.0 [ohm]" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:inductor" id="544483601" x="864" y="306" w="52" h="31" z="1" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:inductor" id="544483601" x="828" y="306" w="52" h="31" z="1" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="666653">
             <param name="L" value="0.30 [H]" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1816648022" name="" x="846" y="306" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1816648022" name="" x="810" y="306" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" id="506080126" name="master:const" x="90" y="144" w="80" h="35" z="10" orient="0" defn="master:const" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="506080126" name="master:const" x="90" y="288" w="80" h="35" z="10" orient="0" defn="master:const" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="10628662">
             <param name="Name" value="pq_tau_meas" />
-            <param name="Value" value="0.001" />
+            <param name="Value" value="0.000" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1517049663" name="master:datalabel" x="162" y="144" w="44" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1517049663" name="master:datalabel" x="162" y="288" w="44" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="tau_pq" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1204820485" name="" x="126" y="144" w="46" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1204820485" name="" x="126" y="288" w="46" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="36" y="0" />
         </Wire>
-        <User classid="UserCmp" id="871473293" name="master:annotation" x="126" y="90" w="202" h="38" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="871473293" name="master:annotation" x="126" y="234" w="202" h="38" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="5338603">
             <param name="AL1" value="Low pass filter power measurement" />
             <param name="AL2" value="time constant in seconds" />
           </paramlist>
         </User>
+        <User classid="UserCmp" defn="master:xfmr-3p2w" id="1088079204" x="414" y="270" w="131" h="89" z="1" orient="4" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="86463138">
+            <param name="Name" value="" />
+            <param name="Tmva" value="100.0 [MVA]" />
+            <param name="f" value="50.0 [Hz]" />
+            <param name="YD1" value="0" />
+            <param name="YD2" value="1" />
+            <param name="Lead" value="1" />
+            <param name="Xl" value="0.15 [pu]" />
+            <param name="Ideal" value="1" />
+            <param name="NLL" value="0.0 [pu]" />
+            <param name="CuL" value="0.0075 [pu]" />
+            <param name="Tap" value="0" />
+            <param name="View" value="1" />
+            <param name="Dtls" value="1" />
+            <param name="V1" value="220.0 [kV]" />
+            <param name="V2" value="66.0 [kV]" />
+            <param name="Enab" value="0" />
+            <param name="Sat" value="0" />
+            <param name="Xair" value="0.2 [pu]" />
+            <param name="Tdc" value="0.0 [s]" />
+            <param name="Xknee" value="1.17 [pu]" />
+            <param name="Txk" value="0.0 [s]" />
+            <param name="Im1" value="2.0 [%]" />
+            <param name="ILA1" value="" />
+            <param name="ILB1" value="" />
+            <param name="ILC1" value="" />
+            <param name="IAB1" value="" />
+            <param name="IBC1" value="" />
+            <param name="ICA1" value="" />
+            <param name="ILA2" value="" />
+            <param name="ILB2" value="" />
+            <param name="ILC2" value="" />
+            <param name="IAB2" value="" />
+            <param name="IBC2" value="" />
+            <param name="ICA2" value="" />
+            <param name="IMA" value="" />
+            <param name="IMB" value="" />
+            <param name="IMC" value="" />
+            <param name="FLXA" value="" />
+            <param name="FLXB" value="" />
+            <param name="FLXC" value="" />
+            <param name="IMAB" value="" />
+            <param name="IMBC" value="" />
+            <param name="IMCA" value="" />
+            <param name="FLXAB" value="" />
+            <param name="FLXBC" value="" />
+            <param name="FLXCA" value="" />
+            <param name="Hys" value="0" />
+            <param name="Fremn1" value="0.0" />
+            <param name="Fremn2" value="0.0" />
+            <param name="Fremn3" value="0.0" />
+            <param name="LW2" value="10" />
+            <param name="Bnom" value="1.7" />
+            <param name="material" value="1" />
+            <param name="C" value="0.1" />
+            <param name="K" value="5.0e-5" />
+            <param name="BETA" value="0.96" />
+            <param name="alpha" value="1.325e-5" />
+            <param name="Msat" value="1.72e6" />
+            <param name="F1" value="2730" />
+            <param name="F2" value="3209" />
+            <param name="F3" value="20294" />
+            <param name="Fb" value="2" />
+            <param name="HA1" value="" />
+            <param name="HB1" value="" />
+            <param name="HC1" value="" />
+            <param name="BA1" value="" />
+            <param name="BB1" value="" />
+            <param name="BC1" value="" />
+            <param name="HAB1" value="" />
+            <param name="HBC1" value="" />
+            <param name="HCA1" value="" />
+            <param name="BAB1" value="" />
+            <param name="BBC1" value="" />
+            <param name="BCA1" value="" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="1125386406" name="" x="468" y="270" w="46" h="10" orient="0" disable="false">
+          <vertex x="0" y="0" />
+          <vertex x="36" y="0" />
+        </Wire>
+        <User classid="UserCmp" id="923785448" name="master:ground" x="432" y="306" w="26" h="34" z="-1" orient="1" defn="master:ground" link="-1" q="4" disable="false">
+          <paramlist name="" link="-1" crc="28206164" />
+        </User>
       </schematic>
     </Definition>
-    <Definition classid="UserCmpDefn" name="dq2abc" build="" crc="107934270" view="false" instances="0" date="1733939434" id="447532284" w="320" h="400">
+    <Definition classid="UserCmpDefn" name="dq2abc" build="" crc="7748672" view="false" instances="0" date="1766482415" id="447532284" w="320" h="400">
       <paramlist>
         <param name="Description" value="dq to abc transformation" />
       </paramlist>
@@ -1168,7 +1253,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           </paramlist>
         </User>
         <grouping />
-        <User classid="UserCmp" defn="master:div" id="680351937" x="126" y="54" w="80" h="59" z="170" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:div" id="680351937" x="126" y="54" w="80" h="60" z="170" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="74852640">
             <param name="Dim" value="2" />
             <param name="Name" value="" />
@@ -1190,7 +1275,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="1047080321" x="396" y="180" w="80" h="63" z="190" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="1047080321" x="396" y="180" w="80" h="64" z="190" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -1204,7 +1289,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:emtconst" id="722378873" x="360" y="216" w="76" h="22" z="90" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:emtconst" id="722378873" x="360" y="216" w="76" h="21" z="90" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="116269466">
             <param name="Name" value="" />
             <param name="Value" value="3" />
@@ -1307,7 +1392,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:sumjct" id="944952538" x="396" y="252" w="80" h="63" z="100" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="944952538" x="396" y="252" w="80" h="64" z="100" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -1360,7 +1445,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="571894406" x="396" y="324" w="80" h="63" z="210" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="571894406" x="396" y="324" w="80" h="64" z="210" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -1374,7 +1459,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:emtconst" id="2079881490" x="360" y="360" w="76" h="22" z="130" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:emtconst" id="2079881490" x="360" y="360" w="76" h="21" z="130" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="116269466">
             <param name="Name" value="" />
             <param name="Value" value="3" />
@@ -1396,7 +1481,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="765469626" x="396" y="396" w="80" h="63" z="140" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="765469626" x="396" y="396" w="80" h="64" z="140" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -1525,7 +1610,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
         </User>
       </schematic>
     </Definition>
-    <Definition classid="UserCmpDefn" name="abc2dq_1" build="" crc="43467232" view="false" instances="0" date="1733939433" id="1876788863" w="320" h="400">
+    <Definition classid="UserCmpDefn" name="abc2dq_1" build="" crc="127073436" view="false" instances="0" date="1766482415" id="1876788863" w="320" h="400">
       <paramlist>
         <param name="Description" value="abd to dq transformation" />
       </paramlist>
@@ -1774,7 +1859,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           </paramlist>
         </User>
         <grouping />
-        <User classid="UserCmp" defn="master:sumjct" id="1927014963" x="252" y="432" w="80" h="63" z="180" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="1927014963" x="252" y="432" w="80" h="64" z="180" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -1788,7 +1873,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:div" id="1138599219" x="288" y="270" w="80" h="59" z="160" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:div" id="1138599219" x="288" y="270" w="80" h="60" z="160" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="74852640">
             <param name="Dim" value="3" />
             <param name="Name" value="" />
@@ -1801,7 +1886,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="598494506" x="252" y="504" w="80" h="63" z="90" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="598494506" x="252" y="504" w="80" h="64" z="90" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -1815,7 +1900,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:emtconst" id="618179197" x="216" y="468" w="76" h="22" z="80" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:emtconst" id="618179197" x="216" y="468" w="76" h="21" z="80" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="116269466">
             <param name="Name" value="" />
             <param name="Value" value="3" />
@@ -1851,7 +1936,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="57625636" x="252" y="144" w="80" h="63" z="120" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="57625636" x="252" y="144" w="80" h="64" z="120" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -1865,7 +1950,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="703810306" x="252" y="216" w="80" h="63" z="140" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="703810306" x="252" y="216" w="80" h="64" z="140" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -1879,7 +1964,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:emtconst" id="1574476658" x="216" y="180" w="76" h="22" z="10" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:emtconst" id="1574476658" x="216" y="180" w="76" h="21" z="10" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="116269466">
             <param name="Name" value="" />
             <param name="Value" value="3" />
@@ -2076,7 +2161,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="3" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:emtconst" id="489587914" x="342" y="306" w="76" h="22" z="50" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:emtconst" id="489587914" x="342" y="306" w="76" h="21" z="50" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="116269466">
             <param name="Name" value="" />
             <param name="Value" value="14" />
@@ -2089,7 +2174,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
         </Wire>
       </schematic>
     </Definition>
-    <Definition classid="UserCmpDefn" name="VSC2L" build="" crc="109031064" view="false" instances="0" date="1733939433" id="1656177364" w="320" h="400">
+    <Definition classid="UserCmpDefn" name="VSC2L" build="" crc="128480275" view="false" instances="0" date="1769967405" id="1656177364" w="320" h="400">
       <paramlist>
         <param name="Description" value="Averaged model of the grid-side converter with constant DC voltage" />
       </paramlist>
@@ -2216,7 +2301,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <error_msg><![CDATA[]]></error_msg>
             <vis />
           </parameter>
-          <parameter name="V_LL_RMS" desc="Rated voltage [kV]" type="Real" group="Ratings" helpmode="Append" content_type="Literal" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
+          <parameter name="V_LL_RMS" desc="Rated voltage [kV]" type="Real" group="Circuit Parameters" helpmode="Append" content_type="Literal" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
             <value><![CDATA[66]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
@@ -2238,6 +2323,12 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <choice><![CDATA[1 = V/Q droop]]></choice>
             <choice><![CDATA[0 = No. Constant Q]]></choice>
           </parameter>
+          <parameter name="i_max" desc="Maximum current [pu]" type="Real" group="" helpmode="Append" content_type="Variable" intent="Input" dim="1" animate="false" unit="" min="0" max="2">
+            <value><![CDATA[1.15]]></value>
+            <cond><![CDATA[true]]></cond>
+            <vis><![CDATA[true]]></vis>
+            <help><![CDATA[Maximum current magnitude in per unit.]]></help>
+          </parameter>
           <parameter name="q_ref" desc="Reactive power [pu]" type="Real" group="Setpoints" helpmode="Append" content_type="Variable" intent="Input" dim="1" animate="false" unit="" min="-1" max="1">
             <value><![CDATA[0]]></value>
             <cond><![CDATA[true]]></cond>
@@ -2256,107 +2347,113 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[]]></help>
           </parameter>
-          <parameter name="Sbase" desc="Rated power [MVA]" type="Real" group="Ratings" helpmode="Append" content_type="Literal" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
+          <parameter name="Sbase" desc="Rated power [MVA]" type="Real" group="Circuit Parameters" helpmode="Append" content_type="Literal" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
             <value><![CDATA[500]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[]]></help>
           </parameter>
-          <parameter name="fbase" desc="AC frequency [Hz]" type="Real" group="Ratings" helpmode="Append" content_type="Literal" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
+          <parameter name="fbase" desc="AC frequency [Hz]" type="Real" group="Circuit Parameters" helpmode="Append" content_type="Literal" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
             <value><![CDATA[50]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[Fundamental frequency in Hz]]></help>
           </parameter>
-          <parameter name="kp_v" desc="Voltage support gain" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
+          <parameter name="kp_v" desc="Voltage support gain" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[10]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[pu/pu]]></help>
           </parameter>
-          <parameter name="tau_v" desc="Voltage sup. time constant" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
+          <parameter name="tau_v" desc="Voltage sup. time constant" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
             <value><![CDATA[0.5]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In seconds]]></help>
           </parameter>
-          <parameter name="kp_f" desc="Freq. sup. gain" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
+          <parameter name="kp_f" desc="Freq. sup. gain" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[10]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[pu/pu]]></help>
           </parameter>
-          <parameter name="tau_f" desc="Freq. sup. time constant" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
+          <parameter name="tau_f" desc="Freq. sup. time constant" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
             <value><![CDATA[0.5]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In seconds]]></help>
           </parameter>
-          <parameter name="kp_P" desc="P control prop. gain" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
+          <parameter name="kp_P" desc="P control prop. gain" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[0.01]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In per unit]]></help>
           </parameter>
-          <parameter name="ki_P" desc="P control int. gain" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
+          <parameter name="ki_P" desc="P control int. gain" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[10]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In per unit]]></help>
           </parameter>
-          <parameter name="kp_Q" desc="Q control prop. gain" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
+          <parameter name="kp_Q" desc="Q control prop. gain" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[0.01]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In per unit]]></help>
           </parameter>
-          <parameter name="ki_Q" desc="Q control int. gain" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
+          <parameter name="ki_Q" desc="Q control int. gain" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[10]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In per unit]]></help>
           </parameter>
-          <parameter name="tau_pq_meas" desc="PQ meas. time constant" type="Real" group="Tuning" helpmode="Append" content_type="Variable" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
+          <parameter name="tau_pq_meas" desc="PQ meas. time constant" type="Real" group="Control" helpmode="Append" content_type="Variable" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
             <value><![CDATA[0.001]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[Power measurement time constant [s]]]></help>
           </parameter>
-          <parameter name="kp_PLL" desc="PLL proportional gain" type="Real" group="Tuning" helpmode="Append" content_type="Variable" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
+          <parameter name="kp_PLL" desc="PLL proportional gain" type="Real" group="Control" helpmode="Append" content_type="Variable" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[0.397887357729738]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In per unit]]></help>
           </parameter>
-          <parameter name="ki_PLL" desc="PLL integral gain" type="Real" group="Tuning" helpmode="Append" content_type="Variable" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
+          <parameter name="ki_PLL" desc="PLL integral gain" type="Real" group="Control" helpmode="Append" content_type="Variable" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[7.957747154594767]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In per unit]]></help>
           </parameter>
-          <parameter name="Tf_PLL" desc="PLL LPF time constant" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
+          <parameter name="Tf_PLL" desc="PLL LPF time constant" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
             <value><![CDATA[0.001989436788649]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In seconds]]></help>
           </parameter>
-          <parameter name="kp_CL" desc="CC proportional gain" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
+          <parameter name="kp_CL" desc="CC proportional gain" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[0.254647908947033]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In per unit]]></help>
           </parameter>
-          <parameter name="ki_CL" desc="CC integral gain" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
+          <parameter name="ki_CL" desc="CC integral gain" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[0.8]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[In per unit]]></help>
           </parameter>
-          <parameter name="Tf_cc" desc="CC measurement filter" type="Real" group="Tuning" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
+          <parameter name="Tf_cc" desc="CC measurement filter" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="0" max="1E+308">
             <value><![CDATA[1e-4]]></value>
             <cond><![CDATA[true]]></cond>
             <vis><![CDATA[true]]></vis>
             <help><![CDATA[Inverse of BW. In seconds.]]></help>
+          </parameter>
+          <parameter name="t_delay" desc="Aggregated delay [s]" type="Real" group="Control" helpmode="Append" content_type="Constant" intent="Input" dim="1" animate="false" unit="" min="0" max="0.0005">
+            <value><![CDATA[50e-6]]></value>
+            <cond><![CDATA[true]]></cond>
+            <vis><![CDATA[true]]></vis>
+            <help><![CDATA[Aggregated control, sampling and modulation time delay]]></help>
           </parameter>
           <parameter name="l_f" desc="Phase Reactor Inductance [pu]" type="Real" group="Circuit Parameters" helpmode="Append" content_type="Variable" intent="Input" dim="1" animate="false" unit="" min="-1E+308" max="1E+308">
             <value><![CDATA[0.08]]></value>
@@ -2375,7 +2472,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
       <schematic classid="UserCanvas">
         <paramlist>
           <param name="show_grid" value="1" />
-          <param name="size" value="0" />
+          <param name="size" value="1" />
           <param name="orient" value="1" />
           <param name="show_border" value="0" />
           <param name="monitor_bus_voltage" value="0" />
@@ -2387,52 +2484,52 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <param name="virtual_filter" value="" />
           <param name="animation_freq" value="500" />
         </paramlist>
-        <User id="1037053160" classid="UserCmp" defn="master:xnode" x="1566" y="342" h="33" w="20" z="1" q="4" orient="0" link="-1" disable="false">
+        <User id="1037053160" classid="UserCmp" defn="master:xnode" x="1746" y="396" h="33" w="20" z="1" q="4" orient="0" link="-1" disable="false">
           <paramlist name="" link="-1" crc="37312176">
             <param name="Name" value="AC" />
           </paramlist>
         </User>
         <grouping />
-        <User classid="UserCmp" defn="master:breakout" id="1029111059" x="1386" y="342" w="44" h="80" z="0" orient="4" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:breakout" id="1029111059" x="1566" y="396" w="44" h="80" z="0" orient="4" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="6599472">
             <param name="Dis" value="0" />
             <param name="Com" value="0" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1097097556" name="" x="1206" y="342" w="10" h="46" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1097097556" name="" x="1386" y="396" w="10" h="46" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-36" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="581487378" name="" x="1350" y="378" w="10" h="28" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="581487378" name="" x="1530" y="432" w="10" h="28" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="18" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="366545614" name="" x="1350" y="288" w="10" h="28" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="366545614" name="" x="1530" y="342" w="10" h="28" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="18" />
         </Wire>
-        <User classid="UserCmp" name="master:annotation" id="513382262" x="1314" y="252" w="58" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:annotation" id="513382262" x="1494" y="306" w="58" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="5338603">
             <param name="AL1" value="Averaged" />
             <param name="AL2" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1442308816" name="" x="1224" y="324" w="100" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1442308816" name="" x="1404" y="378" w="100" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="90" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1164811184" name="" x="1224" y="342" w="100" h="46" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1164811184" name="" x="1404" y="396" w="100" h="46" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
           <vertex x="18" y="36" />
           <vertex x="90" y="36" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="189074541" name="" x="1224" y="360" w="100" h="82" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="189074541" name="" x="1404" y="414" w="100" h="82" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="72" />
           <vertex x="90" y="72" />
         </Wire>
-        <User classid="UserCmp" defn="master:datatap" id="1955355527" x="1224" y="324" w="26" h="28" z="1180" orient="7" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datatap" id="1955355527" x="1404" y="378" w="26" h="28" z="1290" orient="7" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="38224701">
             <param name="Index" value="1" />
             <param name="Dim" value="1" />
@@ -2442,7 +2539,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:datatap" id="1602601591" x="1224" y="342" w="26" h="28" z="1100" orient="7" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datatap" id="1602601591" x="1404" y="396" w="26" h="28" z="1210" orient="7" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="38224701">
             <param name="Index" value="2" />
             <param name="Dim" value="1" />
@@ -2452,7 +2549,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:datatap" id="1737470323" x="1224" y="360" w="26" h="28" z="1090" orient="7" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datatap" id="1737470323" x="1404" y="414" w="26" h="28" z="1200" orient="7" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="38224701">
             <param name="Index" value="3" />
             <param name="Dim" value="1" />
@@ -2462,7 +2559,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:source_1" id="798222916" x="1314" y="288" w="106" h="55" z="1200" orient="4" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:source_1" id="798222916" x="1494" y="342" w="106" h="56" z="1300" orient="4" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="49505675">
             <param name="CUR" value="" />
             <param name="C_" value="1.0 [uF]" />
@@ -2488,12 +2585,12 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="Converter1" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1231905860" name="" x="1188" y="288" w="28" h="28" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1231905860" name="" x="1296" y="342" w="100" h="28" orient="0" disable="false">
           <vertex x="0" y="0" />
-          <vertex x="18" y="0" />
-          <vertex x="18" y="18" />
+          <vertex x="90" y="0" />
+          <vertex x="90" y="18" />
         </Wire>
-        <User classid="UserCmp" defn="master:source_1" id="414420851" x="1314" y="396" w="106" h="55" z="1140" orient="4" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:source_1" id="414420851" x="1494" y="450" w="106" h="56" z="1250" orient="4" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="49505675">
             <param name="CUR" value="" />
             <param name="C_" value="1.0 [uF]" />
@@ -2519,7 +2616,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="Converter1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:source_1" id="1178087073" x="1314" y="342" w="106" h="55" z="1170" orient="4" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:source_1" id="1178087073" x="1494" y="396" w="106" h="56" z="1280" orient="4" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="49505675">
             <param name="CUR" value="" />
             <param name="C_" value="1.0 [uF]" />
@@ -2545,11 +2642,11 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="Converter1" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1726778409" name="" x="414" y="1062" w="10" h="28" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1726778409" name="" x="378" y="1008" w="10" h="28" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-18" />
         </Wire>
-        <User classid="UserCmp" defn="master:integral" id="1432437966" x="558" y="1044" w="80" h="61" z="820" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:integral" id="1432437966" x="522" y="990" w="80" h="61" z="920" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="126573893">
             <param name="Extrn" value="0" />
             <param name="Reset" value="0" />
@@ -2560,12 +2657,12 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="T" value="1 [s]" />
             <param name="Yo" value="0.0" />
             <param name="YRst" value="0.0" />
-            <param name="YHi" value="1e8" />
-            <param name="YLo" value="-1e8" />
+            <param name="YHi" value="i_max" />
+            <param name="YLo" value="i_max_neg" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="1106686007" x="486" y="1044" w="80" h="36" z="770" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="1106686007" x="450" y="990" w="80" h="36" z="870" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="ki_P" />
             <param name="COM" value="Gain" />
@@ -2574,7 +2671,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="1640806365" x="414" y="1008" w="80" h="82" z="750" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="1640806365" x="378" y="954" w="80" h="83" z="850" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -2588,7 +2685,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="15797810" x="522" y="972" w="80" h="36" z="790" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="15797810" x="486" y="918" w="80" h="36" z="890" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="kp_P" />
             <param name="COM" value="Gain" />
@@ -2597,7 +2694,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="1653019766" x="594" y="1008" w="61" h="82" z="830" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="1653019766" x="558" y="954" w="61" h="83" z="930" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -2611,45 +2708,45 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1518364997" name="" x="558" y="972" w="46" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1518364997" name="" x="522" y="918" w="46" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="36" y="0" />
         </Wire>
-        <User classid="UserCmp" name="master:datalabel" id="1383150251" x="1422" y="990" w="36" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="1383150251" x="1422" y="936" w="36" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="iq_ref" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:dot_product" id="691355152" x="306" y="1062" w="80" h="61" z="690" orient="0" defn="master:dot_product" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" name="master:dot_product" id="691355152" x="270" y="1008" w="80" h="61" z="790" orient="0" defn="master:dot_product" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="123394297">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="1773828674" x="306" y="1098" w="22" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="1773828674" x="270" y="1044" w="22" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="idq" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="451555924" x="252" y="1062" w="26" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="451555924" x="216" y="1008" w="26" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="vdq" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="75905950" name="" x="252" y="1062" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="75905950" name="" x="216" y="1008" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1209625923" name="" x="450" y="1044" w="46" h="82" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1209625923" name="" x="414" y="990" w="46" h="82" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-72" />
           <vertex x="36" y="-72" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1716615184" name="" x="1206" y="1044" w="10" h="28" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1716615184" name="" x="1206" y="990" w="10" h="28" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-18" />
         </Wire>
-        <User classid="UserCmp" defn="master:integral" id="193334936" x="1350" y="1026" w="80" h="61" z="800" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:integral" id="193334936" x="1350" y="972" w="80" h="61" z="900" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="126573893">
             <param name="Extrn" value="0" />
             <param name="Reset" value="0" />
@@ -2660,12 +2757,12 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="T" value="1 [s]" />
             <param name="Yo" value="0.0" />
             <param name="YRst" value="0.0" />
-            <param name="YHi" value="1e8" />
-            <param name="YLo" value="-1e8" />
+            <param name="YHi" value="i_max" />
+            <param name="YLo" value="i_max_neg" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="412134157" x="1278" y="1026" w="80" h="36" z="760" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="412134157" x="1278" y="972" w="80" h="36" z="860" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="ki_Q" />
             <param name="COM" value="Gain" />
@@ -2674,7 +2771,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="305636056" x="1206" y="990" w="80" h="82" z="730" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="305636056" x="1206" y="936" w="80" h="83" z="830" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -2688,7 +2785,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="1928888824" x="1314" y="954" w="80" h="36" z="780" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="1928888824" x="1314" y="900" w="80" h="36" z="880" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="kp_Q" />
             <param name="COM" value="Gain" />
@@ -2697,7 +2794,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="859438163" x="1386" y="990" w="61" h="82" z="810" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="859438163" x="1386" y="936" w="61" h="83" z="910" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -2711,36 +2808,36 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:dot_product" id="1760558014" x="1098" y="1044" w="80" h="61" z="680" orient="0" defn="master:dot_product" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" name="master:dot_product" id="1760558014" x="1098" y="990" w="80" h="61" z="780" orient="0" defn="master:dot_product" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="123394297">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="494740604" x="936" y="1170" w="22" h="23" z="1" orient="2" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="494740604" x="936" y="1116" w="22" h="23" z="1" orient="2" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="idq" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="1331355025" x="1044" y="1044" w="26" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="1331355025" x="1044" y="990" w="26" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="vdq" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="664561215" name="" x="1044" y="1044" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="664561215" name="" x="1044" y="990" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="373464872" name="" x="1242" y="1026" w="46" h="82" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="373464872" name="" x="1242" y="972" w="46" h="82" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-72" />
           <vertex x="36" y="-72" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1576315667" name="" x="972" y="1152" w="10" h="28" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1576315667" name="" x="972" y="1098" w="10" h="28" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-18" />
         </Wire>
-        <User classid="UserCmp" defn="master:datatap" id="1237390024" x="990" y="1134" w="26" h="28" z="620" orient="3" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datatap" id="1237390024" x="990" y="1080" w="26" h="28" z="710" orient="3" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="38224701">
             <param name="Index" value="1" />
             <param name="Dim" value="1" />
@@ -2750,7 +2847,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:datatap" id="863375303" x="990" y="1116" w="26" h="28" z="660" orient="3" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datatap" id="863375303" x="990" y="1062" w="26" h="28" z="760" orient="3" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="38224701">
             <param name="Index" value="2" />
             <param name="Dim" value="1" />
@@ -2760,11 +2857,11 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1473483164" name="" x="972" y="1170" w="10" h="28" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1473483164" name="" x="972" y="1116" w="10" h="28" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-18" />
         </Wire>
-        <User classid="UserCmp" defn="master:datamerge" id="715431152" x="1116" y="1080" w="62" h="27" z="670" orient="7" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datamerge" id="715431152" x="1116" y="1026" w="62" h="27" z="770" orient="7" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="43697768">
             <param name="N" value="2" />
             <param name="Type" value="2" />
@@ -2785,7 +2882,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="1205348771" x="1026" y="1134" w="80" h="36" z="650" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="1205348771" x="1026" y="1080" w="80" h="36" z="750" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="-1" />
             <param name="COM" value="Gain" />
@@ -2794,54 +2891,54 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="699500504" name="" x="1062" y="1134" w="10" h="46" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="699500504" name="" x="1062" y="1080" w="10" h="46" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-36" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1585016558" name="" x="1044" y="1098" w="64" h="28" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1585016558" name="" x="1044" y="1044" w="64" h="28" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="-54" y="0" />
           <vertex x="-54" y="18" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1537021871" name="" x="972" y="1170" w="46" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1537021871" name="" x="972" y="1116" w="46" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="-36" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:square" id="2139542921" x="828" y="954" w="80" h="36" z="550" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:square" id="2139542921" x="828" y="900" w="80" h="36" z="660" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="123652463">
             <param name="Dim" value="2" />
             <param name="Name" value="" />
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sqrt" id="132223794" x="972" y="954" w="80" h="36" z="580" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sqrt" id="132223794" x="972" y="900" w="80" h="36" z="720" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="110615855">
             <param name="Dim" value="1" />
             <param name="Name" value="" />
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sum_array" id="1873167256" x="900" y="954" w="80" h="42" z="560" orient="0" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sum_array" id="1873167256" x="900" y="900" w="80" h="42" z="680" orient="0" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="59734010">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:realpole" id="1337759188" x="1080" y="918" w="80" h="37" z="630" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:realpole" id="1337759188" x="1080" y="864" w="80" h="64" z="800" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="96177319">
-            <param name="Limit" value="0" />
+            <param name="Limit" value="1" />
             <param name="COM" value="Real_Pole" />
-            <param name="Reset" value="2" />
+            <param name="Reset" value="1" />
             <param name="YO" value="0.0" />
             <param name="G" value="kp_v" />
             <param name="T" value="tau_v" />
-            <param name="Max" value="10.0" />
-            <param name="Min" value="-10.0" />
+            <param name="Max" value="0.5" />
+            <param name="Min" value="-0.5" />
             <param name="Dim" value="1" />
             <param name="Name" value="VQ droop" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="1915551680" x="1008" y="918" w="80" h="63" z="590" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="1915551680" x="1008" y="864" w="80" h="64" z="730" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -2855,30 +2952,30 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="1623165543" x="774" y="954" w="26" h="23" z="1" orient="4" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="1623165543" x="774" y="900" w="26" h="23" z="1" orient="4" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="vdq" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1467050296" name="" x="1386" y="954" w="46" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1467050296" name="" x="1386" y="900" w="46" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="-36" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:realpole" id="1498526439" x="288" y="918" w="80" h="37" z="640" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:realpole" id="1498526439" x="252" y="864" w="80" h="64" z="810" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="96177319">
-            <param name="Limit" value="0" />
+            <param name="Limit" value="1" />
             <param name="COM" value="Real_Pole" />
-            <param name="Reset" value="2" />
+            <param name="Reset" value="1" />
             <param name="YO" value="0.0" />
             <param name="G" value="kp_f" />
             <param name="T" value="tau_f" />
-            <param name="Max" value="10.0" />
-            <param name="Min" value="-10.0" />
+            <param name="Max" value="0.5" />
+            <param name="Min" value="-0.5" />
             <param name="Dim" value="1" />
             <param name="Name" value="Pf droop" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="2115759910" x="216" y="918" w="80" h="63" z="600" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="2115759910" x="180" y="864" w="80" h="64" z="740" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -2892,26 +2989,26 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="605133764" x="216" y="954" w="42" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="605133764" x="180" y="900" w="42" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="omega" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:mult" id="736971184" x="918" y="324" w="80" h="56" z="950" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:mult" id="736971184" x="918" y="324" w="80" h="56" z="1050" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="29714769">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:mult" id="1679546105" x="918" y="252" w="80" h="56" z="960" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:mult" id="1679546105" x="918" y="252" w="80" h="56" z="1060" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="29714769">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="1387599469" x="1026" y="162" w="80" h="82" z="1040" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="1387599469" x="1026" y="162" w="80" h="83" z="1140" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -2925,7 +3022,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="1525788364" x="990" y="252" w="80" h="36" z="1030" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="1525788364" x="990" y="252" w="80" h="36" z="1130" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="l_f" />
             <param name="COM" value="Gain" />
@@ -2938,7 +3035,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="0" y="-54" />
         </Wire>
-        <User classid="UserCmp" defn="master:sumjct" id="1124423605" x="1026" y="432" w="80" h="82" z="1050" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="1124423605" x="1026" y="432" w="80" h="83" z="1150" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -2962,7 +3059,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="id_ref" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="1565219369" x="756" y="162" w="80" h="63" z="880" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="1565219369" x="756" y="162" w="80" h="64" z="980" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -2984,7 +3081,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:sumjct" id="1597378942" x="756" y="432" w="80" h="63" z="900" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="1597378942" x="756" y="432" w="80" h="64" z="1000" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -3030,16 +3127,16 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="0" y="18" />
         </Wire>
-        <User classid="UserCmp" defn="master:polar_rec" id="1281261323" x="522" y="288" w="97" h="73" z="840" orient="0" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:polar_rec" id="1281261323" x="522" y="288" w="97" h="73" z="940" orient="0" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="16778969">
             <param name="Dir" value="1" />
             <param name="AngUnit" value="0" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:hardlimit" id="374300299" x="594" y="270" w="80" h="59" z="850" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:hardlimit" id="374300299" x="594" y="270" w="80" h="59" z="950" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16843219">
-            <param name="UL" value="1.2" />
+            <param name="UL" value="i_max" />
             <param name="LL" value="0" />
             <param name="COM" value="Hard_Limit" />
             <param name="Dim" value="1" />
@@ -3047,7 +3144,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:polar_rec" id="2091638602" x="666" y="288" w="98" h="73" z="870" orient="0" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:polar_rec" id="2091638602" x="666" y="288" w="98" h="73" z="970" orient="0" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="16778969">
             <param name="Dir" value="0" />
             <param name="AngUnit" value="0" />
@@ -3067,7 +3164,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="id" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="1872172460" x="990" y="324" w="80" h="36" z="1020" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="1872172460" x="990" y="324" w="80" h="36" z="1120" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="l_f" />
             <param name="COM" value="Gain" />
@@ -3085,7 +3182,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="iq" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="129349427" x="954" y="432" w="61" h="82" z="1010" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="129349427" x="954" y="432" w="61" h="83" z="1110" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -3099,7 +3196,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="1427267086" x="828" y="396" w="80" h="36" z="940" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="1427267086" x="828" y="396" w="80" h="36" z="1040" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="kp_CL" />
             <param name="COM" value="Gain" />
@@ -3108,7 +3205,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:integral" id="1918417652" x="900" y="468" w="80" h="61" z="1000" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:integral" id="1918417652" x="900" y="468" w="80" h="61" z="1100" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="126573893">
             <param name="Extrn" value="0" />
             <param name="Reset" value="0" />
@@ -3124,7 +3221,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="618366493" x="828" y="468" w="80" h="36" z="930" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="618366493" x="828" y="468" w="80" h="36" z="1030" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="ki_CL" />
             <param name="COM" value="Gain" />
@@ -3145,15 +3242,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="705198928" name="" x="1062" y="432" w="10" h="154" orient="0" disable="false">
-          <vertex x="0" y="0" />
-          <vertex x="0" y="-144" />
-        </Wire>
-        <Wire classid="WireOrthogonal" id="340583086" name="" x="1062" y="252" w="10" h="100" orient="0" disable="false">
-          <vertex x="0" y="0" />
-          <vertex x="0" y="-90" />
-        </Wire>
-        <User classid="UserCmp" defn="master:sumjct" id="372437732" x="954" y="162" w="61" h="82" z="980" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="372437732" x="954" y="162" w="61" h="83" z="1080" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -3167,7 +3256,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="897853961" x="828" y="126" w="80" h="36" z="920" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="897853961" x="828" y="126" w="80" h="36" z="1020" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="kp_CL" />
             <param name="COM" value="Gain" />
@@ -3176,7 +3265,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:integral" id="2103876905" x="900" y="198" w="80" h="61" z="970" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:integral" id="2103876905" x="900" y="198" w="80" h="61" z="1070" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="126573893">
             <param name="Extrn" value="0" />
             <param name="Reset" value="0" />
@@ -3192,7 +3281,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="921493004" x="828" y="198" w="80" h="36" z="910" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="921493004" x="828" y="198" w="80" h="36" z="1010" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="ki_CL" />
             <param name="COM" value="Gain" />
@@ -3213,7 +3302,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:angle_resolver" id="1294412177" x="720" y="720" w="80" h="59" z="520" orient="0" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:angle_resolver" id="1294412177" x="1008" y="684" w="80" h="59" z="650" orient="0" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="118549215">
             <param name="IPUnit" value="0" />
             <param name="OPUnit" value="0" />
@@ -3222,7 +3311,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:integral" id="2070142499" x="648" y="720" w="80" h="61" z="510" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:integral" id="2070142499" x="936" y="684" w="80" h="61" z="640" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="126573893">
             <param name="Extrn" value="0" />
             <param name="Reset" value="0" />
@@ -3238,11 +3327,11 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:realpole" id="1031822596" x="270" y="774" w="80" h="37" z="440" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:realpole" id="1031822596" x="558" y="738" w="80" h="38" z="570" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="96177319">
             <param name="Limit" value="0" />
             <param name="COM" value="Real_Pole" />
-            <param name="Reset" value="0" />
+            <param name="Reset" value="2" />
             <param name="YO" value="0.0" />
             <param name="G" value="1.0" />
             <param name="T" value="Tf_PLL" />
@@ -3252,7 +3341,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="574772726" x="306" y="720" w="80" h="63" z="450" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="574772726" x="594" y="684" w="80" h="64" z="580" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -3266,14 +3355,14 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="576802671" name="master:const" x="234" y="720" w="76" h="35" z="300" orient="0" defn="master:const" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="576802671" name="master:const" x="522" y="684" w="76" h="35" z="330" orient="0" defn="master:const" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="10628662">
             <param name="Name" value="vq_ref" />
             <param name="Value" value="0" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sumjct" id="322790397" x="504" y="720" w="61" h="82" z="490" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sumjct" id="322790397" x="792" y="684" w="61" h="83" z="620" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="16672553">
             <param name="DPath" value="1" />
             <param name="A" value="0" />
@@ -3287,7 +3376,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="1908813992" x="414" y="684" w="80" h="36" z="480" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="1908813992" x="702" y="648" w="80" h="36" z="610" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="kp_PLL" />
             <param name="COM" value="Gain" />
@@ -3296,7 +3385,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:integral" id="1220214397" x="450" y="756" w="80" h="61" z="470" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:integral" id="1220214397" x="738" y="720" w="80" h="61" z="600" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="126573893">
             <param name="Extrn" value="0" />
             <param name="Reset" value="0" />
@@ -3307,12 +3396,12 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="T" value="1.0 [s]" />
             <param name="Yo" value="1.0" />
             <param name="YRst" value="0.0" />
-            <param name="YHi" value="1e8" />
-            <param name="YLo" value="-1e8" />
+            <param name="YHi" value="1.5" />
+            <param name="YLo" value="-1.5" />
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:gain" id="1848969357" x="378" y="756" w="80" h="36" z="460" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:gain" id="1848969357" x="666" y="720" w="80" h="36" z="590" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="34173863">
             <param name="G" value="ki_PLL" />
             <param name="COM" value="Gain" />
@@ -3321,102 +3410,53 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="764608626" name="" x="342" y="756" w="10" h="82" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="764608626" name="" x="630" y="720" w="10" h="82" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-72" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="441671295" name="" x="450" y="684" w="64" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="441671295" name="" x="738" y="648" w="64" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="54" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1220401817" name="" x="486" y="756" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1220401817" name="" x="774" y="720" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:mult" id="678425762" x="576" y="720" w="80" h="56" z="500" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:mult" id="678425762" x="864" y="684" w="80" h="56" z="630" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="29714769">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="437604403" name="DUT:abc2dq_1" x="810" y="702" w="81" h="59" z="530" orient="0" defn="Simple_2L_VSC_RLC:abc2dq_1" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="38057765">
-            <param name="Name" value="" />
-            <param name="Xb" value="Vbase" />
-            <param name="qaxis" value="1" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" id="1390813666" name="DUT:dq2abc" x="1152" y="288" w="81" h="57" z="1070" orient="0" defn="Simple_2L_VSC_RLC:dq2abc" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="49849602">
-            <param name="Name" value="" />
-            <param name="Xb" value="Vtoabs" />
-            <param name="qaxis" value="1" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" defn="master:datamerge" id="1729238659" x="1134" y="270" w="62" h="44" z="1060" orient="3" link="-1" q="4" disable="false">
-          <paramlist link="-1" name="" crc="43697768">
-            <param name="N" value="2" />
-            <param name="Type" value="2" />
-            <param name="Disp" value="1" />
-            <param name="View" value="1" />
-            <param name="Dim1" value="1" />
-            <param name="Dim2" value="1" />
-            <param name="Dim3" value="1" />
-            <param name="Dim4" value="1" />
-            <param name="Dim5" value="1" />
-            <param name="Dim6" value="1" />
-            <param name="Dim7" value="1" />
-            <param name="Dim8" value="1" />
-            <param name="Dim9" value="1" />
-            <param name="Dim10" value="1" />
-            <param name="Dim11" value="1" />
-            <param name="Dim12" value="1" />
-            <param name="Name" value="" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" name="master:datalabel" id="1962878565" x="1098" y="306" w="36" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
-          <paramlist link="-1" name="" crc="127230955">
-            <param name="Name" value="theta" />
-          </paramlist>
-        </User>
-        <Wire classid="WireOrthogonal" id="610020080" name="" x="1098" y="306" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1333859696" name="" x="1656" y="396" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="1333859696" name="" x="1476" y="342" w="28" h="10" orient="0" disable="false">
-          <vertex x="0" y="0" />
-          <vertex x="18" y="0" />
-        </Wire>
-        <User classid="UserCmp" id="1195399151" name="master:ammeter" x="1512" y="342" w="44" h="28" z="240" orient="6" defn="master:ammeter" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1195399151" name="master:ammeter" x="1692" y="396" w="44" h="28" z="290" orient="6" defn="master:ammeter" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="119030036">
             <param name="Name" value="I_PCC" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="722295910" name="master:voltmetergnd" x="1494" y="342" w="42" h="36" z="220" orient="0" defn="master:voltmetergnd" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="722295910" name="master:voltmetergnd" x="1674" y="396" w="42" h="36" z="280" orient="0" defn="master:voltmetergnd" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="116145885">
             <param name="Name" value="V_PCC" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="13702991" name="" x="1494" y="342" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="13702991" name="" x="1674" y="396" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="795112178" name="" x="1548" y="342" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="795112178" name="" x="1728" y="396" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" name="master:datalabel" id="891179548" x="1080" y="720" w="36" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
-          <paramlist link="-1" name="" crc="127230955">
-            <param name="Name" value="theta" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" name="master:datalabel" id="1782524136" x="1278" y="702" w="22" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="1782524136" x="2196" y="324" w="22" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="idq" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:realpole" id="1646681470" x="1224" y="702" w="80" h="37" z="610" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:realpole" id="1646681470" x="2142" y="324" w="80" h="38" z="700" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="96177319">
             <param name="Limit" value="0" />
             <param name="COM" value="Real_Pole" />
@@ -3430,14 +3470,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="285527713" name="DUT:abc2dq_1" x="1116" y="702" w="81" h="59" z="570" orient="0" defn="Simple_2L_VSC_RLC:abc2dq_1" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="38057765">
-            <param name="Name" value="" />
-            <param name="Xb" value="Ibase" />
-            <param name="qaxis" value="1" />
-          </paramlist>
-        </User>
-        <Wire classid="WireOrthogonal" id="1652015281" name="" x="1278" y="702" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1652015281" name="" x="2196" y="324" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="-18" y="0" />
         </Wire>
@@ -3446,102 +3479,102 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="kp_P" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1657580629" name="master:import" x="72" y="90" w="69" h="25" z="20" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1657580629" name="master:import" x="72" y="90" w="69" h="25" z="40" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="ki_P" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="685345164" name="master:import" x="72" y="126" w="76" h="25" z="30" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="685345164" name="master:import" x="72" y="126" w="76" h="25" z="60" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="kp_Q" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="605229842" name="master:import" x="72" y="162" w="71" h="25" z="50" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="605229842" name="master:import" x="72" y="162" w="71" h="25" z="80" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="ki_Q" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="787965590" name="master:import" x="72" y="198" w="80" h="25" z="70" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="787965590" name="master:import" x="72" y="198" w="80" h="25" z="100" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="kp_CL" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="826017985" name="master:import" x="72" y="234" w="75" h="25" z="90" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="826017985" name="master:import" x="72" y="234" w="75" h="25" z="120" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="ki_CL" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1345792684" name="master:import" x="72" y="270" w="78" h="25" z="110" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1345792684" name="master:import" x="72" y="270" w="78" h="25" z="140" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="Tf_cc" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="524124112" name="master:import" x="72" y="306" w="85" h="25" z="130" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="524124112" name="master:import" x="72" y="306" w="85" h="25" z="160" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="Tf_PLL" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1410676774" name="master:import" x="72" y="342" w="86" h="25" z="150" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1410676774" name="master:import" x="72" y="342" w="86" h="25" z="180" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="kp_PLL" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="593445747" name="master:import" x="72" y="378" w="81" h="25" z="170" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="593445747" name="master:import" x="72" y="378" w="81" h="25" z="200" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="ki_PLL" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="501512857" name="master:import" x="180" y="414" w="79" h="25" z="190" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="501512857" name="master:import" x="180" y="414" w="79" h="25" z="230" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="Sbase" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1093694482" name="master:import" x="90" y="450" w="104" h="25" z="210" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1093694482" name="master:import" x="90" y="450" w="104" h="25" z="250" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="V_LL_RMS" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="447493490" name="master:import" x="540" y="612" w="76" h="25" z="270" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="447493490" name="master:import" x="828" y="576" w="76" h="25" z="300" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="fbase" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1813217390" name="master:import" x="342" y="1008" w="76" h="25" z="360" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1813217390" name="master:import" x="306" y="954" w="76" h="25" z="380" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="p_ref" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="492314182" name="master:import" x="1134" y="990" w="76" h="25" z="380" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="492314182" name="master:import" x="1134" y="936" w="76" h="25" z="410" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="q_ref" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="445373741" name="master:import" x="144" y="918" w="79" h="25" z="320" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="445373741" name="master:import" x="108" y="864" w="79" h="25" z="340" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="w_ref" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="412822951" name="master:import" x="936" y="918" w="75" h="25" z="350" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="412822951" name="master:import" x="936" y="864" w="75" h="25" z="350" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="v_ref" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="2138798363" name="master:import" x="162" y="162" w="73" h="25" z="60" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="2138798363" name="master:import" x="162" y="162" w="73" h="25" z="90" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="kp_v" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1302574286" name="master:import" x="162" y="198" w="78" h="25" z="80" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1302574286" name="master:import" x="162" y="198" w="78" h="25" z="110" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="tau_v" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1691957790" name="master:import" x="162" y="234" w="71" h="25" z="100" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1691957790" name="master:import" x="162" y="234" w="71" h="25" z="130" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="kp_f" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="417409590" name="master:import" x="162" y="270" w="76" h="25" z="120" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="417409590" name="master:import" x="162" y="270" w="76" h="25" z="150" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="tau_f" />
           </paramlist>
@@ -3555,12 +3588,12 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="36" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:realpole" id="1201149288" x="900" y="702" w="80" h="37" z="540" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:realpole" id="1201149288" x="2142" y="414" w="80" h="38" z="550" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="96177319">
             <param name="Limit" value="0" />
             <param name="COM" value="Real_Pole" />
-            <param name="Reset" value="0" />
-            <param name="YO" value="0.0" />
+            <param name="Reset" value="2" />
+            <param name="YO" value="1" />
             <param name="G" value="1.0" />
             <param name="T" value="Tf_cc" />
             <param name="Max" value="10.0" />
@@ -3569,7 +3602,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:datatap" id="1041659186" x="1026" y="720" w="28" h="26" z="430" orient="0" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datatap" id="1041659186" x="2250" y="396" w="28" h="26" z="560" orient="6" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="38224701">
             <param name="Index" value="2" />
             <param name="Dim" value="1" />
@@ -3579,7 +3612,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:datatap" id="1947932060" x="1008" y="720" w="28" h="26" z="990" orient="0" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datatap" id="1947932060" x="2232" y="396" w="28" h="26" z="1090" orient="6" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="38224701">
             <param name="Index" value="1" />
             <param name="Dim" value="1" />
@@ -3589,52 +3622,48 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1489030615" name="" x="972" y="702" w="46" h="10" orient="0" disable="false">
-          <vertex x="0" y="0" />
-          <vertex x="36" y="0" />
-        </Wire>
-        <User classid="UserCmp" name="master:datalabel" id="869636328" x="954" y="702" w="26" h="23" z="1" orient="4" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="869636328" x="2196" y="414" w="26" h="23" z="1" orient="4" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="vdq" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="49454712" name="" x="936" y="702" w="46" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="49454712" name="" x="2178" y="414" w="64" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
-          <vertex x="36" y="0" />
+          <vertex x="54" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="571782913" name="" x="306" y="756" w="10" h="28" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="571782913" name="" x="594" y="720" w="10" h="28" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="18" />
         </Wire>
-        <User classid="UserCmp" defn="master:mult" id="1373289209" x="576" y="648" w="56" h="80" z="290" orient="1" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:mult" id="1373289209" x="864" y="612" w="56" h="80" z="320" orient="1" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="29714769">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:emtconst" id="291813753" x="504" y="648" w="76" h="22" z="280" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:emtconst" id="291813753" x="792" y="612" w="76" h="21" z="310" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="116269466">
             <param name="Name" value="" />
             <param name="Value" value="1" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:emtconst" id="1782542846" x="216" y="378" w="76" h="22" z="180" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:emtconst" id="1782542846" x="216" y="378" w="76" h="21" z="210" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="116269466">
             <param name="Name" value="" />
             <param name="Value" value="14" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:mult" id="519476834" x="252" y="414" w="80" h="56" z="200" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:mult" id="519476834" x="252" y="414" w="80" h="56" z="240" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="29714769">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:div" id="387925305" x="324" y="414" w="80" h="59" z="410" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:div" id="387925305" x="324" y="414" w="80" h="60" z="470" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="74852640">
             <param name="Dim" value="1" />
             <param name="Name" value="" />
@@ -3654,72 +3683,44 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:div" id="287763388" x="324" y="486" w="80" h="59" z="400" orient="6" link="-1" q="4" disable="false">
-          <paramlist link="-1" name="" crc="74852640">
-            <param name="Dim" value="1" />
-            <param name="Name" value="" />
-            <param name="DPath" value="1" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" id="1289982263" name="master:const" x="252" y="486" w="76" h="22" z="260" orient="0" defn="master:const" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="10628662">
-            <param name="Name" value="" />
-            <param name="Value" value="1.0" />
-            <param name="Dim" value="1" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" id="354758953" name="master:datalabel" x="378" y="486" w="44" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="127230955">
-            <param name="Name" value="Vtoabs" />
-          </paramlist>
-        </User>
-        <Wire classid="WireOrthogonal" id="420022925" name="" x="360" y="486" w="28" h="10" orient="0" disable="false">
-          <vertex x="0" y="0" />
-          <vertex x="18" y="0" />
-        </Wire>
-        <User classid="UserCmp" name="master:datalabel" id="1913810213" x="774" y="684" w="42" h="23" z="1" orient="6" defn="master:datalabel" link="-1" q="4" disable="false">
-          <paramlist link="-1" name="" crc="127230955">
-            <param name="Name" value="V_PCC" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" name="master:datalabel" id="158326705" x="1080" y="684" w="38" h="23" z="1" orient="6" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="158326705" x="1890" y="252" w="38" h="23" z="1" orient="6" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="I_PCC" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1128776187" name="" x="342" y="684" w="46" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1128776187" name="" x="630" y="648" w="46" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="36" y="0" />
         </Wire>
-        <Wire classid="WireOrthogonal" id="745194046" name="" x="774" y="954" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="745194046" name="" x="774" y="900" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" name="master:datalabel" id="1739783621" x="630" y="1008" w="36" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="1739783621" x="594" y="954" w="36" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="id_ref" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="1437726631" x="1008" y="720" w="18" h="23" z="1" orient="4" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="1437726631" x="2232" y="396" w="18" h="23" z="1" orient="2" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="vd" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="959740294" x="1026" y="720" w="18" h="23" z="1" orient="4" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="959740294" x="2250" y="396" w="18" h="23" z="1" orient="2" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="vq" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="665213235" x="216" y="774" w="18" h="23" z="1" orient="4" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="665213235" x="504" y="738" w="18" h="23" z="1" orient="4" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="vq" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1952173899" name="" x="216" y="774" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1952173899" name="" x="504" y="738" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:datatap" id="1529168013" x="1332" y="720" w="28" h="26" z="890" orient="0" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datatap" id="1529168013" x="2250" y="306" w="28" h="26" z="990" orient="6" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="38224701">
             <param name="Index" value="2" />
             <param name="Dim" value="1" />
@@ -3729,7 +3730,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:datatap" id="1904157524" x="1314" y="720" w="28" h="26" z="860" orient="0" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:datatap" id="1904157524" x="2232" y="306" w="28" h="26" z="960" orient="6" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="38224701">
             <param name="Index" value="1" />
             <param name="Dim" value="1" />
@@ -3739,39 +3740,39 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1678937023" name="" x="1278" y="702" w="46" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1678937023" name="" x="2196" y="324" w="46" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="36" y="0" />
         </Wire>
-        <User classid="UserCmp" name="master:datalabel" id="1797702840" x="1314" y="720" w="14" h="23" z="1" orient="4" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="1797702840" x="2232" y="306" w="14" h="23" z="1" orient="2" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="id" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="1572271541" x="1332" y="720" w="14" h="23" z="1" orient="4" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="1572271541" x="2250" y="306" w="14" h="23" z="1" orient="2" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="iq" />
           </paramlist>
         </User>
-        <User classid="UserCmp" name="master:datalabel" id="2063033555" x="540" y="756" w="42" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="2063033555" x="828" y="720" w="42" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="omega" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1181315978" name="" x="540" y="756" w="10" h="46" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1181315978" name="" x="828" y="720" w="10" h="46" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="0" y="-36" />
         </Wire>
-        <User classid="UserCmp" name="master:datalabel" id="598335398" x="774" y="720" w="36" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" name="master:datalabel" id="598335398" x="1062" y="684" w="36" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="127230955">
             <param name="Name" value="theta" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1667762180" name="" x="756" y="720" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1667762180" name="" x="1044" y="684" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:div" id="505877432" x="360" y="450" w="80" h="59" z="420" orient="6" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:div" id="505877432" x="360" y="450" w="80" h="60" z="480" orient="6" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="74852640">
             <param name="Dim" value="1" />
             <param name="Name" value="" />
@@ -3783,78 +3784,46 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="Zbase" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1323328391" name="master:datalabel" x="576" y="684" w="48" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1323328391" name="master:datalabel" x="864" y="648" w="48" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="w_base" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:select" id="1349827144" x="1152" y="918" w="82" h="91" z="700" orient="6" link="-1" q="4" disable="false">
-          <paramlist link="-1" name="" crc="108938206">
-            <param name="A" value="0" />
-            <param name="DPath" value="1" />
-            <param name="COM" value="Selector" />
-            <param name="Dim" value="1" />
-            <param name="Name" value="" />
-          </paramlist>
-        </User>
-        <Wire classid="WireOrthogonal" id="1152047146" name="" x="1188" y="918" w="28" h="46" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1152047146" name="" x="1116" y="864" w="100" h="46" orient="0" disable="false">
           <vertex x="0" y="0" />
-          <vertex x="18" y="0" />
-          <vertex x="18" y="36" />
+          <vertex x="90" y="0" />
+          <vertex x="90" y="36" />
         </Wire>
-        <User classid="UserCmp" id="435270956" name="master:const" x="1080" y="954" w="76" h="22" z="370" orient="0" defn="master:const" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="10628662">
-            <param name="Name" value="" />
-            <param name="Value" value="0.0" />
-            <param name="Dim" value="1" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" id="185198454" name="master:import" x="1116" y="882" w="79" h="25" z="340" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="185198454" name="master:import" x="1044" y="936" w="79" h="25" z="390" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="v_sup" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:select" id="877951135" x="360" y="918" w="82" h="91" z="710" orient="6" link="-1" q="4" disable="false">
-          <paramlist link="-1" name="" crc="108938206">
-            <param name="A" value="0" />
-            <param name="DPath" value="1" />
-            <param name="COM" value="Selector" />
-            <param name="Dim" value="1" />
-            <param name="Name" value="" />
-          </paramlist>
-        </User>
-        <Wire classid="WireOrthogonal" id="140743676" name="" x="396" y="918" w="28" h="64" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="140743676" name="" x="288" y="864" w="100" h="64" orient="0" disable="false">
           <vertex x="0" y="0" />
-          <vertex x="18" y="0" />
-          <vertex x="18" y="54" />
+          <vertex x="90" y="0" />
+          <vertex x="90" y="54" />
         </Wire>
-        <User classid="UserCmp" id="625197249" name="master:const" x="288" y="954" w="76" h="22" z="330" orient="0" defn="master:const" link="-1" q="4" disable="false">
-          <paramlist name="" link="-1" crc="10628662">
-            <param name="Name" value="" />
-            <param name="Value" value="0.0" />
-            <param name="Dim" value="1" />
-          </paramlist>
-        </User>
-        <User classid="UserCmp" id="659805017" name="master:import" x="324" y="882" w="77" h="25" z="310" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="659805017" name="master:import" x="216" y="936" w="77" h="25" z="360" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="f_sup" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:emtconst" id="1684297599" x="72" y="486" w="76" h="22" z="230" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:emtconst" id="1684297599" x="72" y="486" w="76" h="21" z="260" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="116269466">
             <param name="Name" value="" />
             <param name="Value" value="14" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:sqrt" id="1679458792" x="144" y="486" w="80" h="36" z="250" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:sqrt" id="1679458792" x="144" y="486" w="80" h="36" z="270" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="110615855">
             <param name="Dim" value="1" />
             <param name="Name" value="" />
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:mult" id="1789856181" x="180" y="450" w="80" h="56" z="390" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:mult" id="1789856181" x="180" y="450" w="80" h="56" z="420" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="29714769">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
@@ -3870,7 +3839,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="Vbase" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:varrlc" id="2147394928" x="1386" y="342" w="44" h="52" z="1160" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:varrlc" id="2147394928" x="1566" y="396" w="44" h="51" z="1270" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="130577312">
             <param name="RLC" value="0" />
             <param name="R" value="Rf" />
@@ -3882,7 +3851,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:varrlc" id="1175130995" x="1440" y="342" w="44" h="52" z="1150" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:varrlc" id="1175130995" x="1620" y="396" w="44" h="51" z="1260" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="130577312">
             <param name="RLC" value="1" />
             <param name="R" value="1.0 [ohm]" />
@@ -3894,29 +3863,29 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1195163290" name="" x="1422" y="342" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1195163290" name="" x="1602" y="396" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" id="2013345332" name="master:annotation" x="522" y="900" w="152" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="2013345332" name="master:annotation" x="486" y="846" w="152" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="5338603">
             <param name="AL1" value="ACTIVE POWER CONTROL" />
             <param name="AL2" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1426851569" name="master:annotation" x="1314" y="900" w="166" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1426851569" name="master:annotation" x="1314" y="846" w="166" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="5338603">
             <param name="AL1" value="REACTIVE POWER CONTROL" />
             <param name="AL2" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="578006971" name="master:annotation" x="342" y="648" w="126" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="578006971" name="master:annotation" x="558" y="576" w="126" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="5338603">
             <param name="AL1" value="PHASE LOCKED LOOP" />
             <param name="AL2" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1632632474" name="master:annotation" x="1440" y="378" w="100" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1632632474" name="master:annotation" x="1620" y="432" w="100" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="5338603">
             <param name="AL1" value="PHASE REACTOR" />
             <param name="AL2" value="" />
@@ -3928,91 +3897,87 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="AL2" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="727837793" name="master:annotation" x="936" y="630" w="280" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="727837793" name="master:annotation" x="2070" y="180" w="280" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="5338603">
             <param name="AL1" value="MEASUREMENTS, PU AND DQ TRANSFORMATION" />
             <param name="AL2" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="997786417" name="master:import" x="162" y="306" w="60" h="25" z="140" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="997786417" name="master:import" x="162" y="306" w="60" h="25" z="170" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="l_f" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1678525956" name="master:import" x="162" y="342" w="62" h="25" z="160" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1678525956" name="master:import" x="162" y="342" w="62" h="25" z="190" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="r_f" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="542787695" name="master:datalabel" x="1314" y="522" w="48" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="542787695" name="master:datalabel" x="1548" y="234" w="48" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="w_base" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="2137832459" name="master:datalabel" x="1278" y="486" w="38" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="2137832459" name="master:datalabel" x="1512" y="198" w="38" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="Zbase" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:div" id="172044657" x="1314" y="486" w="80" h="59" z="1080" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:div" id="172044657" x="1548" y="198" w="80" h="60" z="1190" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="74852640">
             <param name="Dim" value="1" />
             <param name="Name" value="" />
             <param name="DPath" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:mult" id="852705892" x="1422" y="486" w="80" h="56" z="1130" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:mult" id="852705892" x="1656" y="198" w="80" h="56" z="1230" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="29714769">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1749179283" name="" x="1350" y="486" w="46" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="1749179283" name="" x="1584" y="198" w="46" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="36" y="0" />
         </Wire>
-        <User classid="UserCmp" defn="master:mult" id="1951235920" x="1368" y="576" w="80" h="56" z="1120" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:mult" id="1951235920" x="1602" y="288" w="80" h="56" z="1220" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="29714769">
             <param name="DPath" value="1" />
             <param name="Name" value="" />
             <param name="Dim" value="1" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="890837034" name="master:datalabel" x="1368" y="612" w="38" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="890837034" name="master:datalabel" x="1602" y="324" w="38" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="Zbase" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="127125558" name="master:datalabel" x="1422" y="576" w="16" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="127125558" name="master:datalabel" x="1656" y="288" w="16" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="Rf" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="458385493" name="" x="1404" y="576" w="28" h="10" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="458385493" name="" x="1638" y="288" w="28" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
-        <User classid="UserCmp" id="1376869252" name="master:datalabel" x="1458" y="486" w="16" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1376869252" name="master:datalabel" x="1692" y="198" w="16" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="Lf" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="1741663810" name="master:datalabel" x="1422" y="522" w="18" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1741663810" name="master:datalabel" x="1656" y="234" w="18" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="l_f" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="596930623" name="master:datalabel" x="1332" y="576" w="20" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="596930623" name="master:datalabel" x="1566" y="288" w="20" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="127230955">
             <param name="Name" value="r_f" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1508761090" name="" x="1152" y="702" w="46" h="10" orient="0" disable="false">
-          <vertex x="0" y="0" />
-          <vertex x="36" y="0" />
-        </Wire>
-        <User classid="UserCmp" id="77290067" name="master:pgb" x="1278" y="774" w="41" h="40" z="1110" orient="0" defn="master:pgb" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="77290067" name="master:pgb" x="2196" y="270" w="41" h="40" z="1310" orient="0" defn="master:pgb" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="55341900">
             <param name="Name" value="idq" />
             <param name="Group" value="" />
@@ -4030,15 +3995,11 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="gaddress" value="100663303" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="1066329550" name="" x="846" y="702" w="28" h="10" orient="0" disable="false">
-          <vertex x="0" y="0" />
-          <vertex x="18" y="0" />
-        </Wire>
-        <Frame classid="GraphFrame" id="777252360" name="frame" link="-1" x="756" y="828" w="576" h="288">
+        <Frame classid="GraphFrame" id="777252360" name="frame" link="-1" x="1512" y="558" w="576" h="288">
           <paramlist link="-1" name="">
             <param name="Icon" value="756,828" />
-            <param name="state" value="0" />
-            <param name="title" value="$(GROUP) : Graphs" />
+            <param name="state" value="1" />
+            <param name="title" value="$(GROUP) : Monitoring" />
             <param name="XLabel" value="sec" />
             <param name="Pan" value="false" />
             <param name="pan_enable" value="false" />
@@ -4092,17 +4053,20 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
               <param name="ymin" value="-1" />
               <param name="ymax" value="1" />
             </paramlist>
-            <Curve classid="Curve" id="1051017076" name="idq" link="77290067" color="0" bold="0" show="0" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
+            <Curve classid="Curve" id="1051017076" name="idq" link="77290067" color="0" bold="0" show="-4" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
               <path />
             </Curve>
             <Curve classid="Curve" id="2027691077" name="i_mag" link="1901877114" color="0" bold="0" show="-1" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
               <path />
             </Curve>
+            <Curve classid="Curve" id="1363821728" name="vdq" link="1265062054" color="0" bold="0" show="-3" mode="0" gradient="false" transparency="255" thresh="0.5" above="High" below="Low" style="0">
+              <path />
+            </Curve>
           </Graph>
         </Frame>
-        <Wire classid="WireOrthogonal" id="266308865" name="" x="1278" y="774" w="10" h="82" orient="0" disable="false">
+        <Wire classid="WireOrthogonal" id="266308865" name="" x="2196" y="270" w="10" h="64" orient="0" disable="false">
           <vertex x="0" y="0" />
-          <vertex x="0" y="-72" />
+          <vertex x="0" y="54" />
         </Wire>
         <User classid="UserCmp" id="786683905" name="master:annotation" x="594" y="216" w="174" h="20" z="1" orient="0" defn="master:annotation" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="5338603">
@@ -4110,12 +4074,12 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="AL2" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:realpole" id="968812698" x="378" y="1062" w="80" h="37" z="740" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:realpole" id="968812698" x="342" y="1008" w="80" h="38" z="840" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="96177319">
             <param name="Limit" value="0" />
             <param name="COM" value="Real_Pole" />
             <param name="Reset" value="2" />
-            <param name="YO" value="p_ref" />
+            <param name="YO" value="0" />
             <param name="G" value="1.0" />
             <param name="T" value="tau_pq_meas" />
             <param name="Max" value="10.0" />
@@ -4124,12 +4088,12 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:realpole" id="1031573577" x="1170" y="1044" w="80" h="37" z="720" orient="0" link="-1" q="4" disable="false">
+        <User classid="UserCmp" defn="master:realpole" id="1031573577" x="1170" y="990" w="80" h="38" z="820" orient="0" link="-1" q="4" disable="false">
           <paramlist link="-1" name="" crc="96177319">
             <param name="Limit" value="0" />
             <param name="COM" value="Real_Pole" />
             <param name="Reset" value="2" />
-            <param name="YO" value="q_ref" />
+            <param name="YO" value="0" />
             <param name="G" value="1.0" />
             <param name="T" value="tau_pq_meas" />
             <param name="Max" value="10.0" />
@@ -4138,15 +4102,11 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="" />
           </paramlist>
         </User>
-        <User classid="UserCmp" id="931973092" name="master:import" x="198" y="126" w="121" h="25" z="40" orient="0" defn="master:import" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="931973092" name="master:import" x="198" y="126" w="121" h="25" z="70" orient="0" defn="master:import" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="117509081">
             <param name="Name" value="tau_pq_meas" />
           </paramlist>
         </User>
-        <Wire classid="WireOrthogonal" id="281911702" name="" x="1062" y="288" w="28" h="10" orient="0" disable="false">
-          <vertex x="0" y="0" />
-          <vertex x="18" y="0" />
-        </Wire>
         <Wire classid="WireOrthogonal" id="933762594" name="" x="450" y="270" w="46" h="10" orient="0" disable="false">
           <vertex x="0" y="0" />
           <vertex x="36" y="0" />
@@ -4163,7 +4123,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="0" y="126" />
         </Wire>
-        <User classid="UserCmp" id="1901877114" name="master:pgb" x="576" y="360" w="49" h="40" z="1210" orient="0" defn="master:pgb" link="-1" q="4" disable="false">
+        <User classid="UserCmp" id="1901877114" name="master:pgb" x="576" y="360" w="49" h="40" z="1330" orient="0" defn="master:pgb" link="-1" q="4" disable="false">
           <paramlist name="" link="-1" crc="55341900">
             <param name="Name" value="i_mag" />
             <param name="Group" value="" />
@@ -4188,7 +4148,7 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
             <param name="Name" value="id" />
           </paramlist>
         </User>
-        <User classid="UserCmp" defn="master:polar_rec" id="1032089903" x="522" y="378" w="97" h="73" z="1190" orient="0" link="-1" layer="" q="4" disable="false">
+        <User classid="UserCmp" defn="master:polar_rec" id="1032089903" x="522" y="378" w="97" h="73" z="1320" orient="0" link="-1" layer="" q="4" disable="false">
           <paramlist link="-1" name="" crc="16778969">
             <param name="Dir" value="1" />
             <param name="AngUnit" value="0" />
@@ -4207,18 +4167,304 @@ Around 45% of series compensation can be inserted by opening the enable_series_C
           <vertex x="0" y="0" />
           <vertex x="18" y="0" />
         </Wire>
+        <User classid="UserCmp" id="1265062054" name="master:pgb" x="2196" y="414" w="40" h="41" z="1240" orient="3" defn="master:pgb" link="-1" q="4" disable="false">
+          <paramlist name="" link="-1" crc="55341900">
+            <param name="Name" value="vdq" />
+            <param name="Group" value="" />
+            <param name="UseSignalName" value="1" />
+            <param name="enab" value="1" />
+            <param name="Display" value="1" />
+            <param name="Scale" value="1.0" />
+            <param name="Units" value="" />
+            <param name="mrun" value="0" />
+            <param name="Pol" value="0" />
+            <param name="Max" value="2.0" />
+            <param name="Min" value="-2.0" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:tdelay" id="564124947" x="1332" y="288" w="80" h="36" z="1170" orient="0" link="-1" q="4" disable="true">
+          <paramlist link="-1" name="" crc="21496410">
+            <param name="T" value="t_delay" />
+            <param name="N" value="1000" />
+            <param name="Intp" value="0" />
+            <param name="COM" value="Delay" />
+            <param name="Dim" value="3" />
+            <param name="Init" value="0" />
+            <param name="X0" value="0.0" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" id="1423132396" name="master:import" x="162" y="90" w="87" h="25" z="50" orient="0" defn="master:import" link="-1" q="4" disable="false">
+          <paramlist name="" link="-1" crc="117509081">
+            <param name="Name" value="t_delay" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:abcdq0" id="1882314671" x="1170" y="288" w="80" h="60" z="1160" orient="0" link="-1" layer="" q="4" disable="false">
+          <paramlist link="-1" name="" crc="116491288">
+            <param name="IDir" value="0" />
+            <param name="Theta" value="theta" />
+            <param name="dqorder" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:mult" id="727366453" x="1260" y="342" w="80" h="56" z="1180" orient="6" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="29714769">
+            <param name="DPath" value="1" />
+            <param name="Name" value="" />
+            <param name="Dim" value="3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" id="1929840858" name="master:const" x="1098" y="306" w="76" h="22" z="220" orient="0" defn="master:const" link="-1" q="4" disable="false">
+          <paramlist name="" link="-1" crc="10628662">
+            <param name="Name" value="" />
+            <param name="Value" value="0" />
+            <param name="Dim" value="1" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="520766360" name="" x="1062" y="162" w="82" h="118" orient="0" disable="false">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="108" />
+          <vertex x="72" y="108" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="208450474" name="" x="1062" y="432" w="82" h="154" orient="0" disable="false">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-144" />
+          <vertex x="72" y="-144" />
+        </Wire>
+        <User classid="UserCmp" defn="master:datamerge" id="482212812" x="1224" y="342" w="27" h="80" z="1170" orient="4" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="43697768">
+            <param name="N" value="3" />
+            <param name="Type" value="2" />
+            <param name="Disp" value="1" />
+            <param name="View" value="0" />
+            <param name="Dim1" value="1" />
+            <param name="Dim2" value="1" />
+            <param name="Dim3" value="1" />
+            <param name="Dim4" value="1" />
+            <param name="Dim5" value="1" />
+            <param name="Dim6" value="1" />
+            <param name="Dim7" value="1" />
+            <param name="Dim8" value="1" />
+            <param name="Dim9" value="1" />
+            <param name="Dim10" value="1" />
+            <param name="Dim11" value="1" />
+            <param name="Dim12" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" id="212597093" name="master:datalabel" x="1260" y="306" w="38" h="23" z="1" orient="6" defn="master:datalabel" link="-1" q="4" disable="false">
+          <paramlist name="" link="-1" crc="127230955">
+            <param name="Name" value="Vbase" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:abcdq0" id="477669280" x="2052" y="288" w="80" h="60" z="670" orient="0" link="-1" layer="" q="4" disable="false">
+          <paramlist link="-1" name="" crc="116491288">
+            <param name="IDir" value="1" />
+            <param name="Theta" value="theta" />
+            <param name="dqorder" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:datamerge" id="1894628523" x="2106" y="342" w="27" h="62" z="690" orient="4" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="43697768">
+            <param name="N" value="2" />
+            <param name="Type" value="2" />
+            <param name="Disp" value="1" />
+            <param name="View" value="0" />
+            <param name="Dim1" value="1" />
+            <param name="Dim2" value="1" />
+            <param name="Dim3" value="1" />
+            <param name="Dim4" value="1" />
+            <param name="Dim5" value="1" />
+            <param name="Dim6" value="1" />
+            <param name="Dim7" value="1" />
+            <param name="Dim8" value="1" />
+            <param name="Dim9" value="1" />
+            <param name="Dim10" value="1" />
+            <param name="Dim11" value="1" />
+            <param name="Dim12" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:div" id="583651217" x="1944" y="252" w="80" h="60" z="490" orient="0" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="74852640">
+            <param name="Dim" value="3" />
+            <param name="Name" value="" />
+            <param name="DPath" value="1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" id="1168819441" name="master:datalabel" x="1944" y="288" w="34" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+          <paramlist name="" link="-1" crc="127230955">
+            <param name="Name" value="Ibase" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="1852364334" name="" x="1890" y="252" w="28" h="10" orient="0" disable="false">
+          <vertex x="0" y="0" />
+          <vertex x="18" y="0" />
+        </Wire>
+        <User classid="UserCmp" defn="master:datatap" id="1579079642" x="2016" y="288" w="26" h="28" z="510" orient="7" link="-1" layer="" q="4" disable="false">
+          <paramlist link="-1" name="" crc="38224701">
+            <param name="Index" value="2" />
+            <param name="Dim" value="1" />
+            <param name="Type" value="2" />
+            <param name="Style" value="0" />
+            <param name="Disp" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:datatap" id="1638355367" x="2016" y="270" w="26" h="28" z="500" orient="7" link="-1" layer="" q="4" disable="false">
+          <paramlist link="-1" name="" crc="38224701">
+            <param name="Index" value="1" />
+            <param name="Dim" value="1" />
+            <param name="Type" value="2" />
+            <param name="Style" value="0" />
+            <param name="Disp" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:datatap" id="626598808" x="2016" y="306" w="26" h="28" z="520" orient="7" link="-1" layer="" q="4" disable="false">
+          <paramlist link="-1" name="" crc="38224701">
+            <param name="Index" value="3" />
+            <param name="Dim" value="1" />
+            <param name="Type" value="2" />
+            <param name="Style" value="0" />
+            <param name="Disp" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="1010499943" name="" x="1980" y="252" w="28" h="46" orient="0" disable="false">
+          <vertex x="0" y="0" />
+          <vertex x="18" y="0" />
+          <vertex x="18" y="36" />
+        </Wire>
+        <User classid="UserCmp" name="master:datalabel" id="1531709918" x="1890" y="342" w="42" h="23" z="1" orient="6" defn="master:datalabel" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="127230955">
+            <param name="Name" value="V_PCC" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:div" id="490093818" x="1944" y="342" w="80" h="60" z="430" orient="0" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="74852640">
+            <param name="Dim" value="3" />
+            <param name="Name" value="" />
+            <param name="DPath" value="1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" id="534933568" name="master:datalabel" x="1944" y="378" w="38" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+          <paramlist name="" link="-1" crc="127230955">
+            <param name="Name" value="Vbase" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:datatap" id="771838437" x="2016" y="378" w="26" h="28" z="450" orient="7" link="-1" layer="" q="4" disable="false">
+          <paramlist link="-1" name="" crc="38224701">
+            <param name="Index" value="2" />
+            <param name="Dim" value="1" />
+            <param name="Type" value="2" />
+            <param name="Style" value="0" />
+            <param name="Disp" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:datatap" id="191027571" x="2016" y="360" w="26" h="28" z="440" orient="7" link="-1" layer="" q="4" disable="false">
+          <paramlist link="-1" name="" crc="38224701">
+            <param name="Index" value="1" />
+            <param name="Dim" value="1" />
+            <param name="Type" value="2" />
+            <param name="Style" value="0" />
+            <param name="Disp" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:datatap" id="864047009" x="2016" y="396" w="26" h="28" z="460" orient="7" link="-1" layer="" q="4" disable="false">
+          <paramlist link="-1" name="" crc="38224701">
+            <param name="Index" value="3" />
+            <param name="Dim" value="1" />
+            <param name="Type" value="2" />
+            <param name="Style" value="0" />
+            <param name="Disp" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="1100169007" name="" x="1980" y="342" w="28" h="46" orient="0" disable="false">
+          <vertex x="0" y="0" />
+          <vertex x="18" y="0" />
+          <vertex x="18" y="36" />
+        </Wire>
+        <User classid="UserCmp" defn="master:abcdq0" id="2017071994" x="2052" y="378" w="80" h="60" z="530" orient="0" link="-1" layer="" q="4" disable="false">
+          <paramlist link="-1" name="" crc="116491288">
+            <param name="IDir" value="1" />
+            <param name="Theta" value="theta" />
+            <param name="dqorder" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:datamerge" id="846995395" x="2106" y="432" w="27" h="62" z="540" orient="4" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="43697768">
+            <param name="N" value="2" />
+            <param name="Type" value="2" />
+            <param name="Disp" value="1" />
+            <param name="View" value="0" />
+            <param name="Dim1" value="1" />
+            <param name="Dim2" value="1" />
+            <param name="Dim3" value="1" />
+            <param name="Dim4" value="1" />
+            <param name="Dim5" value="1" />
+            <param name="Dim6" value="1" />
+            <param name="Dim7" value="1" />
+            <param name="Dim8" value="1" />
+            <param name="Dim9" value="1" />
+            <param name="Dim10" value="1" />
+            <param name="Dim11" value="1" />
+            <param name="Dim12" value="1" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="1692465344" name="" x="1890" y="342" w="28" h="10" orient="0" disable="false">
+          <vertex x="0" y="0" />
+          <vertex x="18" y="0" />
+        </Wire>
+        <User classid="UserCmp" defn="master:inv" id="99789646" x="1080" y="936" w="25" h="44" z="400" orient="3" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="58931267">
+            <param name="INTR" value="0" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:inv" id="1201888879" x="252" y="936" w="25" h="44" z="370" orient="3" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="58931267">
+            <param name="INTR" value="0" />
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" id="1485653941" name="master:import" x="162" y="54" w="78" h="25" z="20" orient="0" defn="master:import" link="-1" q="4" disable="false">
+          <paramlist name="" link="-1" crc="117509081">
+            <param name="Name" value="i_max" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" defn="master:gain" id="490024815" x="234" y="54" w="80" h="36" z="30" orient="0" link="-1" q="4" disable="false">
+          <paramlist link="-1" name="" crc="34173863">
+            <param name="G" value="-1" />
+            <param name="COM" value="Gain" />
+            <param name="Dim" value="1" />
+            <param name="Name" value="" />
+            <param name="DPath" value="1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" id="755733461" name="master:datalabel" x="306" y="54" w="64" h="23" z="1" orient="0" defn="master:datalabel" link="-1" q="4" disable="false">
+          <paramlist name="" link="-1" crc="127230955">
+            <param name="Name" value="i_max_neg" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="1944635942" name="" x="306" y="54" w="46" h="10" orient="0" disable="false">
+          <vertex x="0" y="0" />
+          <vertex x="-36" y="0" />
+        </Wire>
       </schematic>
     </Definition>
   </definitions>
   <List classid="Resource" />
   <hierarchy>
-    <call link="1861332368" name="Simple_2L_VSC_RLC:DS" z="-1" view="false" instance="0">
+    <call link="1989839071" name="Simple_2L_VSC_RLC:DS" z="-1" view="false" instance="0">
       <call link="1391491652" name="Simple_2L_VSC_RLC:Main" z="-1" view="true" instance="0">
-        <call link="406903800" name="Simple_2L_VSC_RLC:VSC2L" z="20" view="false" instance="0">
-          <call link="437604403" name="Simple_2L_VSC_RLC:abc2dq_1" z="530" view="false" instance="0" />
-          <call link="285527713" name="Simple_2L_VSC_RLC:abc2dq_1" z="570" view="false" instance="1" />
-          <call link="1390813666" name="Simple_2L_VSC_RLC:dq2abc" z="1070" view="false" instance="0" />
-        </call>
+        <call link="406903800" name="Simple_2L_VSC_RLC:VSC2L" z="20" view="false" instance="0" />
         <call link="546001545" name="Z_tool:ACscan" z="40" view="false" instance="0" />
       </call>
     </call>

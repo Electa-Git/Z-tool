@@ -1,0 +1,16 @@
+<workspace name="TF_test" version="5.0.2" crc="6724521">
+  <projects>
+    <project type="library" name="Z_tool" filepath="..\..\Source\ztoolacdc\Scan\Z_tool.pslx" />
+    <project type="project" name="Test_TF" filepath=".\Test_TF.pscx" />
+  </projects>
+  <simulations>
+  </simulations>
+  <pmr />
+  <messagegrid expanded="">
+    <column name="Icon" />
+    <column name="Id" />
+    <column name="Component" />
+    <column name="Namespace" />
+    <column name="Description" />
+  </messagegrid>
+</workspace>

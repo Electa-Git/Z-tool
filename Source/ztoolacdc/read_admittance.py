@@ -2,7 +2,7 @@
 Function to read the addmittance files as obtained with the tool
 """
 """
-Copyright (C) 2024  Francisco Javier Cifuentes Garcia
+Copyright (C) 2026  Francisco Javier Cifuentes Garcia
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,33 +43,30 @@ class Admittance:
             self.vars.append("_".join([b[:-2],name_loop.split("_")[-1]]))
             if b not in self.blocks: self.blocks.append(b)  # "-".join(b.split("-")[:-1])
             if self.blocks[-1] not in list(self.blocks_info.keys()):
-                self.blocks_info[self.blocks[-1]] = {"type": y_type[-1], "side": b[-1]}  # b..split("-")[-1]
+                self.blocks_info[self.blocks[-1]] = {"type": y_type[-1], "side": b[-1] if len(b) > 1 else 1}  # b..split("-")[-1]
         y_type = list(set(y_type))
         if len(y_type) != 1: y_type = ["ACDC"]
         # print(self.blocks[-1],self.blocks_info[self.blocks[-1]])  # Only the name of the blocks as they appear in the matrix (.txt file)
         # print(self.vars)
         self.y_type = y_type[0]  # AC, DC or ACDC
-        if node or self.y_type == "ACDC":
-            #  or (admittance.shape[1] == 2 and self.y_type == "AC") or (admittance.shape[1] == 1 and self.y_type == "DC")
+        # TODO: update the logic to define if the addmitance is part of the node or edge subsystems
+        if node or self.y_type == "ACDC" or (admittance.shape[1] == 2 and self.y_type == "AC") or (admittance.shape[1] == 1 and self.y_type == "DC"):
             self.node = True
         else:
             self.node = False
 
 def read_admittance(path=None, involved_blocks=None, file_name=None, file_root=None):
     if file_name is None:
-        if (involved_blocks or path) is None:
-            print('\nError: One or more required arguments are missing. \n')
-            return
+        if (involved_blocks or path) is None: raise ValueError('Error: One or more required arguments are missing.')
+
         else:
             # Look for the text file involving the indicated blocks
             file_name = [file for file in listdir(path) if (file.endswith("#.txt") and all(x in file for x in involved_blocks))]
             if file_root is not None: file_name = [file for file in file_name if file.startswith(file_root+"#")]
             file_name = file_name[0]
             # and (file.count("#") == len(involved_blocks)+2) Just as many blocks as involved
-    else:
-        if path is None:
-            print('\nError: File path is missing. \n')
-            return
+    elif path is None:
+        raise ValueError('\nError: File path is missing. \n')
 
     # Read the variable names
     with open(path + '\\' + file_name, 'r') as f:

@@ -1,34 +1,46 @@
 # Simple two level VSC example
-This example demonstrates the most simple usage case consisting of a single-bus analysis. The case study contains a basic averaged model of a two-level voltage source converter with constant DC-voltage and grid-supporting controls connected to a Thevenin equivalent with SCR = 2 and X/R = 10. The grid equivalent impedance can be increased until the SCR is too low and small-signal instability is reached. In addition, a series capacitor can be used to represent the series-capacitor compensation which also increases the risk of small-signal stability. 
+This example demonstrates the most simple usage case consisting of a single-bus analysis. The case study contains a basic averaged model of a two-level voltage source converter with constant DC-voltage and grid-supporting controls connected to a Thevenin equivalent with SCR = 2 and X/R = 10. The grid equivalent impedance can be increased until the SCR is too low and small-signal instability is reached. In addition, a series capacitor can be used to represent the series-capacitor compensation which also increases the risk of small-signal stability. This example shows how the Z-tool can be used to quickly obtain insights into the small-signal stability by scanning the converter admittance and performing a Subsynchronous Control Interactions (SSCI) screening study.
 
-## Usage
 The steps below guide you to perform a first frequency-domain analysis using the toolbox. It is assumed that the [pre-requistes](../README.md) are installed.
 
-1. Add the Z-tool PSCAD library to your PSCAD project
 
-2. Place the tool's analysis blocks at the target buses and name them uniquely
+## Setting up the PSCAD model
+Firstly, open the PSCAD workspace file [Single_bus_example.pswx](Single_bus_example.pswx). If you open an existing PSCAD project from a different PC, like the one here, the library will appear grayed-out as it points to a different location. Therefore, in the PSCAD project simply **unload** the grayed-out library by right-cliking on it and selecting _Unload_, then **add the library** file _Z_tool.pslx_ within the Z-tool installation path in your PC (_Scan_ folder at the directory retrieved by cmd `py -m pip show ztoolacdc`), **move it up** before your project files and **save** the changes.
 
-3. Speficy the basic simulation options and frequency range for the study
+![Adding the Z-tool PSCAD library](../../Doc/add_library.png)
 
-4. Run the frequency scan and small-signal stability analysis functions
-
-
-If you are using the tool for the first time in a given project, then add the PSCAD library to your workspace and move it before your project files. The Z-tool library is in the _Scan_ folder within the package, use the cmd `py -m pip show ztoolacdc` to find this folder in your computer. Note that if you open an existing PSCAD project from a different PC, like the [Single_bus_example.pswx](Single_bus_example.pswx), the library will appear grayed-out as it points to a different location. Therefore simply delete it, add it again with the correct Z-tool path in your PC and move it up before your project files.
-
-Next, copy the scan blocks from the library and paste them at the desired analysis buses of your system. It is necessary to give them a name so the results can be related to actual system components.
-Optionally, the base frequency and steady-state voltage amplitude can be specified.
+The provided model already contains an AC scan block placed at the Point of Common Coupling (PCC) of the inverter model under analysis as seen below. The name of the scan block is PCC and will be used to retrieve the scan results. The inverter is at side 1 of the block, while the RLC grid equivalent is at side 2. Two breakers can be used to increase the grid-side impedance as well as insert series capacitor compensation at the desired times.
 
 ![block_location](../../Doc/single_bus_blocks.png)
 
-For a single-bus analysis point, the system topology information does not need to be provided. The next step is to introduce the scan parameters in the corresponding python script. The parameters are provided to the frequency_sweep function which performs the frequency-domain characterization of both the VSC-side and the grid-side simultaneously: [Single_bus_analysis.py](Single_bus_analysis.py) After running the script, the status of the process can be seen in real time.
-When the scan is finished, we can access the results in the specificed results folder. The admittances are ploted in _.pdf_ and saved as _.txt_ tab-separated files.
+## Basic simulation and scan options
+Once the PSCAD model is setup, the scan parameters need to be provided in the corresponding python script [Single_bus_analysis.py](Single_bus_analysis.py). For instance, the frequency sweep is done between `f_min = 1` Hz and `f_max = 500` Hz with a resolution of `f_base = 1` Hz and for a total of `f_points` frequency points.
+The simulation time step (in microseconds) is defined by the `t_step` argument and can highly impact the time needed to complete the scan. In addition, the parameters below have a significant influence on the scanning time:
+1. **Number of parallel simulations** (`num_parallel_sim` argument): this defines the number of simultaneous PSCAD simulations. The default is 8, which is the limit of the basic academic license. However, for an optimal use of computational resources this parameter should be set to the minimum between the maximum allowed by your PSCAD license and the number of cores of your computer.
+2. **Multi-frequency scan** (`multi_freq_scan` argument): when set to `True` it uses 8-tone sinusoidal perturbation signals, while when `False` a single frequency scan is perfomed. Perturbing more frequencies at the same time allows to reduce the total number of simulations proportionally.
+3. **FFT time** (`start_fft` argument): this option defines the time in seconds needed for the subsystems to reach sinusoidal steady-state during the injections. It depends on the particular dynamics of each subsystem; it can be approximated as the settling time after applying a small step in the electrical terminal quantities, i.e. voltage magnitude and angle steps. It should be set as small as possible.
+
+These and other parameters are provided to the `frequency_sweep` function which performs the frequency-domain characterization of both the VSC-side and the grid-side simultaneously. Note that for single-bus analysis, such as this one, the system topology file does not need to be provided. For more information on the function arguments, open a python shell, import the function e.g. `from ztoolacdc.frequency_sweep import frequency_sweep`, and type `help(frequency_sweep)`.
+
+## Frequency scan
+After running the script [Single_bus_analysis.py](Single_bus_analysis.py), the status of the process can be seen in real time. When the scan is finished, the results can be found in the specificed `results_folder`. The admittances are ploted in _.pdf_ and saved as _.txt_ tab-separated files. You can read these matrices for further analysis by calling the [read_admittance](../../Source/ztoolacdc/read_admittance.py#L58) function.
 
 ![Admittances](../../Doc/pdf_out_2LVSC.png)
 
-For a detailed system stability analysis, we can simply call the different functions defined in [stability.py](../../Source/ztoolacdc/stability.py): _nyquist_ for the application of the Generalized Nyquist Criterion (GNC) to determine system stability, _EVD_ to reveal the closed-loop system oscillatory modes and participating buses via eigenvalue decomposition, _passivity_ for the computation of the passivity index of the different system matrices and the application of the small-gain theorem via small_gain. The GNC shows a stable interconnected system, the _EVD_ function indicates two main oscillatory modes and the passivity analysis points out that the VSC cannot be responsible for any instability above 48 Hz.
+For a detailed stability analysis, we can simply call the different functions defined in [stability.py](../../Source/ztoolacdc/stability.py):
+- [_nyquist_](Source/ztoolacdc/stability.py#L347) for the application of the Generalized Nyquist Criterion (GNC) to determine system stability
+- [_EVD_](Source/ztoolacdc/stability.py#L588) to reveal the closed-loop oscillatory modes and participating buses via eigenvalue decomposition
+- [_passivity_](Source/ztoolacdc/stability.py#L267) for the computation of the passivity index of the different system matrices
+- [small_gain](Source/ztoolacdc/stability.py#L523) for the application of the small-gain theorem.
+
+The resulting eigenloci below shows a stable interconnected system, and the eigenvalue decomposition indicates two well-damped oscillatory modes. In addition, the passivity analysis points out that this device shows a negative passivitiy index below 48 Hz.
 
 ![Stability](../../Doc/stability_2LVSC.png)
 
-The last part of the script [Single_bus_analysis.py](Single_bus_analysis.py) performs a quick screening study to determine the maximum series-compensation level before reaching small-signal instability. The previously scanned converter admittance is assumed to be constant, i.e. the VSC operating point change due to the compensation level is neglected. Therefore, the series capacitor impedance matrix is added to the scanned grid impedance for different compensation levels and the _nyquist_ function is called to determine the system stability. The identified instability takes place for compenation levels higher than 35% with oscillatory frequencies below 45 Hz, thus highlighting the passivity-based insights. Note that these results might change depending on the operating mode, e.g. PQ-control, P/f Q/V-control, P,Q/V-control, etc. as well as with the operating point, e.g. active power reference.
+The next part of the script [Single_bus_analysis.py](Single_bus_analysis.py) performs a quick screening study to determine the maximum series-compensation level before reaching small-signal instability. The previously scanned converter admittance is assumed to be constant, i.e. the VSC operating point change due to the compensation level is neglected. Therefore, the series capacitor impedance matrix is added to the scanned grid impedance for different compensation levels and the _nyquist_ function is called to determine the system stability. As seen by the results below, the identified instability takes place for compensation levels higher than 32% resulting in oscillatory frequencies below 45 Hz. Furthermore, the bus participation factors (PF) point at a dominant _q_-axis oscillation (reactive current), which is validated by an EMT simulation adding the series compensation after 2 seconds and showing in a 43 Hz instability mostly visible in the reactive power.
 
-![Instability](../../Doc/instability_2LVSC.png)
+![Instability](../../Doc/SSCI_screening.png)
+
+Note that these conclusions might change depending on the operating mode, e.g. PQ-control, P/f Q/V-control, P,Q/V-control, etc. as well as with the operating point, e.g. active power reference. 
+
+Lastly, the script shows how to use the built-in frame conversion functions in [frame_conversion.py](../../Source/ztoolacdc/frame_conversion.py) to transform the _dq_ frame admittance matrix into the _alpha-beta_ frame and into the _positive-negative_ sequence frame.

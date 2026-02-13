@@ -8,7 +8,8 @@ set(0,'defaultAxesFontSize',16)
 format compact; format long
 
 %% Import the GNC data and define standard colors
-filename = '../Results stable/ISGT_stable_GNC.txt';
+% filename = '../Results/ISGT2024_stable_GNC.txt';
+filename = '../Results/ISGT2024_unstable_GNC.txt';
 num_vars = 16; % Number of variables: matrix size is num_vars x num_vars
 lambdas = importmatrix(filename, num_vars, "\t");
 f = real(lambdas(:,1)); % Extract the frequency at the 1st column
@@ -51,7 +52,8 @@ title('Critical point detail','interpreter','latex');
 
 
 %% Import the EVD data and define standard colors
-filename = '../Results stable/ISGT_stable_EVD.txt';
+% filename = '../Results/ISGT2024_stable_EVD.txt';
+filename = '../Results/ISGT2024_unstable_EVD.txt';
 num_vars = 16; % Number of variables: matrix size is num_vars x num_vars
 evd = importmatrix(filename, num_vars, "\t");
 f = real(evd(:,1)); % Extract the frequency

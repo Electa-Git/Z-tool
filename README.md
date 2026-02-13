@@ -1,15 +1,16 @@
 # Z-tool
-Z-tool is a Python-based implementation for the frequendy-domain analysis of modern power systems.
-The core functionalities are admittance characterization and small-signal stability assessment.
-The analysis relies on an existing system model in the EMT simulation software [PSCAD]([url](https://www.pscad.com/)).
+Z-tool is a Python-based implementation for the frequendy-domain stability analysis of modern power systems.
+The core functionalities are measurement/characterization of EMT models in the frequency domain and small-signal stability assessment.
+The analysis relies on an existing system model in the EMT simulation software [PSCAD]([url](https://www.pscad.com/)) and/or input frequency response data.
 
 The following features are currently implemented and validated:
-- [x] Voltage perturbation-based admittance scan at several nodes, including MMC-based systems and black-box components
-- [x] Stability assessment via Generalized Nyquist Criteria applicable to standalone-stable MIMO systems
-- [x] Oscillation mode identification via eigenvalue decomposition (EVD) and bus participation factors
-- [x] Passivity assessment and Singular Value Decomposition functions
+- Voltage perturbation-based admittance scan at several nodes, including MMC-based systems and black-box components
+- Stability assessment via [Generalized Nyquist Criteria](Source/ztoolacdc/stability.py#L347) applicable to standalone-stable MIMO systems
+- Oscillation mode identification via closed-loop eigenvalue decomposition and bus participation factors, [EVD](Source/ztoolacdc/stability.py#L588)
+- [Passivity](Source/ztoolacdc/stability.py#L267) assessment and [small gain](Source/ztoolacdc/stability.py#L523) theorem application
+- [Frame conversion](Source/ztoolacdc/frame_conversion.py) functions, e.g. from dq-frame to alpha/beta-frame
 
-The flowchart below summarizes a common usage of the tool for stability studies, including frequency-domain system identification ([frequency_sweep](Source/ztoolacdc/frequency_sweep.py)) and several stability analysis functions ([stability_analysis](Source/ztoolacdc/stability.py)):
+The flowchart below summarizes a common usage of the tool for stability studies, including frequency-domain system identification ([frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L193)) and several stability analysis functions ([stability](Source/ztoolacdc/stability.py#L72)):
 
 ![Tool flowchart](Doc/flowchart.png)
 ![Tool summary](Doc/Ztool_summary.png)
@@ -20,19 +21,29 @@ To use the toolbox, the following pre-requisites are needed.
    * [Numpy](https://numpy.org/), [Scipy](https://scipy.org/), and [Matplotlib](https://matplotlib.org/) (included in common python installations such as Anaconda)
    * [PSCAD automation library]([url](https://www.pscad.com/webhelp-v5-al/index.html))
 2. PSCAD v5 or higher is recommended.
-3. Install the Z-tool via cmd `py -m pip install ztoolacdc` or using the package files.
+3. Install the Z-tool via cmd `py -m pip install ztoolacdc` or using the repository files.
 
 ## Usage
 A generic usage of the package can be summarized in the following steps:
 1. Add the Z-tool PSCAD library to your PSCAD project
-2. Place the tool's analysis blocks at the target buses and name them uniquely
-3. Define the resulting connectivity of the scan blocks
-4. Specify the basic simulation settings and frequency range for your study
+2. Place the tool's scan blocks at the target buses and name them uniquely
+3. Define the resulting connectivity of the scan blocks (only for multi-infeed analyses)
+4. Specify the basic simulation settings and frequency range for the study
 5. Run the frequency scan and small-signal stability analysis functions
-Follow the example(s) described [here](Examples/README.md) for more details. The GUI is currently under development.
+
+Follow the example(s) described [here](Examples) for more guidance. More details on the approach and implemented functions can be found in the papers below and/or this [webinar](https://www.youtube.com/watch?v=AqK5q3ediU0) with the complementary [slides](Doc/Z%20tool%20webinar%20slides%2013-02-2025.pdf). The GUI is currently under development.
+
+## Other features
+- Transfer function scan via the [frequency_sweep_TF](Source/ztoolacdc/frequency_sweep.py#L1030) function, see the example [here](Examples/Transfer_function)
+- Change of PSCAD component values for parametric studies, see the example [here](Examples/Parametric_sweep)
+- PSCAD control arguments: clear temporary files, keep PSCAD open, retain certificate, etc.
+- Exploit the symmetric properties of the system to reduce the scan time (optional)
+- Different computation of participation factors, e.g. admittance-based calculation via [EVD](Source/ztoolacdc/stability.py#L588)
+- Allow previous snapshots to be re-used
+- Snapshot simulation plots
 
 ## Citing Z-tool
-If you find the Z-tool useful in your work, we kindly request that you cite the following publications which you can access [here](https://lirias.kuleuven.be/4201452&lang=en):
+If you find the Z-tool useful in your work, we kindly request that you cite the following publications, which you can freely access [here](https://lirias.kuleuven.be/4201452&lang=en) and [here](https://lirias.kuleuven.be/4235609&lang=en).
 
 ```bibtex
 @INPROCEEDINGS{Cifuentes2024,
@@ -42,7 +53,16 @@ If you find the Z-tool useful in your work, we kindly request that you cite the 
   year={2024},
   pages={1-6},
   doi={10.1109/ISGTEUROPE62998.2024.10863484}}
-
+```
+```bibtex
+@article{Cifuentes2025,
+author = {Francisco Javier {Cifuentes Garcia} and Jef Beerten},
+title = {Z-Tool: Frequency-domain characterization of EMT models for small-signal stability analysis},
+journal = {Electric Power Systems Research},
+volume = {252},
+pages = {112405},
+year = {2026},
+doi = {https://doi.org/10.1016/j.epsr.2025.112405}}
 ```
 
 ## Contact Details
@@ -54,17 +74,12 @@ This is a free software: you can redistribute it and/or modify it under the term
 ## Contributors
 * Fransciso Javier Cifuentes Garcia: Main developer
 * Thomas Roose: Initial stability analysis functions
-* Eros Avdiaj and Özgür Can Sakinci: Validation and support
+* Jan Kircheis, Eros Avdiaj and Özgür Can Sakinci: Validation and support
 
 ## Future work
-- [x] Exploit the symmetric properties of the admittance matrix for AC (and DC) systems to reduce the scans (less simulation time)
-- [x] Allow a previous snapshot to be re-used
-- [ ] Snapshot simulation plot
-- [ ] Support for non-topology specification: inefficient but easier to use
-- [ ] Option to clear the temporary PSCAD files
-- [ ] Allow for different computation of the PFs, e.g. admittance PFs
-- [ ] Switch between current and voltage perturbation
-- [ ] Computation of stability margins: phase, gain and vector margins
+- Scans in split projects
+- Switch between current and voltage perturbation
+- Computation of stability margins: phase, gain and vector margins
+- Sensitivity of the nyquist loci w.r.t. different components' admittance
 <!--- - [ ] Minimum simulation time before starting FFT (does it need to be at least as long as the period of the perturbation or could it be smaller?) --->
 <!--- - [ ] Transformation to positive and negative sequence representation 
-- [ ] Frequency scan and stability analysis optimization based on the passivity properties of the converters --->

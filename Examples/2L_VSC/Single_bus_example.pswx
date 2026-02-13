@@ -1,6 +1,6 @@
-<workspace name="Single_bus_example" version="5.0.2" crc="127742333">
+<workspace name="Single_bus_example" version="5.0.2" crc="63010101">
   <projects>
-    <project type="library" name="Z_tool" filepath="..\..\Source\Scan\Z_tool.pslx" />
+    <project type="library" name="Z_tool" filepath="..\..\Source\ztoolacdc\Scan\Z_tool.pslx" />
     <project type="project" name="Simple_2L_VSC_RLC" filepath=".\Simple_2L_VSC_RLC.pscx" />
   </projects>
   <simulations />

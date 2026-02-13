@@ -1,0 +1,2 @@
+Bus	Area	Angle [rad]
+PCC	0	0.54904373590097

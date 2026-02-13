@@ -4,7 +4,7 @@ Warning: Documentation for this function is not updated
 """
 
 """
-Copyright (C) 2024  Francisco Javier Cifuentes Garcia
+Copyright (C) 2026  Francisco Javier Cifuentes Garcia
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -100,7 +100,7 @@ def multiple_s(n_sim=None, out_folder=None, file_name=None, save_folder=None, sa
                         # If the block needs data from the file, then use the block's target columns for this file
                         for col in block.relative_cols[file_num]:
                             ch = col - 1 + 10 * (file_num - 1)  # Absolute output channel number for the column
-                            # print(" Channel",ch,"variable",block.out_vars_names[ch],"initial value",values[0, col - 1])
+                            # print(" Channel",ch,"variable",block.out_vars_names[ch],"sim_type",sim_type,"initial value",values[0, col - 1])
                             if block.out_vars_names[ch] in scan_vars:
                                 # Retrieve the currents and voltages
                                 block.perturbation_data[sim-1][block.out_vars_names[ch]+sim_type] = values[:, col - 1]

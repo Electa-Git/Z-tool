@@ -1,0 +1,18 @@
+! This file stores the multi-frequency sweep values in Hz 
+1	4.5
+2	8.5
+3	12.5
+4	16.5
+5	21.0
+6	26.0
+7	31.5
+8	37.5
+9	43.5
+10	49.5
+11	56.0
+12	62.5
+13	69.0
+14	75.5
+15	82.5
+16	100.0
+ENDFILE:
