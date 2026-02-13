@@ -12,7 +12,7 @@
 *.infx
 *.bat
 *.dta
-*.pdf
+# *.pdf
 *.f
 *.snp
 *.pickle
