@@ -17,15 +17,15 @@ To use the tool, the following pre-requisites are needed
 The general tool usage can be summarized in the following steps:
 1. Add the Z-tool PSCAD library to your PSCAD project.
 
-If you are using the tool for the first time in a given project, then add the PSCAD library to your workspace and move it before your project files. Note that if you open an existing PSCAD project from a different PC, like those in the [2L_VSC](2L_VSC) and [Energy_hub](Energy_hub) examples, the library will appear grayed-out as it points to a different location. After you install the package, the library file _Z_tool.pslx_ is in the _Scan_ folder within the package's installation directory: use the cmd `py -m pip show ztoolacdc` to find this folder in your computer. Therefore, in the PSCAD project simply **unload** the grayed-out library by right-cliking on it and selecting _Unload_, then **add the library** file _Z_tool.pslx_ within the Z-tool installation path in your PC (_Scan_ folder at the directory retrieved by cmd `py -m pip show ztoolacdc`), **move it up** before your project files and **save** the changes.
+If you are using the tool for the first time in a given project, then add the PSCAD library to your workspace and move it before your project files. Note that if you open an existing PSCAD project from a different PC, like those in the [2L_VSC](./2L_VSC) and [Energy_hub](./Energy_hub) examples, the library will appear grayed-out as it points to a different location. After you install the package, the library file _Z_tool.pslx_ is in the _Scan_ folder within the package's installation directory: use the cmd `py -m pip show ztoolacdc` to find this folder in your computer. Therefore, in the PSCAD project simply **unload** the grayed-out library by right-cliking on it and selecting _Unload_, then **add the library** file _Z_tool.pslx_ within the Z-tool installation path in your PC (_Scan_ folder at the directory retrieved by cmd `py -m pip show ztoolacdc`), **move it up** before your project files and **save** the changes.
 
-![Adding the Z-tool PSCAD library](../Doc/add_library.png)
+![Adding the Z-tool PSCAD library](.././Doc/add_library.png)
 
 2. Place the tool's analysis blocks at the target buses and name them uniquely.
 
 Copy the scan blocks from the Z-tool PSCAD library and paste them in series at the desired buses. The location of the scan blocks determines the partition points where the subsystems are to be decoupled. It is necessary to give them a **name** so the results can be related to actual system nodes; the given name will apear on top of the scan block after introduced. In addition, the base frequency and steady-state voltage magnitude can be specified, although it is not mandatory.
 
-![Z tool block location example in a point-to-point system](../Doc/P2P_blocks.png)
+![Z tool block location example in a point-to-point system](.././Doc/P2P_blocks.png)
 
 3. Define the connectivity of the scan blocks: _for single-bus analysis this step is not needed_.
 
@@ -36,15 +36,23 @@ Each scan block has two series-connection points, shown in the canvas by the num
 - **Zeros** indicate no interconnection between the blocks at their corresponding sides
 
 The scan routine decouples the network at these points so each side, i.e. 1 or 2, connects to a different subsystem. When several blocks are interconnected via electrical components they define a _subsystem_. The sides are labed as X-1 and X-2 in the topology file, where X corresponds to the user-defined PSCAD block name. For instance, the HVDC cable network of the point-to-point example is defined from the _MMC1_DC_ block side 1 to the _MMC2_DC_ block side 1. This is specified in the topology file as a 1 in the row _MMC2_DC-1_ and column _MMC1_DC-1_ (and vice-versa as this matrix is symmetric). The other side of each DC scan block connects to a MMC which is also connected to an AC scan block at its AC-side. The special case of AC/DC converters is recognized by the package as these are always key components when studying system dynamics.
-This table can just be pasted into a text file which path is an argument to the [frequency sweep](../Source/ztoolacdc/frequency_sweep.py) and [stability analysis](../Source/ztoolacdc/stability.py) functions. To verify that the system topology is specified correctly, set _visualize_network=True_ in the [frequency_sweep](../Source/ztoolacdc/frequency_sweep.py) function returns a simplified single-line diagram pdf file with ending __network_visualization.pdf_ to make sure the interconnections have been correctly defined.
+This table can just be pasted into a text file which path is an argument to the [frequency sweep](.././Source/ztoolacdc/frequency_sweep.py) and [stability analysis](.././Source/ztoolacdc/stability.py) functions. To verify that the system topology is specified correctly, set _visualize_network=True_ in the [frequency_sweep](.././Source/ztoolacdc/frequency_sweep.py) function returns a simplified single-line diagram (SLD) pdf file with ending __network_visualization.pdf_ to make sure the interconnections have been correctly defined.
 <!---This is done via the modified network undirected graph, i.e. adjacent matrix but diagonals are 1 when there is no other scan block from that node onwards.--->
 
-![topology specification example](../Doc/topology.png)
+<p align="center">
+  <img src=".././Doc/topology.png" alt="Topology specification example"/>
+</p>
+
+The corresponding SLD file generated when calling `frequency_sweep` is shown below: the lines represent admittances between two or more scan blocks defined as the analysis points, e.g. the HVDC cable between MMC1_DC and MMC2_DC, while the red dots point at subsystems which are only at one side of the specified analysis points, e.g. the Thevenin equivalent at the left side of the MMC1_AC block.
+
+<p align="center">
+  <img src=".././Doc/SLD_topology.png" alt="SLD of the topology example"/>
+</p>
 
 4. Specify the basic simulation settings and frequency range for the study
 
 The next step is to introduce the scan parameters in the corresponding python script.
-The parameters, which are self-descriptive, are provided to the [frequency_sweep](../Source/ztoolacdc/frequency_sweep.py) function which performs the frequency-domain characterization. You can read about the function's documentation by typing `help(name_of_the_function)` in a python terminal after importing the function, or at the end of the corresponding python file.
+The parameters, which are self-descriptive, are provided to the [frequency_sweep](.././Source/ztoolacdc/frequency_sweep.py#L192) function which performs the frequency-domain characterization. You can read about the function's documentation by typing `help(name_of_the_function)` in a python terminal after importing the function, or at the end of the corresponding python file.
 
 ```
 """ Simple script template for the frequency sweep and frequency-domain analysis of an EMT model"""
@@ -58,40 +66,42 @@ topology = pscad_folder + r'\topology.txt'  # Absolute path of topology file
 
 workspace_name = "P2P_study"  # Name of the PSCAD workspace (.pswx file)
 project_name = "P2P"          # Name of the PSCAD project   (.pscx file)
+fortran_ext= '.gf81' # Fortran compiler extension, e.g. '.gf46' or '.gf81'
 
 output_files = 'example'  # Desired name for the output files
 perturbations = 8 * 65   # Number of scanned frequencies: ideally a multiple of the possible multi-core simulations number 
+multi_freq_scan = True # True = 8-tone sinusoidal perturbation, False = single-tone perturbations
 f_base = 1  # Base frequency in Hz (determines the frequency resolution)
 f_min = 1  # Minimum frequency in Hz
 f_max = 3000   # Maximum frequency in Hz
 
 start_fft = 1  # [s] Time for the system to reach steady-state after every perturbation
 fft_periods = 1  # Number of periods used in the FFT for the lowest frequency
-dt_injections = 2  # [s] Time after the decoupling to reach steady-state (optional, it can be set to zero)
+dt_injections = 1  # [s] Time after the decoupling to reach steady-state (optional, it can be set to zero)
 
 t_snap = 5  # [s] Time for the cold-start of the model after which an snapshot is taken
 t_sim = start_fft + fft_periods/f_base  # [s] Simulation time during under sinusoidal perturbations
 t_step = 20  # [us] Simulation timestep
 v_perturb_mag = 0.002  # Voltage perturbation magnitude in per unit with respect to the steady-state value
 
-frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, v_perturb_mag=v_perturb_mag, start_fft=start_fft, multi_freq_scan=True,
-               f_points=perturbations, f_base=f_base, f_max=f_max, f_min=f_min, show_powerflow=True, fft_periods=fft_periods,
-               topology=topology, working_dir=pscad_folder, scan_single_ports=False, scan_single_ports=True, dt_injections=dt_injections,
+frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, v_perturb_mag=v_perturb_mag, start_fft=start_fft, multi_freq_scan=multi_freq_scan,
+               f_points=perturbations, f_base=f_base, f_max=f_max, f_min=f_min, visualize_network=True, fft_periods=fft_periods,
+               topology=topology, working_dir=pscad_folder, fortran_ext=fortran_ext, dt_injections=dt_injections,
                workspace_name=workspace_name, project_name=project_name, results_folder=results_folder, output_files=output_files)
 
 stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files)
 ```
 
-After running the script, the status of the process can be seen in real time.
+After running the script, the status of the scan process can be seen in real time. In addition, the main analysis outcomes are displayed on the screen for quick reference, e.g. stability conclusion and dominant oscillatory mode. 
 
 ![Printed information](../Doc/img_6.png)
 
-When the process is finished, we can access the results in the specificed results folder. The admittances are ploted in _.pdf_ and saved as _.txt_ tab-separated files. You can read these matrices into by calling the [read_admittance](../Source/ztoolacdc/read_admittance.py) function.
-If the [stability_analysis](../Source/ztoolacdc/stability.py) function is called, then the results also include detailed system stability properties, such as the application of the Nyquist criterion to determine system stability, the eigenvalue decomposition of the closed-loop impedance matrix to reveal the system oscillatory modes and participating buses for the dominant one, as well as the computation of the passivity index of the different system matrices.
+When the process is finished, we can access the results in the specificed results folder. The admittances are ploted in _.pdf_ and saved as _.txt_ tab-separated files. You can read these matrices into by calling the [read_admittance](.././Source/ztoolacdc/read_admittance.py) function.
+If the [stability_analysis](.././Source/ztoolacdc/stability.py) function is called, then the results also include detailed system stability properties, such as the application of the Nyquist criterion to determine system stability, the eigenvalue decomposition of the closed-loop impedance matrix to reveal the system oscillatory modes and participating buses for the dominant one, as well as the computation of the passivity index of the different system matrices.
 
 ![Results](../Doc/pdf_out.png)
 
-We recommend reading [these](../README.md#citing-z-tool) openly available papers and checking the webinar [slides](.././Doc/Z_tool_webinar_slides_13-02-2025.pdf) and [recording](https://www.youtube.com/watch?v=AqK5q3ediU0) to better understand the package's functioning principles. You can find three step-by-step examples in the following subfolders: [2L_VSC](2L_VSC), [parametric sweep](Parametric_sweep) and [Energy_hub](Energy_hub). Feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512) in case of questions!
+We recommend reading [these](.././README.md#citing-z-tool) openly available papers and checking the webinar [slides](.././Doc/Z_tool_webinar_slides_13-02-2025.pdf) and [recording](https://www.youtube.com/watch?v=AqK5q3ediU0) to better understand the package's functioning principles. You can find three step-by-step examples in the following subfolders: [2L_VSC](2L_VSC), [parametric sweep](Parametric_sweep) and [Energy_hub](Energy_hub). Feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512) in case of questions!
 
 ## Basic installation of Python dependencies
 After installing Python or using an exsiting Python version >3.7, you can add the necessary packages with the use of _pip_ following the steps below.
@@ -102,4 +112,4 @@ Then, the installation syntax looks like this: `py -m pip install NAMEofTHEpacka
    * _Numpy_, _Scipy_ and _Matplotlib_. Numpy and Scipy packages contain the mathematical functions to handle the numerical data, such as rFFT, inverse matrix computations and EVD. Matplotlib is used to plot the results.
    * _PSCAD automation library_. It is automatically downloaded to your computed after installing PSCAD v5. It should be located in a directory similar to _C:\Users\Public\Documents\Manitoba Hydro International\Python\Packages_. Here there should be a file named _mhi_pscad-2.2.1-py3-none-any.whl_ or similar. Use the same cmd + _pip_ commands as before, but first go to the folder where the package is located using cmd commands. More information on the PSCAD automation library can be found [here](https://www.pscad.com/software/pscad/automation-library).
 
-![Figure of the Numpy, matplotlib and PSCAD automation library installation](../Doc/img_8.png)
+![Figure of the Numpy, matplotlib and PSCAD automation library installation](.././Doc/img_8.png)

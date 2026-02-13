@@ -27,11 +27,11 @@ After running the script [Single_bus_analysis.py](Single_bus_analysis.py), the s
 
 ![Admittances](../../Doc/pdf_out_2LVSC.png)
 
-For a detailed stability analysis, we can simply call the different functions defined in [stability.py](../../Source/ztoolacdc/stability.py):
-- [_nyquist_](Source/ztoolacdc/stability.py#L347) for the application of the Generalized Nyquist Criterion (GNC) to determine system stability
-- [_EVD_](Source/ztoolacdc/stability.py#L588) to reveal the closed-loop oscillatory modes and participating buses via eigenvalue decomposition
-- [_passivity_](Source/ztoolacdc/stability.py#L267) for the computation of the passivity index of the different system matrices
-- [small_gain](Source/ztoolacdc/stability.py#L523) for the application of the small-gain theorem.
+For a detailed stability analysis, we can simply call the different functions defined in [stability.py](./../../Source/ztoolacdc/stability.py):
+- [_nyquist_](./../../Source/ztoolacdc/stability.py#L347) for the application of the Generalized Nyquist Criterion (GNC) to determine system stability
+- [_EVD_](./../../Source/ztoolacdc/stability.py#L587) to reveal the closed-loop oscillatory modes and participating buses via eigenvalue decomposition
+- [_passivity_](./../../Source/ztoolacdc/stability.py#L267) for the computation of the passivity index of the different system matrices
+- [small_gain](./../../Source/ztoolacdc/stability.py#L522) for the application of the small-gain theorem.
 
 The resulting eigenloci below shows a stable interconnected system, and the eigenvalue decomposition indicates two well-damped oscillatory modes. In addition, the passivity analysis points out that this device shows a negative passivitiy index below 48 Hz.
 
@@ -43,4 +43,4 @@ The next part of the script [Single_bus_analysis.py](Single_bus_analysis.py) per
 
 Note that these conclusions might change depending on the operating mode, e.g. PQ-control, P/f Q/V-control, P,Q/V-control, etc. as well as with the operating point, e.g. active power reference. 
 
-Lastly, the script shows how to use the built-in frame conversion functions in [frame_conversion.py](../../Source/ztoolacdc/frame_conversion.py) to transform the _dq_ frame admittance matrix into the _alpha-beta_ frame and into the _positive-negative_ sequence frame.
+Lastly, the script shows how to use the built-in frame conversion functions in [frame_conversion.py](./../../Source/ztoolacdc/frame_conversion.py) to transform the _dq_ frame admittance matrix into the _alpha-beta_ frame and into the _positive-negative_ sequence frame.

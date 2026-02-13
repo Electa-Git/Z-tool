@@ -31,14 +31,14 @@ A generic usage of the package can be summarized in the following steps:
 4. Specify the basic simulation settings and frequency range for the study
 5. Run the frequency scan and small-signal stability analysis functions
 
-Follow the example(s) described [here](Examples) for more guidance. More details on the approach and implemented functions can be found in the papers below and/or this [webinar](https://www.youtube.com/watch?v=AqK5q3ediU0) with the complementary [slides](./Doc/Z_tool_webinar_slides_13-02-2025.pdf). The GUI is currently under development.
+Follow the example(s) described [here](./Examples) for more guidance. More details on the approach and implemented functions can be found in the papers below and/or this [webinar](https://www.youtube.com/watch?v=AqK5q3ediU0) with the complementary [slides](./Doc/Z_tool_webinar_slides_13-02-2025.pdf). The GUI is currently under development.
 
 ## Other features
-- Transfer function scan via the [frequency_sweep_TF](Source/ztoolacdc/frequency_sweep.py#L1030) function, see the example [here](Examples/Transfer_function)
+- Transfer function scan via the [frequency_sweep_TF](./Source/ztoolacdc/frequency_sweep.py#L1030) function, see the example [here](./Examples/Transfer_function)
 - Change of PSCAD component values for parametric studies, see the example [here](Examples/Parametric_sweep)
 - PSCAD control arguments: clear temporary files, keep PSCAD open, retain certificate, etc.
 - Exploit the symmetric properties of the system to reduce the scan time (optional)
-- Different computation of participation factors, e.g. admittance-based calculation via [EVD](Source/ztoolacdc/stability.py#L588)
+- Different computation of participation factors, e.g. admittance-based calculation via [EVD](./Source/ztoolacdc/stability.py#L588)
 - Allow previous snapshots to be re-used
 - Snapshot simulation plots
 
