@@ -70,7 +70,8 @@ class Graph:
         return cc
 
 def stability_analysis(topology=None, results_folder=None, file_root=None, indentations=[], node_blocks=None,
-                       check_conditioning=False, condition_number_th=10e6, make_plot=True, save_pickle=False):
+                       check_conditioning=False, condition_number_th=10e6, make_plot=True, save_pickle=False, save_results=True,
+                       run_nyquist_det=True, run_EVD=True, run_passivity=True, run_small_gain=True):
     # This function loads and builds the edge and node admittance matrices and applies the most common stability analysis functions
     # 0) Firstly, read the terminal angle information for the AC blocks
     block_area_angle = []  # List for each block containing a list as [bus/block name, area_id, terminal angle in rad]
@@ -156,35 +157,36 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
         y_edge_idx = y_edge_idx + len(yedge.vars)  # Update the matrix index for the next admittance block
 
     # Sparsity plot for verification at the lowest frequency
-    np.seterr(divide='ignore')
-    Yedge_aux_nan = np.zeros_like(Yedge_aux[0,:,:], dtype=np.float64)
-    Yedge_aux_nan.fill(np.nan)
-    plt.imshow(20*np.log10(np.abs(Yedge_aux[0,:,:]), out=Yedge_aux_nan, where=(np.abs(Yedge_aux[0, :, :])!=0.0)),cmap='spring', interpolation='nearest')
-    plt.colorbar()
-    plt.xticks(ticks=np.arange(0, len(edge_aux_variables), step=1), labels=[])
-    plt.yticks(ticks=np.arange(0, len(edge_aux_variables), step=1), labels=edge_aux_variables)
-    plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
-    plt.title('Auxiliary edge admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
-    plt.savefig(results_folder + '\\' + file_root + "_Edge_aux.pdf", format="pdf", bbox_inches="tight")
-    # with open(results_folder + '\\' + file_root + "_Edge_aux.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
-    plt.close()
+    if save_results:
+        np.seterr(divide='ignore')
+        Yedge_aux_nan = np.zeros_like(Yedge_aux[0,:,:], dtype=np.float64)
+        Yedge_aux_nan.fill(np.nan)
+        plt.imshow(20*np.log10(np.abs(Yedge_aux[0,:,:]), out=Yedge_aux_nan, where=(np.abs(Yedge_aux[0, :, :])!=0.0)),cmap='spring', interpolation='nearest')
+        plt.colorbar()
+        plt.xticks(ticks=np.arange(0, len(edge_aux_variables), step=1), labels=[])
+        plt.yticks(ticks=np.arange(0, len(edge_aux_variables), step=1), labels=edge_aux_variables)
+        plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
+        plt.title('Auxiliary edge admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
+        plt.savefig(results_folder + '\\' + file_root + "_Edge_aux.pdf", format="pdf", bbox_inches="tight")
+        # with open(results_folder + '\\' + file_root + "_Edge_aux.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
+        plt.close()
 
-    # Re-sort the edge matrix acording to the node matrix variables
-    Yedge = Yedge_aux[:,:,edge_ordering]  # Sort the columns
-    Yedge = Yedge[:,edge_ordering,:]  # Sort the rows
+        # Re-sort the edge matrix acording to the node matrix variables
+        Yedge = Yedge_aux[:,:,edge_ordering]  # Sort the columns
+        Yedge = Yedge[:,edge_ordering,:]  # Sort the rows
 
-    # Plot the sorted edge admittance for verification at the lowest frequency
-    Yedge_nan = np.zeros_like(Yedge[0,:,:], dtype=np.float64)
-    Yedge_nan.fill(np.nan)
-    plt.imshow(20*np.log10(np.abs(Yedge[0, :, :]), out=Yedge_nan, where=(np.abs(Yedge[0,:,:])!=0.0)), cmap='spring', interpolation='nearest')
-    plt.colorbar()
-    plt.xticks(ticks=np.arange(0, len(node_variables), step=1), labels=[])
-    plt.yticks(ticks=np.arange(0, len(node_variables), step=1), labels=node_variables)
-    plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
-    plt.title('Edge admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
-    plt.savefig(results_folder + '\\' + file_root + "_Edge.pdf", format="pdf", bbox_inches="tight")
-    # with open(results_folder + '\\' + file_root + "_Edge.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
-    plt.close()
+        # Plot the sorted edge admittance for verification at the lowest frequency
+        Yedge_nan = np.zeros_like(Yedge[0,:,:], dtype=np.float64)
+        Yedge_nan.fill(np.nan)
+        plt.imshow(20*np.log10(np.abs(Yedge[0, :, :]), out=Yedge_nan, where=(np.abs(Yedge[0,:,:])!=0.0)), cmap='spring', interpolation='nearest')
+        plt.colorbar()
+        plt.xticks(ticks=np.arange(0, len(node_variables), step=1), labels=[])
+        plt.yticks(ticks=np.arange(0, len(node_variables), step=1), labels=node_variables)
+        plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
+        plt.title('Edge admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
+        plt.savefig(results_folder + '\\' + file_root + "_Edge.pdf", format="pdf", bbox_inches="tight")
+        # with open(results_folder + '\\' + file_root + "_Edge.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
+        plt.close()
 
     # 5) Build the block-diagonal node admittance and define the rotation matrix accordingly
     Ynode = np.zeros((len(frequencies), len(node_variables), len(node_variables)),dtype='cdouble')  # Or dtype='csingle'
@@ -214,63 +216,68 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
     Yedge = T.transpose() @ Yedge @ T
 
     # Scatter verification of the node admittance for the lowest frequency
-    Ynode_nan = np.zeros_like(Ynode[0,:,:], dtype=np.float64)
-    Ynode_nan.fill(np.nan)
-    plt.imshow(20*np.log10(np.abs(Ynode[0,:,:]), out=Ynode_nan, where=(np.abs(Ynode[0,:,:])!=0.0)), cmap='spring', interpolation='nearest')
-    plt.colorbar()
-    plt.xticks(ticks=np.arange(0, len(node_variables), step=1), labels=[])
-    plt.yticks(ticks=np.arange(0, len(node_variables), step=1), labels=node_variables)
-    plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
-    plt.title('Node admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
-    plt.savefig(results_folder + '\\' + file_root + "_Node.pdf", format="pdf", bbox_inches="tight")
-    # with open(results_folder + '\\' + file_root + "_Node.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
-    plt.close()
-    np.seterr(divide='warn')
+    if save_results:
+        Ynode_nan = np.zeros_like(Ynode[0,:,:], dtype=np.float64)
+        Ynode_nan.fill(np.nan)
+        plt.imshow(20*np.log10(np.abs(Ynode[0,:,:]), out=Ynode_nan, where=(np.abs(Ynode[0,:,:])!=0.0)), cmap='spring', interpolation='nearest')
+        plt.colorbar()
+        plt.xticks(ticks=np.arange(0, len(node_variables), step=1), labels=[])
+        plt.yticks(ticks=np.arange(0, len(node_variables), step=1), labels=node_variables)
+        plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
+        plt.title('Node admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
+        plt.savefig(results_folder + '\\' + file_root + "_Node.pdf", format="pdf", bbox_inches="tight")
+        # with open(results_folder + '\\' + file_root + "_Node.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
+        plt.close()
+        np.seterr(divide='warn')
 
     # 6) Perform stability analysis
     Zedge = np.linalg.inv(Yedge)
     L = np.matmul(Zedge,Ynode)  # Loop gain matrix
     # Stability via eigenvalue loci
     stable = nyquist(L=L,frequencies=frequencies,results_folder=results_folder,filename=file_root,verbose=True,check_conditioning=check_conditioning,
-                     condition_number_th=condition_number_th, make_plot=make_plot, indentations=indentations, save_pickle=save_pickle)
+                     condition_number_th=condition_number_th, make_plot=make_plot, indentations=indentations, save_pickle=save_pickle, save_results=save_results)
+    
     # Stability via determinant
-    nyquist_det(L=L,frequencies=frequencies,results_folder=results_folder,filename=file_root, verbose=False, offset=0.0,
-                draw_arrows=True, show_plot=False, make_plot=make_plot, indentations=indentations, save_pickle=save_pickle) 
+    if run_nyquist_det:
+        nyquist_det(L=L,frequencies=frequencies,results_folder=results_folder, filename=file_root, verbose=False, offset=0.0,
+                    draw_arrows=True, show_plot=False, make_plot=make_plot, indentations=indentations, save_pickle=save_pickle, save_results=save_results) 
 
     # Oscillatory frequencies and bus participation factors based on the closed-loop impedance: the admittance is provided to avoid inversion so Z_closedloop=False
-    EVD(Yedge+Ynode, frequencies, node_variables, results_folder, file_root, make_plot=make_plot, Z_closedloop=False, save_pickle=save_pickle)
+    if run_EVD: EVD(Yedge+Ynode, frequencies, node_variables, results_folder, file_root, make_plot=make_plot, Z_closedloop=False, save_pickle=save_pickle, save_results=save_results)
 
     # Save the admittance matrices
-    results = [Yedge[:, row, col] for row in range(len(node_variables)) for col in range(len(node_variables))]
-    results.insert(0, frequencies)
-    results = tuple(results)
-    np.savetxt(results_folder + '\\' + file_root + '_Y_edge.txt', np.stack(results, axis=1), delimiter='\t',
-               header="f\t" + "\t".join(node_variables), comments='')
+    if save_results:
+        results = [Yedge[:, row, col] for row in range(len(node_variables)) for col in range(len(node_variables))]
+        results.insert(0, frequencies)
+        results = tuple(results)
+        np.savetxt(results_folder + '\\' + file_root + '_Y_edge.txt', np.stack(results, axis=1), delimiter='\t',
+                header="f\t" + "\t".join(node_variables), comments='')
 
-    results = [Ynode[:, row, col] for row in range(len(node_variables)) for col in range(len(node_variables))]
-    results.insert(0, frequencies)
-    results = tuple(results)
-    np.savetxt(results_folder + '\\' + file_root + '_Y_node.txt', np.stack(results, axis=1), delimiter='\t',
-               header="f\t" + "\t".join(node_variables), comments='')
+        results = [Ynode[:, row, col] for row in range(len(node_variables)) for col in range(len(node_variables))]
+        results.insert(0, frequencies)
+        results = tuple(results)
+        np.savetxt(results_folder + '\\' + file_root + '_Y_node.txt', np.stack(results, axis=1), delimiter='\t',
+                header="f\t" + "\t".join(node_variables), comments='')
 
-    # Save the minor loop gain matrix
-    results = [L[:, row, col] for row in range(len(node_variables)) for col in range(len(node_variables))]
-    results.insert(0, frequencies)
-    # elements = [str(row) + "-" + str(col) for row in range(len(node_variables)) for col in range(len(node_variables))]
-    results = tuple(results)
-    np.savetxt(results_folder+'\\'+file_root+'_Minor_loop_gain.txt',np.stack(results, axis=1),delimiter='\t',
-               header="f\t" + "\t".join(node_variables), comments='')
+        # Save the minor loop gain matrix
+        results = [L[:, row, col] for row in range(len(node_variables)) for col in range(len(node_variables))]
+        results.insert(0, frequencies)
+        # elements = [str(row) + "-" + str(col) for row in range(len(node_variables)) for col in range(len(node_variables))]
+        results = tuple(results)
+        np.savetxt(results_folder+'\\'+file_root+'_Minor_loop_gain.txt',np.stack(results, axis=1),delimiter='\t',
+                header="f\t" + "\t".join(node_variables), comments='')
 
-    # Compute the passivity and SVD of the system matrices
-    # passivity(G=Yedge_aux, frequencies=frequencies, results_folder=results_folder, filename=file_root + "_Yedge_aux",variables=edge_aux_variables)
-    passivity(G=Ynode,frequencies=frequencies,results_folder=results_folder,filename=file_root+"_Ynode", variables=node_variables, make_plot=make_plot, save_pickle=save_pickle)
-    passivity(G=Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root + "_Yedge", make_plot=make_plot, save_pickle=save_pickle)
-    passivity(G=Ynode+Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root+"_Ynode_+_Yedge", make_plot=make_plot, save_pickle=save_pickle)
-    small_gain(np.linalg.inv(Yedge), Ynode, frequencies, results_folder, file_root, variables=node_variables, make_plot=make_plot, save_pickle=save_pickle)
+    # Compute the passivity index and gains of the system matrices
+    if run_passivity:
+        passivity(G=Ynode,frequencies=frequencies,results_folder=results_folder,filename=file_root+"_Ynode", variables=node_variables, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
+        passivity(G=Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root + "_Yedge", make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
+        passivity(G=Ynode+Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root+"_Ynode_+_Yedge", make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
+    if run_small_gain:
+        small_gain(np.linalg.inv(Yedge), Ynode, frequencies, results_folder, file_root, variables=node_variables, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
 
     return stable
 
-def passivity(G, frequencies, results_folder=None, filename=None, variables=None, Yedge=None, make_plot=True, save_pickle=False):
+def passivity(G, frequencies, results_folder=None, filename=None, variables=None, Yedge=None, make_plot=True, save_pickle=False, save_results=True):
     # The passivity index is computed as half of the minimum eigenvalue of the matrix plus its conjugate transpose
     # min{eig(A + A')}/2
     # A passive system has its Nyquist plot in the RHP: increased stability margins if connected to a passive system
@@ -345,12 +352,12 @@ def passivity(G, frequencies, results_folder=None, filename=None, variables=None
                 with open(results_folder + '\\' + filename + "_passivity.pickle", 'wb') as f: pickle.dump(fig, f)
             plt.close(fig)
         
-        np.savetxt(results_folder+'\\'+filename+'_passivity.txt', np.stack((frequencies, passivity_index), axis=1), delimiter='\t',
-                   header="f\t" + "Passivity_index", comments='')  
+        if save_results:
+            np.savetxt(results_folder+'\\'+filename+'_passivity.txt', np.stack((frequencies, passivity_index), axis=1), delimiter='\t', header="f\t" + "Passivity_index", comments='')  
 
     return passivity_index
 
-def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, check_conditioning=False, condition_number_th=0.01/5e-9, make_plot=True, show_plot=False, indentations =[], save_pickle=False):
+def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, check_conditioning=False, condition_number_th=0.01/5e-9, make_plot=True, show_plot=False, indentations =[], save_pickle=False, save_results=True):
     # Stability assessment via the Generalized Nyquist Criteria (GNC): graphycally determine the number of unstable closed-loop poles from the encirclements of the critical point by the loci of the open-loop gain matrix
     if verbose: print("Performing Nyquist stability assessment based on the eigenvalues of L")
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
@@ -520,17 +527,17 @@ def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, ch
         bode_plot(Y=1/(1+eigenvalues_sorted),  frequencies=frequencies, results_folder=results_folder, file_name=filename+"_inv(1+L)", style="solid", title=r"Bode plot of $1/(1+\lambda(L))$ over "+str(len(frequencies))+' frequencies', legend=[str(idx+1) for idx in range(eigenvalues_sorted.shape[1])])
 
     # Save the eigenloci
-    loci = [eigenvalues_sorted[:, idx] for idx in range(eigenvalues_sorted.shape[1])]
-    loci.insert(0, frequencies)
-    loci = tuple(loci)
-    np.savetxt(results_folder + '\\' + filename + '_GNC.txt', np.stack(loci, axis=1), delimiter='\t',
-               header="f\t"+"\t".join(["lambda_"+format(idx+1,'.0f') for idx in range(eigenvalues_sorted.shape[1])]), comments='')
+    if save_results:
+        loci = [eigenvalues_sorted[:, idx] for idx in range(eigenvalues_sorted.shape[1])]
+        loci.insert(0, frequencies)
+        loci = tuple(loci)
+        np.savetxt(results_folder + '\\' + filename + '_GNC.txt', np.stack(loci, axis=1), delimiter='\t',
+                header="f\t"+"\t".join(["lambda_"+format(idx+1,'.0f') for idx in range(eigenvalues_sorted.shape[1])]), comments='')
 
     return stable_system
 
-def small_gain(G1, G2, frequencies, results_folder=None, filename=None, variables=None, make_plot=True, save_pickle=False):
+def small_gain(G1, G2, frequencies, results_folder=None, filename=None, variables=None, make_plot=True, save_pickle=False, save_results=True):
     # Applies a conservative version of the small-gain theorem as |L| = |G1*G2| <= |G1|*|G2| < 1
-
     S1 = np.linalg.svd(G1, compute_uv=False)
     S2 = np.linalg.svd(G2, compute_uv=False)
     S12 = np.linalg.svd(np.matmul(G1,G2), compute_uv=False)
@@ -589,11 +596,12 @@ def small_gain(G1, G2, frequencies, results_folder=None, filename=None, variable
             with open(results_folder + '\\' + filename + "_gain.pickle", 'wb') as f: pickle.dump(fig, f)
         plt.close(fig)
 
-    np.savetxt(results_folder + '\\' + filename + '_gain.txt',
-                np.stack((frequencies, np.max(S1, axis=1), np.max(S2, axis=1), np.max(S12, axis=1)), axis=1),
-                delimiter='\t', header="f\t" + "max_sigma_G1\t" + "max_sigma_G2\t" + "max_sigma_G1_G2", comments='')
+    if save_results:
+        np.savetxt(results_folder + '\\' + filename + '_gain.txt',
+                    np.stack((frequencies, np.max(S1, axis=1), np.max(S2, axis=1), np.max(S12, axis=1)), axis=1),
+                    delimiter='\t', header="f\t" + "max_sigma_G1\t" + "max_sigma_G2\t" + "max_sigma_G1_G2", comments='')
 
-def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None, verbose=True, Z_closedloop=True, make_plot=True, save_pickle=False):
+def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None, verbose=True, Z_closedloop=True, make_plot=True, save_pickle=False, save_results=True):
     if bus_names is None: bus_names = [str(bus+1) for bus in range(G.shape[1])]  # Sorted numbers if names not provided
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
 
@@ -720,10 +728,11 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None, verb
         bode_plot(PF_envelope, frequencies, results_folder, filename+"_EVD_PFs", title='PFs of the largest closed-loop impedance over '+str(len(frequencies))+' frequencies', legend=bus_names, style="solid", save_pickle=save_pickle, linear_mag=True)
 
     # Save the EVD and PFs of the envelope into a text file
-    np.savetxt(results_folder + '\\' + filename + '_EVD.txt', np.column_stack((frequencies, eigenvalues_sorted)), delimiter='\t', header="Frequency [Hz]\t" + "\t".join([str(i+1) for i in range(len(bus_names))]), comments='')
-    np.savetxt(results_folder + '\\' + filename + '_EVD_PFs.txt', np.column_stack((frequencies, PF_envelope)), delimiter='\t', header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
+    if save_results:
+        np.savetxt(results_folder + '\\' + filename + '_EVD.txt', np.column_stack((frequencies, eigenvalues_sorted)), delimiter='\t', header="Frequency [Hz]\t" + "\t".join([str(i+1) for i in range(len(bus_names))]), comments='')
+        np.savetxt(results_folder + '\\' + filename + '_EVD_PFs.txt', np.column_stack((frequencies, PF_envelope)), delimiter='\t', header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
 
-def nyquist_det(L, frequencies, results_folder=None, filename=None, verbose=True, offset=0.0, draw_arrows=True, make_plot=True, show_plot=False, f0=50.0, indentations=[], save_pickle=False):
+def nyquist_det(L, frequencies, results_folder=None, filename=None, verbose=True, offset=0.0, draw_arrows=True, make_plot=True, show_plot=False, f0=50.0, indentations=[], save_pickle=False, save_results=True):
     # Stability assessment based on the determinant of I + L
     if verbose: print("Performing Nyquist stability assessment based on the determinant of I + L")
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
@@ -857,8 +866,9 @@ def nyquist_det(L, frequencies, results_folder=None, filename=None, verbose=True
         bode_plot(det,  frequencies, results_folder, file_name=filename + "_det_Bode", title='Bode plot of '+str(offset)+r' + det[$I + L(j \omega)$] over '+str(len(frequencies))+' frequencies', style="solid", save_pickle=save_pickle)
 
     # Save the results
-    np.savetxt(results_folder + '\\' + filename + '_det.txt', np.stack((frequencies,det), axis=-1), delimiter='\t',
-               header="Frequency [Hz]\t"+str(offset)+"+det[I + L(s)]", comments='')
+    if save_results:
+        np.savetxt(results_folder + '\\' + filename + '_det.txt', np.stack((frequencies,det), axis=-1), delimiter='\t',
+                header="Frequency [Hz]\t"+str(offset)+"+det[I + L(s)]", comments='')
     
     return stable_system
 
@@ -892,6 +902,7 @@ Optional arguments
                             This threshold can be set based on the expected input error and maximum acceptable ouTput error.
                             For example, for a relative output error <= 0.01 considering a relative input error of 5e-9, the condition number threshold can be set to 0.01/5e-9 (default value).
         save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
+        save_results        (bool) Bool flag to save the results in a text file. Default = True.
 
 Returns
         Bool flag indicating closed-loop or interconnected stability: True means stable.
@@ -926,6 +937,7 @@ Optional arguments
                             For example, offset = -1.0 defines the critical point as (-1,j0) as when applying the GNC via the eigenvalue loci of L.
         show_plot           (bool) to show the plot interactively. Default = False.
         save_pickle         Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
+        save_results        (bool) Bool flag to save the results in a text file. Default = True.
 
 Returns
         Bool flag indicating closed-loop or interconnected stability: True means stable.
@@ -935,17 +947,20 @@ Returns
 stability_analysis.__doc__ = """
 Performs a small-signal analysis based on the scanned matrices of the network defined by the topology file over the frequency and stores the results in the specified results folder.
 Firstly, the function reads the individual admittance matrices from the specified topology file. Then it builds the edge and node (block-diagonal) matrices, including the necessary rotations to a common reference frame.
-Finally, it applies different dynamic evaluations to assess the small-signal dynamics of the system:
+Finally, it calculates different metrics used to assess the small-signal dynamics of the system:
 - Generalized Nyquist Criteria (GNC) based on the eigenvalue decomposition (EVD) and the determinant of the open-loop (minor-loop) matrix L computed as the product of the edge and node matrices.
 - Eigenvalue decomposition (EVD) of the closed-loop impedance matrix for oscillation modes identification.
 - Bus participation factors computation at the frequency of largest current amplification.
 - Small-gain theorem based on the singular value decomposition (SVD) of the edge and node matrices:: used to identify risk-free frequencies.
 - Passivity assessment based on the minimum singular value of the Hermitian part of the different system matrix: used to identify risk-free frequencies.
+The user can choose which of the above analyses to perform by setting the corresponding boolean flags.
+The results are stored in the specified results folder as text files and pdf plots based on the boolean arguments save_results and make_plot.
 
 Required arguments
         topology            (str) Absolute path to the topology file defining the system the subsystems interconnections.
         results_folder      (str) Absolute path where the matrices and powerflow files are stored.
         file_root           (str) Name root of the files used in the analysis
+
 Optional arguments
         indentations        (list of double) Frequencies [Hz] at which indentations around open-loop poles are performed in the GNC.
         node_blocks         (list of strings) List of strings where each entry is "BlockName-side" corresponding to the node matrix components. Default = None, which results in the automated identification of the blocks as per the read_admittance function.
@@ -954,6 +969,11 @@ Optional arguments
                             This threshold can be set based on the expected input error and maximum acceptable ouTput error.
         make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files.
         save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
+        save_results        (bool) Bool flag to save the results in a text file. Default = True.
+        run_nyquist_det     (bool) Bool flag to run the determinant-based Nyquist stability assessment. Default = True.
+        run_EVD             (bool) Bool flag to run the eigenvalue decomposition (EVD) of the closed-loop system for oscillation modes identification and bus participation factors computation. Default = True.
+        run_passivity       (bool) Bool flag to run the passivity assessment of the system matrices. Default = True.
+        run_small_gain      (bool) Bool flag to run the small-gain theorem based on the system matrices. Default = True.
 """
 
 passivity.__doc__ = """
@@ -969,6 +989,7 @@ Optional arguments
         variables           (list of str) Names of the block-diagonal matrices in G for block-wise analysis. Default = None.
         make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files.
         save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
+        save_results        (bool) Bool flag to save the results in a text file. Default = True.
 """
 
 EVD.__doc__ = """
@@ -985,6 +1006,7 @@ Optional arguments
         Z_closedloop       (bool) Bool flag indicating if G is the closed-loop impedance matrix. This can be used to avoid the inversion of Ynode + Yedge. Default = True.
         make_plot          (bool) Bool flag to enable/disable the generation of pdf plot files.
         save_pickle        (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
+        save_results       (bool) Bool flag to save the results in a text file. Default = True.
 """
 
 small_gain.__doc__ = """
@@ -1005,4 +1027,5 @@ Optional arguments
         variables           (list of str) Names of the block-diagonal matrices in G2 for block-wise analysis. Default = None.
         make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files.
         save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
+        save_results        (bool) Bool flag to save the results in a text file. Default = True.
 """

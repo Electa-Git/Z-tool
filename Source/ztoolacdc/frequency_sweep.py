@@ -197,7 +197,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                     topology=None, project_name=None, workspace_name=None,fortran_ext=r'.gf46', num_parallel_sim=8,
                     scan_multi_ports=True, edge_dq_sym=False, edge_sym=False, component_parameters=None,
                     results_folder=None, output_files='results', compute_yz=True, save_td=False, plot_snapshot=False,
-                    fft_periods=1, start_fft=None, pscad_plot=0, show_powerflow=False, visualize_network=False,
+                    fft_periods=1, start_fft=None, pscad_plot=False, show_powerflow=False, visualize_network=False,
                     run_sim=True, verbose=False, make_plot=True, delete_PSCAD_output_files=False, release_certificates=True,
                     enforce_topology=True, f_exclude=[], launch_and_load_PSCAD=True, close_PSCAD=True):
 
@@ -486,7 +486,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     if not pscad_plot:
         if verbose: print(' Disabling needless outputs and animated displays')
         scan_vars = ['blockid','VDUTac','IDUTacA1','IDUTacA2','VDUTdc','IDUTdcA1','IDUTdcA2','theta']  # Target outputs
-        disable_pscad_outputs(main, scan_vars, only_main_canvas=True)
+        disable_pscad_outputs(main, scan_vars, max_depth=0) # Explore the project subcomponents up to max_depth looking for output channels
 
     # Set simulation-specific parameters
     if 'Perturbation' not in pscad.simulation_sets():
@@ -1152,7 +1152,7 @@ def frequency_sweep_TF(t_snap=None, t_sim=None, t_step=None, sample_step=None, v
     # Disable output channel components (all but Z-tool's scaning blocks) and animated displays
     if not pscad_plot:
         if verbose: print(' Disabling needless outputs and animated displays')
-        disable_pscad_outputs(main, ['blockid','inputTF', 'outputTF'], only_main_canvas=True)
+        disable_pscad_outputs(main, ['blockid','inputTF', 'outputTF'], max_depth=0) # Explore the project subcomponents up to max_depth looking for output channels
 
     # Set simulation-specific parameters
     if 'Perturbation' not in pscad.simulation_sets():
@@ -1390,15 +1390,16 @@ def read_one_line(file_path, nline):
             if line_number == nline + 1: selected_data = line.split()
     return selected_data
 
-def disable_pscad_outputs(canvas, target_variables=[], only_main_canvas=True):
+def disable_pscad_outputs(canvas, target_variables=[], max_depth=0, current_depth=0):
     all_pgb = canvas.find_all("master:pgb")  # Find all output channels in the canvas
     for pgb in all_pgb:
         if not (pgb.parameters()['Name'] in target_variables):  pgb.disable()  # Disable the non-selected outputs
     all_multimeters = canvas.find_all("master:multimeter")  # Find all multimeters in the canvas
     for multimeter in all_multimeters: multimeter.parameters(Dis=0)  # Animated display is disabled (0)
-    if not only_main_canvas:
+    if max_depth > current_depth:
+        current_depth += 1 # Increase the current depth
         # Go into the sub-canvases and disable outputs within as well: this can take a long time if there are many components and sub-canvases, so it is optional
-        # print(' Current canvas:', canvas)
+        # print(' Current canvas', canvas,"and depth", current_depth)
         components = canvas.find_all()  # Find all components in the canvas
         for component in components:
             try:
@@ -1407,7 +1408,7 @@ def disable_pscad_outputs(canvas, target_variables=[], only_main_canvas=True):
                 component_is_module = False
             if component_is_module:
                 sub_canvas = component.canvas()  # Sub-canvas of the module
-                disable_pscad_outputs(sub_canvas, target_variables=target_variables,only_main_canvas=False)  # Disable outputs in the sub-canvas and its sub-canvases
+                disable_pscad_outputs(sub_canvas, target_variables=target_variables, max_depth=max_depth, current_depth=current_depth)  # Disable outputs in the sub-canvas and its sub-canvases
 
 
 frequency_sweep.__doc__ = """
@@ -1466,7 +1467,7 @@ Optional
         
         plot_snapshot           Bool: If set to True, it creates plots of the snapshot waveforms for each scan block. Default = False.
 
-        pscad_plot              Binary to disable PSCAD plots so as to speed-up the simulations. Default = 0 i.e. no plots
+        pscad_plot              Bool to disable PSCAD plots so as to speed-up the simulations. Default = False i.e. no plots
         compute_yz	 	        Compute the admittance and save the results. If no results folder is specified then it saves the data in working_dir. Default = True
         save_td  		        Bool: If set to True, many files of time domain data are saved into more compact .txt files for each independent
                                 perturbation. The format is [time Vd(f1) Vq(f1) Id(f1) Iq(f1) ... Vd(f_max) Vq(f_max) Id(f_max) Iq(f_max)].
@@ -1523,7 +1524,7 @@ Optional
         plot_snapshot           Bool: If set to True, it creates plots of the snapshot waveforms for the scan block. Default = False.
         plot_perturbation       Integer: The value specifies the perturbation simulation number for which FFT plots are created for each scan block. Default = 0 (no plots). 
         
-        pscad_plot              Binary to disable PSCAD plots so as to speed-up the simulations. Default = 0 i.e. no plots
+        pscad_plot              Bool to disable PSCAD plots so as to speed-up the simulations. Default = 0 i.e. no plots
         save_td  		        Bool: If set to True, many files of time domain data are saved into more compact .txt files for each independent
                                 perturbation. The format is [time Vd(f1) Vq(f1) Id(f1) Iq(f1) ... Vd(f_max) Vq(f_max) Id(f_max) Iq(f_max)].
         run_sim                 Bool flag to run or not run all PSCAD simulations. True = runs PSCAD, False = does NOT run PSCAD
