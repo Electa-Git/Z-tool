@@ -9,7 +9,7 @@ Finally, an interpolation of the admittance at a different operating point is pe
 from ztoolacdc.frequency_sweep import frequency_sweep
 from ztoolacdc.read_admittance import read_admittance
 from ztoolacdc.plot_utils import bode_plot
-from os import getcwd, path
+from os import getcwd, path, makedirs
 from shutil import copyfile
 import time as t  # Relative time
 import numpy as np
@@ -71,6 +71,7 @@ print('There are '+str(number_of_cases)+" cases involving", ", ".join(parameter_
 # The resulting admittances are stored in a single text file together with the case-specific parameter values
 t0 = t.time()  # Initial time
 # Create the file storing the results: name of the parameters and sliced admittance elements as FrequencyIndex_MatrixIndex
+if not path.exists(results_folder): makedirs(results_folder) # Create the results folder if it does not exist
 header = " ".join([parameter_names[i] for i in range(parameter_num)] + [str(f+1)+"_"+str(y+1) for f in range(f_points) for y in range(admittance_size*admittance_size)])
 with open(results_file, "w") as f:
     f.write(header + "\n")
@@ -134,11 +135,10 @@ frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, f_base=f_base, num_pa
                 take_snapshot=True, show_powerflow=False, multi_freq_scan=multi_freq_scan, delete_PSCAD_output_files=True)
 
 """-------------- Compare the actual and interpolated admittances -----------------"""
-legend = ["d", "q"]
 Y_scan = read_admittance(path=results_folder, involved_blocks="PCC-1", file_root=output_files)  # Side 1 of the PCC block is connected to the VSC
 # Plot the scanned admittance at the new operating point
-fig_comparison = bode_plot(Y_scan.y, Y_scan.f, return_plot=True, style="line", legend=False) 
+fig_comparison = bode_plot(Y_scan.y, Y_scan.f, return_plot=True, style="line", legend=None)
 # Add the interpolated admittance to the same plot for comparison
-fig_comparison, ax_comparison = bode_plot(Y_interpolated, frequencies, return_plot=True, legend=legend, fig_handle=fig_comparison) 
+fig_comparison, ax_comparison = bode_plot(Y_interpolated, frequencies, return_plot=True, legend=["d", "q"], fig_handle=fig_comparison) 
 ax_comparison[0].set_title('Comparison of scanned (solid lines) and interpolated (dots) admittances for ' + str(len(frequencies)) + ' frequencies')
 fig_comparison.savefig(results_folder + '\\Scan_vs_interpolated.pdf', format="pdf", bbox_inches="tight") # Save the figure

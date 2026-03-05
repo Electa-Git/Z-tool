@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 from .read_admittance import read_admittance
 from os import path, makedirs
 import pickle
-
+from .plot_utils import bode_plot
 from matplotlib import rcParams  # Text's parameters for plots
 rcParams['mathtext.fontset'] = 'cm'  # Font selection
 rcParams['font.family'] = 'STIXGeneral'  # 'cmu serif'
@@ -69,37 +69,41 @@ class Graph:
                 cc.append(self.DFSUtil(temp, v, visited))
         return cc
 
-def stability_analysis(topology=None, results_folder=None, file_root=None, check_conditioning=False, condition_number_th=10e6, make_plot=True, indentations=[], save_pickle=False):
-    # 0) Read the terminal angle information
+def stability_analysis(topology=None, results_folder=None, file_root=None, indentations=[], node_blocks=None,
+                       check_conditioning=False, condition_number_th=10e6, make_plot=True, save_pickle=False):
+    # This function loads and builds the edge and node admittance matrices and applies the most common stability analysis functions
+    # 0) Firstly, read the terminal angle information for the AC blocks
     block_area_angle = []  # List for each block containing a list as [bus/block name, area_id, terminal angle in rad]
     with open(results_folder+r'\\'+file_root+'_angles.txt', 'r') as file:
         next(file)  # First line contains the header
         for line in file:
             content = [str(line.strip().split("\t")[0]),int(line.strip().split("\t")[1]),float(line.strip().split("\t")[2])]
-            block_area_angle.append(content)
-    areas = set([bus[1] for bus in block_area_angle])
+            block_area_angle.append(content) # For each element in block_area_angle, the first element is the block name, the second is the area number, and the third is the angle
     # Define a reference bus for each area
-    reference_angle = {i: -100.0 for i in areas}  # Unrealistic intial values
+    reference_angle = {i: -100 for i in set([bus[1] for bus in block_area_angle])}  # Unrealistic intial value for each area 
     for bus in block_area_angle:
-        if len(areas) == 1:
-            reference_angle[0] = float(bus[2])
-            reference_angle[1] = float(bus[2])
-        else:
-            if reference_angle[bus[1]] == -100.0:
-                reference_angle[bus[1]] = float(bus[2])  # If no angle is already defined, use the first one from that area
-                # print("The reference for area",bus[1],'is bus',bus[0])
-
-    # This function loads and builds the edge and nodal admittance matrices and for stability analysis
+        if reference_angle[bus[1]] == -100: 
+            reference_angle[bus[1]] = float(bus[2])  # If the reference angle of this block's area is not defined yet, then use the angle of the current block as the reference
+    
     # 1) Read the topology matrix and extract block names
-    Ytopology = np.loadtxt(topology, skiprows=1, comments=["#", "%", "!"])
-    # nameA-1 nameA-2 nameB-1 nameB-2 ... x nameA-1 nameA-2 nameB-1 ...
-    # 0 means no interconnection, 1 means connection between the edges: diagonals are single-sided / shunt
-    with open(topology, 'r') as f:
-        block_names_Y = f.readline().strip('\n').split("\t")
+    if topology is not None:
+        Ytopology = np.loadtxt(topology, skiprows=1, comments=["#", "%", "!"])
+        # nameA-1 nameA-2 nameB-1 nameB-2 ... x nameA-1 nameA-2 nameB-1 ...
+        # 0 means no interconnection, 1 means connection between the edges: diagonals are single-sided / shunt
+        with open(topology, 'r') as f:
+            block_names_Y = f.readline().strip('\n').split("\t")
+    elif node_blocks is not None:
+        if len(node_blocks) != 1:
+            raise ValueError("The topology must be specified when there is more than one node block.")
+        # If the user specifies the node blocks but not the topology, then it is assumed that the interconnection is full
+        block_names_Y = [block[:-2] for block in node_blocks for _ in (0, 1)]
+        block_names_Y = [block+"-1" if i%2==0 else block+"-2" for i, block in enumerate(block_names_Y)]
+        Ytopology =  np.identity(2)
+    else:
+        raise ValueError("The topology or node_blocks must be specified. Check the function documentation by typing help(stability_analysis)")
 
     # 2) Read the admittance files based on the topology file
     admittances = []  # List containing the admittance objects
-    bus_names = []  # List of list with block (bus) names
     # Create the undirected graph: adjacent matrix but diagonals can be 1
     g = Graph(len(Ytopology))
     for row, name in enumerate(block_names_Y):
@@ -109,17 +113,20 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     cc = g.connectedComponents()  # List of lists with blocks positions connected
     # For every group of connected buses, read and add the admittance matrix
     for buses in cc:
-        bus_names.append([block_names_Y[bus] for bus in buses])
-        admittances.append(read_admittance(path=results_folder, involved_blocks=bus_names[-1], file_root=file_root))
+        involved_blocks=[block_names_Y[bus] for bus in buses]
+        if node_blocks is not None:
+            node = True if set(involved_blocks).issubset(node_blocks) else False  # If all the blocks in the file are in the node_blocks list, then it is a node matrix
+        else:
+            node = None  # If the user does not specify the node blocks, AC/DC matrices and single-port AC or DC components are node matrices by default
+        admittances.append(read_admittance(path=results_folder, involved_blocks=involved_blocks, file_root=file_root, node=node))
 
     # 3) Update bus_names to be ordered as the variables in the individual admittance matrices and build the node matrix
     node_matrix = []  # Create the node matrix with the active components (block diagonal)
     node_variables = []  # List of variable names = the current/voltage vectors
     edge_aux_matrix = []  # Auxiliary edge matrix (block diagonal)
     edge_aux_variables = []  # The order of this aux matrix is different from the order of the node matrix
-    for idx, y in enumerate(admittances):
-        bus_names[idx] = y.blocks
-        # print(bus_names[idx],y.y_type,"- Node:",y.node)
+    for y in admittances:
+        # print(y.blocks,y.y_type,"- Node:",y.node)
         if y.node:
             # Define the nodal matrix that sets the order of the electrical variables
             for var in y.vars: node_variables.append(var)
@@ -139,7 +146,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     # Create the auxiliary edge matrix (different order than node matrix), useful to check the network topology and scan
     Yedge_aux = np.zeros((len(frequencies),len(node_variables),len(node_variables)),dtype='cdouble')  # Or dtype='csingle'
     y_edge_idx = 0
-    for idx, yedge in enumerate(edge_aux_matrix):
+    for yedge in edge_aux_matrix:
         # # Eliminate too small elements: related to PSCAD accuracy when the topology is not enforced
         # for col in range(np.size(yedge.y, 1)):
         #     for row in range(np.size(yedge.y, 2)):
@@ -179,34 +186,32 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     # with open(results_folder + '\\' + file_root + "_Edge.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
     plt.close()
 
-    # Node admittance matrix and associated edge matrix
+    # 5) Build the block-diagonal node admittance and define the rotation matrix accordingly
     Ynode = np.zeros((len(frequencies), len(node_variables), len(node_variables)),dtype='cdouble')  # Or dtype='csingle'
-    y_node_idx = 0
+    T = np.zeros((len(node_variables), len(node_variables)), dtype='double') # Block-diagonal rotation matrix
+    y_node_idx = 0 # Block index for the node matrix
     for idx, ynode in enumerate(node_matrix):
-        # Rotate the matrix accordingly to the terminal angle if it involves AC variables
-        if len(ynode.vars) >= 2:
-            for block in block_area_angle:
-                # Iterate over the different blocks and use the angle of the current matrix
-                if block[0] in [bus[:-2] for bus in ynode.blocks]:
-                    # The reference angle for the area of this block - bus angle of this block
-                    theta = (reference_angle[block[1]] - block[2])
-                    # print("Angle of",round(theta,4),"in the admittance involving",ynode.blocks)
+        sub_block_idx = 0 # Block index for the node matrix sub-blocks
+        for block in ynode.blocks:
+            if ynode.blocks_info[block]["type"] == "AC": # If the current sub-block is AC then define the AC rotation
+                for each_block in block_area_angle: # Iterate over all blocks to find the angle of the current sub-matrix
+                    if each_block[0] == block[:-2]: # If the names match
+                        theta = (each_block[2] - reference_angle[each_block[1]]) # Rotation angle = block's bus angle - reference angle for the area of this block 
+                        # print('Nodal submatrix',idx,"between:",y_node_idx,"and",y_node_idx+len(ynode.vars),"with angle",round(theta,4),"for block",block,"between",str(y_node_idx+sub_block_idx),"and",str(y_node_idx+sub_block_idx+2))
+                        T[y_node_idx+sub_block_idx:y_node_idx+sub_block_idx+2, y_node_idx+sub_block_idx:y_node_idx+sub_block_idx+2] = np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]])
+                sub_block_idx = sub_block_idx + 2
+            
+            elif ynode.blocks_info[block]["type"] == "DC": # DC blocks need no rotation
+                # print("Node submatrix",idx,"between:",y_node_idx,"and",y_node_idx+len(ynode.vars),"DC type for block",block,"between",str(y_node_idx+sub_block_idx),"and",str(y_node_idx+sub_block_idx+1))
+                T[y_node_idx+sub_block_idx:y_node_idx+sub_block_idx+1, y_node_idx+sub_block_idx:y_node_idx+sub_block_idx+1] = 1.0
+                sub_block_idx = sub_block_idx + 1
 
-        # Define the rotation matrix for each component: AC-side 2x2, AC/DC 3x3
-        if ynode.y_type == "AC" and len(ynode.vars) == 2:
-            T = np.array([[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]])
-            T_1 = np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]])
-        elif ynode.y_type == "ACDC" and len(ynode.vars) == 3:
-            T = np.array([[1, 0, 0],[0, np.cos(theta), -np.sin(theta)],[0, np.sin(theta), np.cos(theta)]])
-            T_1 = np.array([[1, 0, 0], [0, np.cos(theta), np.sin(theta)], [0, -np.sin(theta), np.cos(theta)]])
-        else:
-            T = np.identity(len(ynode.vas))  # DC-side analysis only: does not need frame alignment
-            T_1 = np.identity(len(ynode.vars))
-
-        # print('Matrix',idx,", nodal matrix start idx:",y_node_idx,"and end:",y_node_idx+len(ynode.vars))
-        Ynode[:, y_node_idx:y_node_idx+len(ynode.vars), y_node_idx:y_node_idx+len(ynode.vars)] = T@ynode.y@T_1
-        # Equivalent to np.matmul(T,np.matmul(ynode.y,T_1))
+        Ynode[:, y_node_idx:y_node_idx+len(ynode.vars), y_node_idx:y_node_idx+len(ynode.vars)] = ynode.y      
         y_node_idx = y_node_idx + len(ynode.vars)  # Update the matrix index for the next admittance block
+
+    # Define the inverse of the rotation matrix and rotate the system matrices: T is orthogonal so T^-1 = T'
+    Ynode = T.transpose() @ Ynode @ T # Equivalent to np.matmul(T.transpose(),np.matmul(Ynode,T))
+    Yedge = T.transpose() @ Yedge @ T
 
     # Scatter verification of the node admittance for the lowest frequency
     Ynode_nan = np.zeros_like(Ynode[0,:,:], dtype=np.float64)
@@ -222,8 +227,9 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     plt.close()
     np.seterr(divide='warn')
 
-    # Perform stability analysis
-    L = np.matmul(np.linalg.inv(Yedge),Ynode)  # Loop gain matrix
+    # 6) Perform stability analysis
+    Zedge = np.linalg.inv(Yedge)
+    L = np.matmul(Zedge,Ynode)  # Loop gain matrix
     # Stability via eigenvalue loci
     stable = nyquist(L=L,frequencies=frequencies,results_folder=results_folder,filename=file_root,verbose=True,check_conditioning=check_conditioning,
                      condition_number_th=condition_number_th, make_plot=make_plot, indentations=indentations, save_pickle=save_pickle)
@@ -231,7 +237,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, check
     nyquist_det(L=L,frequencies=frequencies,results_folder=results_folder,filename=file_root, verbose=False, offset=0.0,
                 draw_arrows=True, show_plot=False, make_plot=make_plot, indentations=indentations, save_pickle=save_pickle) 
 
-    # Oscillatory frequencies and bus participation factors based on the closed-loop impedance: the admittance is provided to avoid the inversion so Z_closedloop=False
+    # Oscillatory frequencies and bus participation factors based on the closed-loop impedance: the admittance is provided to avoid inversion so Z_closedloop=False
     EVD(Yedge+Ynode, frequencies, node_variables, results_folder, file_root, make_plot=make_plot, Z_closedloop=False, save_pickle=save_pickle)
 
     # Save the admittance matrices
@@ -350,7 +356,7 @@ def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, ch
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
 
     # 1) Compute the eigenvalues of the loop-gain at every frequency
-    eigenvalues = np.linalg.eig(L)[0]
+    eigenvalues, right_eigenvectors = np.linalg.eig(L)
     # Compute the condition number to discard doubtful data: threshold based on input error
     if check_conditioning: condition_number = np.linalg.cond(L)  # Relative error output <= cond_num * relative error input
 
@@ -373,6 +379,7 @@ def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, ch
             # Solve the linear sum assignment problem to find the minimum variation and thus the correct order
             col_ind = linear_sum_assignment(d_abs)[1]  # The absolute distance is the cost matrix
             eigenvalues_sorted[idx, :] = eigenvalues[idx, col_ind]  # Sort the eigenvalues
+            right_eigenvectors[idx, :] = right_eigenvectors[idx][:,col_ind]  # Sort the eigenvectors
 
     # 2) Eigenloci plot and count clockwise and counter-clockwise encirclements of (-1,0j) for each eigenvalue
     # Compute the coordinates of the eigenloci for the GNC aplication and plotting
@@ -406,14 +413,14 @@ def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, ch
         for idx in range(0,len(idx_indentations),2):
             print(f"GNC indentation at {indentations[idx//2]} Hz performed between {frequencies[idx_indentations[idx]]} and {frequencies[idx_indentations[idx+1]]} Hz")
     
-    cw = []  # List of clockwise encirclements for each locus
-    ccw = []  # List of counter-clockwise encirclements for each locus
+    cw = []  # List of clockwise crossings for each locus
+    ccw = []  # List of counter-clockwise crossings for each locus
     if make_plot:
         fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(6, 7))  # Create the figure and get the colors cycle
         colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
         for col in plt.rcParams['axes.prop_cycle'].by_key()['color']: colors.append(col)  # Triplicate the color cycle
         for col in plt.rcParams['axes.prop_cycle'].by_key()['color']: colors.append(col)  # in case of many eigenvalues
-    # Loop over the sorted eigenvalues for ploting the locus and count the encirclements
+    # Loop over the sorted eigenvalues for ploting the locus and count the crossings
     for idx in range(eigenvalues_sorted.shape[1]):
         # Plot the eigenvalue locus avoiding the indentations
         if make_plot:
@@ -421,18 +428,17 @@ def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, ch
             ax[0].plot(x_indent[:,idx], -y_indent[:,idx], color=colors[idx], linestyle='solid', linewidth=1.5, label='_nolegend_')
             ax[1].plot(x_indent[:,idx],y_indent[:,idx], color=colors[idx],linestyle='solid',linewidth=1.5,label=r'$\lambda_{' + format(idx+1,'.0f')+r'}$')
             ax[1].plot(x_indent[:,idx], -y_indent[:,idx], color=colors[idx], linestyle='solid', linewidth=1.5, label='_nolegend_')
-
-        # Count the number of (-1, 0j) encirclements by this eigenvalue locus
+        # Count the number of real axis crossings to the left of (-1, 0j) by this eigenvalue locus
         cwi = 0  # Initialize the counters
         ccwi = 0
         for j in range(1,eigenvalues_sorted.shape[0]):
-            # Only consider clockwise crossings of the imaginary axis beyond (-1,0j)
+            # Only consider clockwise crossings of the real axis beyond (-1,0j)
             if y[j - 1, idx] < 0 < y[j, idx] and (x[j,idx] < -1) and j not in idx_indentations:  # x[j-1,idx] < -1 or
                 # Check that the (-1,0j) is to the right of the line between (x1,y1) and (x2,y2)
                 # If the cross product of vectors (x2-x1, y2-y1) and (-1-x1, 0-y1) is < 0, then (-1,0) is to the right
                 if (x[j,idx] - x[j-1,idx])*(0 - y[j-1,idx]) - (y[j,idx] - y[j-1,idx])*(-1 - x[j-1,idx]) < 0:
                     cwi += 1
-                    if verbose: print("CW crossing around ",round(0.5*(frequencies[j] + frequencies[j-1]),4)," Hz by lambda =",str(idx+1))
+                    if verbose: print("Real axis CW crossing at",round(0.5*(frequencies[j] + frequencies[j-1]),4),"Hz by lambda =",str(idx+1))
                     if make_plot and show_plot:
                         fig1, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(6, 7))
                         ax1.plot([x[j-1,idx],x[j,idx]],[y[j-1,idx],y[j,idx]], color='red', linestyle='solid', linewidth=2.0, label='_nolegend_')
@@ -446,14 +452,13 @@ def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, ch
                         with open(results_folder + '\\' + filename + "_GNC_lambda_"+str(idx)+"_cw_"+str(cwi)+".pickle", 'wb') as f: pickle.dump(fig1, f)
                         plt.close(fig1)
 
-
-            # Only consider counter-clockwise crossings of the imaginary axis beyond (-1,0j)
+            # Only consider counter-clockwise crossings of the real axis beyond (-1,0j)
             elif y[j - 1, idx] > 0 > y[j, idx] and (x[j-1,idx] < -1 or x[j,idx] < -1) and j not in idx_indentations:
                 if (x[j,idx] - x[j-1,idx])*(0 - y[j-1,idx]) - (y[j,idx] - y[j-1,idx])*(-1 - x[j-1,idx]) > 0:
                     # If the cross product of vectors (x2-x1, y2-y1) and (-1-x1, 0-y1) is > 0, then (-1,0) is to the left
                     # if (x[j,idx] - x[j-1,idx])*(0 - y[j-1,idx]) - (y[j,idx] - y[j-1,idx])*(-1 - x[j-1,idx]) > 0:
                     ccwi += 1
-                    if verbose: print("CCW crossing around ",round(0.5*(frequencies[j] + frequencies[j-1]),4)," Hz by lambda =",str(idx+1))
+                    if verbose: print("Real axis CCW crossing at",round(0.5*(frequencies[j] + frequencies[j-1]),4),"Hz by lambda =",str(idx+1))
                     if make_plot and show_plot:
                         fig1, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(6, 7))
                         ax1.plot([x[j-1,idx],x[j,idx]],[y[j-1,idx],y[j,idx]], color='red', linestyle='solid', linewidth=2.0, label='_nolegend_')
@@ -466,6 +471,9 @@ def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, ch
                         if show_plot: plt.show()  # Visualize the plot
                         with open(results_folder + '\\' + filename + "_GNC_lambda_"+str(idx)+"_ccw_"+str(ccwi)+".pickle", 'wb') as f: pickle.dump(fig1, f)
                         plt.close(fig1)
+        
+        if cwi - ccwi > 0:
+            if verbose: print("CW encirclements for lambda =",str(idx+1)+":",cwi-ccwi)
 
         cw.append(cwi)  # Add the counters to the list
         ccw.append(ccwi)
@@ -473,13 +481,13 @@ def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, ch
     N = sum(cw) - sum(ccw)  # Net number of clockwise encirclements
     if N > 0:
         stable_system = False
-        if verbose: print("\n GNC stability assessment: unstable closed-loop system \n")
+        if verbose: print("\n GNC stability assessment: UNSTABLE closed-loop system \n")
     elif N < 0:
         stable_system = False
-        if verbose: print("\n GNC stability assessment: unstable subsystem \n")
+        if verbose: print("\n GNC stability assessment: UNSTABLE subsystem \n")
     else:
         stable_system = True
-        if verbose: print("\n GNC stability assessment: stable closed-loop system if subsystems are stable \n")
+        if verbose: print("\n GNC stability assessment: STABLE closed-loop system if subsystems are stable \n")
 
     # Plot the unit circle and the critical point
     if make_plot:
@@ -509,6 +517,7 @@ def nyquist(L, frequencies, results_folder=None, filename=None, verbose=True, ch
             with open(results_folder + '\\' + filename + "_GNC.pickle", 'wb') as f: pickle.dump(fig, f)
         if show_plot: plt.show()  # Visualize the plot
         plt.close(fig)
+        bode_plot(Y=1/(1+eigenvalues_sorted),  frequencies=frequencies, results_folder=results_folder, file_name=filename+"_inv(1+L)", style="solid", title=r"Bode plot of $1/(1+\lambda(L))$ over "+str(len(frequencies))+' frequencies', legend=[str(idx+1) for idx in range(eigenvalues_sorted.shape[1])])
 
     # Save the eigenloci
     loci = [eigenvalues_sorted[:, idx] for idx in range(eigenvalues_sorted.shape[1])]
@@ -642,16 +651,20 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None, verb
     Cont = np.transpose(left_eigenvectors[freq_idx, :])
     # PF[frequency, row = bus, column = mode]
     PF = right_eigenvectors * left_eigenvectors.transpose(0,2,1)  # Element-wise product of right eigenvectors and the transposed left eigenvectors
+    idx_lambda_envelope = np.argmax(lambda_abs,axis=1)  # Index of the maximum magnitude eigenvalue at each frequency
+    PF_envelope = np.take_along_axis(PF, idx_lambda_envelope[:,None,None], axis=2)[:, :, 0]  # PF of the maximum magnitude eigenvalue at each frequency
     PF_freq_idx = Obs * Cont  # Element-wise product
     PF_mode = PF_freq_idx[:,idx_lambda_max_max]  # Select the target mode
 
     # The controllability, observability and PF of the critical mode at each bus
-    if verbose: print("Bus"+(max([len(bus) for bus in bus_names])-3)*" "+"\t","Cont.\t","Obs.\t","PF")  # Header
-    for idx, bus in enumerate(bus_names):
-        if verbose: 
-            print(bus+"\t", f"{np.abs(Cont[idx,idx_lambda_max_max]) / np.sum(np.abs(Cont[:,idx_lambda_max_max])):.4f}"+"\t",
-              f"{np.abs(Obs[idx,idx_lambda_max_max]) / np.sum(np.abs(Obs[:,idx_lambda_max_max])):.4f}"+"\t",
-              f"{np.abs(PF_mode[idx]) / np.sum(np.abs(PF_mode)):.4f}")
+    if verbose:
+        len_longest_bus_name = max([len(bus) for bus in bus_names])
+        print("Bus"+(len_longest_bus_name-3)*" "+"\t","Cont.\t","Obs.\t","PF")  # Header
+        for idx, bus in enumerate(bus_names):
+            print(bus+(len_longest_bus_name-len(bus))*" "+"\t",
+                  f"{np.abs(Cont[idx,idx_lambda_max_max]) / np.sum(np.abs(Cont[:,idx_lambda_max_max])):.4f}"+"\t",
+                  f"{np.abs(Obs[idx,idx_lambda_max_max]) / np.sum(np.abs(Obs[:,idx_lambda_max_max])):.4f}"+"\t",
+                  f"{np.abs(PF_mode[idx]) / np.sum(np.abs(PF_mode)):.4f}")
 
     # 4) Plot the eigenvalues over frequency
     if make_plot:
@@ -668,7 +681,6 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None, verb
                     label=r'$\lambda_{' + format(idx + 1, '.0f') + r'}$')
             ax[2].plot(frequencies, lambda_imag[:, idx], color=colors[idx], linestyle='solid', linewidth=1.5,
                     label=r'$\lambda_{' + format(idx + 1, '.0f') + r'}$')
-
         # Figure settings and save to pdf
         ax[0].minorticks_on()
         ax[0].grid(visible=True, which='major', color='k', linestyle='-', linewidth=0.5)
@@ -700,17 +712,16 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename=None, verb
 
         # plt.show()  # Visualize the plot interactively
         fig.savefig(results_folder + '\\' + filename + "_EVD.pdf", format="pdf", bbox_inches="tight")
-        
+
         if save_pickle:
             with open(results_folder + '\\' + filename + "_EVD.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
         plt.close(fig)
+        bode_plot(eigenvalues_sorted, frequencies, results_folder, filename+"_EVD_Bode", title='EVD of the closed-loop impedance over '+str(len(frequencies))+' frequencies', legend=[format(idx+1,'.0f') for idx in range(eigenvalues_sorted.shape[1])], style="solid", save_pickle=save_pickle)
+        bode_plot(PF_envelope, frequencies, results_folder, filename+"_EVD_PFs", title='PFs of the largest closed-loop impedance over '+str(len(frequencies))+' frequencies', legend=bus_names, style="solid", save_pickle=save_pickle, linear_mag=True)
 
-    # Save the EVD into a text file
-    evd_results = [eigenvalues_sorted[:,idx] for idx in range(eigenvalues_sorted.shape[1])]
-    evd_results.insert(0, frequencies)
-    evd_results = tuple(evd_results)
-    np.savetxt(results_folder + '\\' + filename + '_EVD.txt', np.stack(evd_results, axis=1), delimiter='\t',
-               header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
+    # Save the EVD and PFs of the envelope into a text file
+    np.savetxt(results_folder + '\\' + filename + '_EVD.txt', np.column_stack((frequencies, eigenvalues_sorted)), delimiter='\t', header="Frequency [Hz]\t" + "\t".join([str(i+1) for i in range(len(bus_names))]), comments='')
+    np.savetxt(results_folder + '\\' + filename + '_EVD_PFs.txt', np.column_stack((frequencies, PF_envelope)), delimiter='\t', header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
 
 def nyquist_det(L, frequencies, results_folder=None, filename=None, verbose=True, offset=0.0, draw_arrows=True, make_plot=True, show_plot=False, f0=50.0, indentations=[], save_pickle=False):
     # Stability assessment based on the determinant of I + L
@@ -750,7 +761,7 @@ def nyquist_det(L, frequencies, results_folder=None, filename=None, verbose=True
         for idx in range(0,len(idx_indentations),2):
             print(f"GNC indentation at {indentations[idx//2]} Hz performed between {frequencies[idx_indentations[idx]]} and {frequencies[idx_indentations[idx+1]]} Hz")
 
-    # Count the number of (offset, 0j) encirclements by det
+    # Count the number of crossings of the positive vertical axis at (offset,0j) by det
     cwi = 0  # Initialize the counters
     ccwi = 0
     for j in range(1,len(frequencies)):
@@ -761,7 +772,7 @@ def nyquist_det(L, frequencies, results_folder=None, filename=None, verbose=True
             if (x[j] - x[j-1])*(0 - y[j-1]) - (y[j] - y[j-1])*(offset - x[j-1]) < 0:
                 cwi += 1
                 if show_plot:
-                    print("CW crossing around ",round(0.5*(frequencies[j] + frequencies[j-1]),4)," Hz")
+                    print("Vertical line CW crossing at",round(0.5*(frequencies[j] + frequencies[j-1]),4),"Hz")
                     fig1, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(6, 7))
                     ax1.plot([x[j-1],x[j]],[y[j-1],y[j]], color='red', linestyle='solid', linewidth=2.0, label='_nolegend_')
                     ax1.scatter(x[j-1], y[j-1], color='green', label=str(frequencies[j-1]))
@@ -780,7 +791,7 @@ def nyquist_det(L, frequencies, results_folder=None, filename=None, verbose=True
                 # If the cross product of vectors (x2-x1, y2-y1) and (offset-x1, 0-y1) is > 0, then (offset,0) is to the left
                 ccwi += 1
                 if show_plot:
-                    print("CCW crossing around ",round(0.5*(frequencies[j] + frequencies[j-1]),4)," Hz")
+                    print("Vertical line CCW crossing at",round(0.5*(frequencies[j] + frequencies[j-1]),4),"Hz")
                     fig1, ax1 = plt.subplots(nrows=1, ncols=1, figsize=(6, 7))
                     ax1.plot([x[j-1],x[j]],[y[j-1],y[j]], color='red', linestyle='solid', linewidth=2.0, label='_nolegend_')
                     ax1.scatter(x[j-1], y[j-1], color='green', label=str(frequencies[j-1]))
@@ -796,13 +807,13 @@ def nyquist_det(L, frequencies, results_folder=None, filename=None, verbose=True
     N = cwi - ccwi  # Net number of clockwise encirclements
     if N > 0:
         stable_system = False
-        if verbose: print("\n GNC stability assessment: unstable closed-loop system \n")
+        if verbose: print("\n GNC stability assessment: UNSTABLE closed-loop system \n")
     elif N < 0:
         stable_system = False
-        if verbose: print("\n GNC stability assessment: unstable subsystem \n")
+        if verbose: print("\n GNC stability assessment: UNSTABLE subsystem \n")
     else:
         stable_system = True
-        if verbose: print("\n GNC stability assessment: stable closed-loop system if subsystems are stable \n")
+        if verbose: print("\n GNC stability assessment: STABLE closed-loop system if subsystems are stable \n")
 
     if make_plot:
         fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(6, 7))  # Create the figure
@@ -843,6 +854,7 @@ def nyquist_det(L, frequencies, results_folder=None, filename=None, verbose=True
             with open(results_folder + '\\' + filename + "_det.pickle", 'wb') as f: pickle.dump(fig, f)
         if show_plot: plt.show()  # Visualize the plot interactively
         plt.close(fig)
+        bode_plot(det,  frequencies, results_folder, file_name=filename + "_det_Bode", title='Bode plot of '+str(offset)+r' + det[$I + L(j \omega)$] over '+str(len(frequencies))+' frequencies', style="solid", save_pickle=save_pickle)
 
     # Save the results
     np.savetxt(results_folder + '\\' + filename + '_det.txt', np.stack((frequencies,det), axis=-1), delimiter='\t',
@@ -935,11 +947,12 @@ Required arguments
         results_folder      (str) Absolute path where the matrices and powerflow files are stored.
         file_root           (str) Name root of the files used in the analysis
 Optional arguments
+        indentations        (list of double) Frequencies [Hz] at which indentations around open-loop poles are performed in the GNC.
+        node_blocks         (list of strings) List of strings where each entry is "BlockName-side" corresponding to the node matrix components. Default = None, which results in the automated identification of the blocks as per the read_admittance function.
         check_conditioning  (bool) Bool flag to discard values with poor numerical conditioning of the system matrices.
         condition_number_th (double) Condition number threshold of the system matrices above which the data is ignored.
                             This threshold can be set based on the expected input error and maximum acceptable ouTput error.
         make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files.
-        indentations        (list of double) Frequencies [Hz] at which indentations around open-loop poles are performed in the GNC.
         save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
 """
 

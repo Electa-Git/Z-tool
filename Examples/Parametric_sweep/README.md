@@ -38,7 +38,7 @@ When the scan data for a specific operating point is not known, linear interpola
   <img src="../../Doc/parametric_study_1.png" alt="Parametric study scenarios"/>
 </p>
 
-Lastly, the actual admittance at the new operating point is scanned and compared with the interpolated results to verify the adequacy of the interpolation. As seen below, the minor differences between the interpolated (dots) and actual (lines) admittance emphasize the applicabilability of interpolation.
+Lastly, the actual admittance at the new operating point is scanned and compared with the interpolated results to verify the adequacy of the interpolation. As seen below, the minor differences between the interpolated (dots) and actual (lines) admittance emphasize the applicability of interpolation.
 
 <p align="center">
   <img src="../../Doc/parametric_study_2.png" alt="Admittance comparison"/>

@@ -17,6 +17,8 @@ Copyright (C) 2026  Francisco Javier Cifuentes Garcia
 """
 __all__ = ['frequency_sweep', 'frequency_sweep_TF']
 
+from pdb import main
+from tabnanny import verbose
 import time as t  # Relative time
 from os import listdir, chdir, getcwd, path, makedirs
 import numpy as np  # Numerical python functions
@@ -482,12 +484,9 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
 
     # Disable output channel components (all but Z-tool's scaning blocks) and animated displays
     if not pscad_plot:
+        if verbose: print(' Disabling needless outputs and animated displays')
         scan_vars = ['blockid','VDUTac','IDUTacA1','IDUTacA2','VDUTdc','IDUTdcA1','IDUTdcA2','theta']  # Target outputs
-        all_pgb = project.find_all("master:pgb")  # Find all output channels in the project
-        for pgb in all_pgb:
-            if not (pgb.parameters()['Name'] in scan_vars):  pgb.disable()  # Disable the non-selected outputs
-        all_multimeters = project.find_all("master:multimeter")  # Find all multimeters in the project
-        for multimeter in all_multimeters: multimeter.parameters(Dis=0)  # Animated display is disabled (0)
+        disable_pscad_outputs(main, scan_vars, only_main_canvas=True)
 
     # Set simulation-specific parameters
     if 'Perturbation' not in pscad.simulation_sets():
@@ -554,67 +553,52 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                 # ch_var_names.__setitem__(key=counter, value=names[-1])  # Var name entry with the channel num as key
                 ch_var_names[counter] = names[-1]  # Var name entry with the channel num as key
             counter = counter + 1
-    if verbose: print("Output channel variable names \n","\n".join(names))
+
     block_id_out_num = [out_num[i] for i in range(len(names)) if "blockid" in names[i]]  # block_id outputs numbers
     # out_files = int(np.ceil(counter / 10))  # Only 10 output channels per .out file
     files_to_open = [int(np.ceil(block_id_out / 10)) for block_id_out in block_id_out_num]  # With block_id outputs
     files_to_open = list(set(files_to_open))  # File's number to be opened
-    block_id_out_signal = []
+    block_id_out = {}  # Dict with block_id signal as the key and block_id output channel number as the content
     for file_num in files_to_open:
         # Select the columns to be read relative to each file and only for the block_id signal
-        cols = [num + 1 - 10 * (file_num - 1) for num in block_id_out_num if
-                int(np.ceil(num / 10)) == file_num]
-        if file_num < 10:  # If the file number is less than 10, then it adds 0 before the file number
-            # values = np.loadtxt(out_filename + "0" + str(file_num) + ".out", skiprows=1, max_rows=2, usecols=cols)
-            values = read_one_line(out_filename + "_0" + str(file_num) + ".out", nline=1)  # Read the first value
-        else:
-            # values = np.loadtxt(out_filename + str(file_num) + ".out", skiprows=1, max_rows=2, usecols=cols)
-            values = read_one_line(out_filename + "_" + str(file_num) + ".out", nline=1)  # Read the first value
-        for idx, signal in enumerate(values):
-            if idx + 1 in cols:
-                block_id_out_signal.append(int(float(signal)))
-
-    # Map the block_id_out_signal to the blocks in the list ScanBlocksTool
+        block_id_in_file = [block_id_out for block_id_out in block_id_out_num if int(np.ceil(block_id_out / 10)) == file_num]
+        cols = [num + 1 - 10 * (file_num - 1) for num in block_id_in_file]  # Columns where the block_id signals are in the file
+        pre_file_number = "_0" if file_num < 10 else "_"  # Pre-file number for the filename: if the file number < 10, then it adds 0 after the underscore
+        # values = np.loadtxt(out_filename + pre_file_number + str(file_num) + ".out", skiprows=1, max_rows=2, usecols=cols)
+        values = read_one_line(out_filename + pre_file_number + str(file_num) + ".out", nline=1)  # Read the first value
+        # print("File number", file_num, "contains block_id outputs",block_id_in_file,"at columns", cols," with values", [int(float(values[col-1])) for col in cols])  # Print the block_id signal values for debugging
+        for idx, col in enumerate(cols): block_id_out[int(float(values[col-1]))] = block_id_in_file[idx] # block_id signal is the key, block_id output channel number is the content
+    
+    # Map the block_id_out signal to the blocks in the list ScanBlocksTool
     all_files_to_open = []  # A list containing all the output files number that need to be read
-    for idx, id_signal in enumerate(block_id_out_signal):  # Loop over the identification signals
-        for block in ScanBlocksTool:  # And check for each active scaning block
-            # If the ids match, then define the first and last output channel numbers for the measurement block
-            if block.block_id == id_signal:
-                ch0 = block_id_out_num[idx]  # Start channel
-                if verbose: print("Block name:",block.name,"type",block.type, )
-                if "AC" == block.type:
-                    ch1 = ch0 + len(AC_scan_variables)  # End channel number containing the scan block signals
-                else:
-                    ch1 = ch0 + len(DC_scan_variables)  # Idem but for DC scan blocks
-                block.out_vars_ch = [i for i in range(ch0,ch1)]  # Output channel numbers for this block
+    for block in ScanBlocksTool:  # Go over the scan blocks to find the corresponding block_id output channel number and then the output channels of the scan variables
+        # Define the first (ch0) and last (ch1) output channel numbers for this block
+        ch0 = block_id_out[block.block_id]  # Start channel
+        if verbose: print("Block name:",block.name,"type",block.type, "with id", block.block_id )
+        ch1 = ch0 + len(AC_scan_variables) if "AC" == block.type else ch0 + len(DC_scan_variables)  # End channel number containing the scan block signals
+        block.out_vars_ch = [i for i in range(ch0,ch1)]  # Output channel numbers for this block
+        # Dict with output channel number as the key and output channel name as the content
+        for ch in block.out_vars_ch:
+            name_ch = ch_var_names[ch].split('_')
+            if len(name_ch) > 1:
+                # There is an underscore: remove the additional numbering and add back the end of the name
+                block.out_vars_names[ch] = name_ch[0] + ":" + name_ch[1].split(":")[1] if ":" in name_ch[1] else name_ch[0]
+            else:
+                block.out_vars_names[ch] = name_ch[0]
+        if verbose:
+            print(" \t Target output channels ", block.out_vars_ch)
+            print(" \t Output names: ", [block.out_vars_names[ch] for ch in block.out_vars_ch])
 
-                # Dict with output channel number as the key and output channel name as the content
-                for ch in block.out_vars_ch:
-                    name_ch = ch_var_names[ch].split('_')
-                    if len(name_ch) > 1:
-                        # There is an underscore
-                        if ":" in name_ch[1]:
-                            # Remove the additional numbering and add back the end of the name
-                            block.out_vars_names[ch] = name_ch[0] + ":" + name_ch[1].split(":")[1]
-                        else:
-                            block.out_vars_names[ch] = name_ch[0]
-                    else:
-                        block.out_vars_names[ch] = name_ch[0]
-                if verbose:
-                    print(" Block ", block.name, "\n \t Target output channels ", block.out_vars_ch)
-                    print(" \t Output names: ", [block.out_vars_names[ch] for ch in block.out_vars_ch])
-
-                # block.out_vars_names.__setitem__(key=ch, value=ch_var_names.get(ch))
-                files_to_open = [int(np.ceil(block_out / 10)) for block_out in block.out_vars_ch]
-                files_to_open = list(set(files_to_open))  # File's number to be opened (no repetitions)
-                block.files_to_open = files_to_open  # Number of the files containing the block's outputs
-                for f2o in files_to_open: all_files_to_open.append(f2o)
-                for file_num in files_to_open:
-                    # Select the columns to be read relative to each file and only for the signals of the scan block
-                    cols = [num + 1 - 10 * (file_num - 1) for num in block.out_vars_ch if
-                            int(np.ceil(num / 10)) == file_num]
-                    block.relative_cols[file_num] = cols
-                    if verbose: print("\t Block ", block.name, " output file:", file_num,", columns:",cols)
+        # block.out_vars_names.__setitem__(key=ch, value=ch_var_names.get(ch))
+        files_to_open = [int(np.ceil(block_out / 10)) for block_out in block.out_vars_ch]
+        files_to_open = list(set(files_to_open))  # File's number to be opened (no repetitions)
+        block.files_to_open = files_to_open  # Number of the files containing the block's outputs
+        for f2o in files_to_open: all_files_to_open.append(f2o)
+        for file_num in files_to_open:
+            # Select the columns to be read relative to each file and only for the signals of the scan block
+            cols = [num + 1 - 10 * (file_num - 1) for num in block.out_vars_ch if int(np.ceil(num / 10)) == file_num]
+            block.relative_cols[file_num] = cols
+            if verbose: print("\t Block", block.name, "output file", file_num,"and columns",cols)
 
     all_files_to_open = list(set(all_files_to_open))  # Get rid of repetitions
 
@@ -635,7 +619,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
 
     """ ---------- Save power flow and remove time offset---------- """
     prec = 5  # Saving precision
-    powerflow = ["Block \t [kV] \t [MW] \t [kA] \t [MVAr] \t [rad] \t Area"]
+    powerflow = ["\t".join(["Block","[kV]","[MW]","[kA]","[MVAr]","[rad]","Area"])]
     if plot_snapshot: print(" Plotting spectrum of the snapshot simulation")
     for block in ScanBlocksTool:
         if block.type == "AC":
@@ -678,7 +662,8 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     with open(results_folder+r'\\'+output_files+"_power_flow.txt", 'w') as powerflowfile:
         for item in powerflow:
             powerflowfile.write(item + '\n')
-            if show_powerflow: print(" "," \t ".join(item.split()))
+            if show_powerflow:
+                print(" ","\t".join([item[0:min(len(item),7+prec)] + (prec+7 - min(len(item),7+prec))*" " for item in item.split()])) # Add spacing for better visualization
 
     print('\n Unperturbed simulation results collected in', round((t.time() - t1), 2), 'seconds')
 
@@ -1166,11 +1151,8 @@ def frequency_sweep_TF(t_snap=None, t_sim=None, t_step=None, sample_step=None, v
 
     # Disable output channel components (all but Z-tool's scaning blocks) and animated displays
     if not pscad_plot:
-        all_pgb = project.find_all("master:pgb")  # Find all output channels in the project
-        for pgb in all_pgb:
-            if not (pgb.parameters()['Name'] in ['blockid','inputTF', 'outputTF']):  pgb.disable()  # Disable the non-selected outputs
-        all_multimeters = project.find_all("master:multimeter")  # Find all multimeters in the project
-        for multimeter in all_multimeters: multimeter.parameters(Dis=0)  # Animated display is disabled (0)
+        if verbose: print(' Disabling needless outputs and animated displays')
+        disable_pscad_outputs(main, ['blockid','inputTF', 'outputTF'], only_main_canvas=True)
 
     # Set simulation-specific parameters
     if 'Perturbation' not in pscad.simulation_sets():
@@ -1239,55 +1221,44 @@ def frequency_sweep_TF(t_snap=None, t_sim=None, t_step=None, sample_step=None, v
     block_id_out_num = [out_num[i] for i in range(len(names)) if "blockid" in names[i]]  # block_id outputs numbers
     files_to_open = [int(np.ceil(block_id_out / 10)) for block_id_out in block_id_out_num]  # With block_id outputs
     files_to_open = list(set(files_to_open))  # File's number to be opened
-    block_id_out_signal = []
+    block_id_out = {}  # Dict with block_id signal as the key and block_id output channel number as the content
     for file_num in files_to_open:
         # Select the columns to be read relative to each file and only for the block_id signal
-        cols = [num + 1 - 10 * (file_num - 1) for num in block_id_out_num if
-                int(np.ceil(num / 10)) == file_num]
-        if file_num < 10:  # If the file number is less than 10, then it adds 0 before the file number
-            values = read_one_line(out_filename + "_0" + str(file_num) + ".out", nline=1)  # Read the first value
-        else:
-            values = read_one_line(out_filename + "_" + str(file_num) + ".out", nline=1)  # Read the first value
-        for idx, signal in enumerate(values):
-            if idx + 1 in cols:
-                block_id_out_signal.append(int(float(signal)))
+        block_id_in_file = [block_id_out for block_id_out in block_id_out_num if int(np.ceil(block_id_out / 10)) == file_num]
+        cols = [num + 1 - 10 * (file_num - 1) for num in block_id_in_file]  # Columns where the block_id signals are in the file
+        pre_file_number = "_0" if file_num < 10 else "_"  # Pre-file number for the filename: if the file number < 10, then it adds 0 after the underscore
+        values = read_one_line(out_filename + pre_file_number + str(file_num) + ".out", nline=1)  # Read the first value
+        for idx, col in enumerate(cols): block_id_out[int(float(values[col-1]))] = block_id_in_file[idx] # block_id signal is the key, block_id output channel number is the content
 
-    # Map the block_id_out_signal to the blocks in the list ScanBlocksTool
+    # Map the block_id_out signal to the blocks in the list ScanBlocksTool
     all_files_to_open = []  # A list containing all the output files number that need to be read
-    for idx, id_signal in enumerate(block_id_out_signal):  # Loop over the identification signals
-        for block in ScanBlocksTool:  # And check for each active scaning block
-            # If the ids match, then define the first and last output channel numbers for the measurement block
-            if block.block_id == id_signal:
-                ch0 = block_id_out_num[idx]  # Start channel
-                if verbose: print("Block name:",block.name,"type",block.type)
-                ch1 = ch0 + len(['blockid','input_TF', 'output_TF'])  # End channel number containing the TFscan block signals
-                block.out_vars_ch = [i for i in range(ch0,ch1)]  # Output channel numbers for this block
+    for block in ScanBlocksTool:  # And check for each active scaning block
+        ch0 = block_id_out[block.block_id]  # Start channel
+        if verbose: print("Block name:",block.name,"type",block.type)
+        ch1 = ch0 + len(['blockid','input_TF', 'output_TF'])  # End channel number containing the TFscan block signals
+        block.out_vars_ch = [i for i in range(ch0,ch1)]  # Output channel numbers for this block
 
-                # Dict with output channel number as the key and output channel name as the content
-                for ch in block.out_vars_ch:
-                    name_ch = ch_var_names[ch].split('_')
-                    if len(name_ch) > 1:
-                        # There is an underscore
-                        if ":" in name_ch[1]:
-                            # Remove the additional numbering and add back the end of the name
-                            block.out_vars_names[ch] = name_ch[0] + ":" + name_ch[1].split(":")[1]
-                        else:
-                            block.out_vars_names[ch] = name_ch[0]
-                    else:
-                        block.out_vars_names[ch] = name_ch[0]
-                if verbose:
-                    print(" Block ", block.name, "\n \t Target output channels ", block.out_vars_ch)
-                    print(" \t Output names: ", [block.out_vars_names[ch] for ch in block.out_vars_ch])
+        # block.out_vars_names is a dict with the output channel number as the key and output channel name as the content
+        for ch in block.out_vars_ch:
+            name_ch = ch_var_names[ch].split('_')
+            if len(name_ch) > 1:
+                # There is an underscore: remove the additional numbering and add back the end of the name
+                block.out_vars_names[ch] = name_ch[0] + ":" + name_ch[1].split(":")[1] if ":" in name_ch[1] else name_ch[0]
+            else:
+                block.out_vars_names[ch] = name_ch[0]
+        if verbose:
+            print(" Block ", block.name, "\n \t Target output channels ", block.out_vars_ch)
+            print(" \t Output names: ", [block.out_vars_names[ch] for ch in block.out_vars_ch])
 
-                files_to_open = [int(np.ceil(block_out / 10)) for block_out in block.out_vars_ch]
-                files_to_open = list(set(files_to_open))  # File's number to be opened (no repetitions)
-                block.files_to_open = files_to_open  # Number of the files containing the block's outputs
-                for f2o in files_to_open: all_files_to_open.append(f2o)
-                for file_num in files_to_open:
-                    # Select the columns to be read relative to each file and only for the signals of the scan block
-                    cols = [num + 1 - 10 * (file_num - 1) for num in block.out_vars_ch if int(np.ceil(num / 10)) == file_num]
-                    block.relative_cols[file_num] = cols
-                    if verbose: print("\t Block ", block.name, " output file:", file_num,", columns:",cols)
+        files_to_open = [int(np.ceil(block_out / 10)) for block_out in block.out_vars_ch]
+        files_to_open = list(set(files_to_open))  # File's number to be opened (no repetitions)
+        block.files_to_open = files_to_open  # Number of the files containing the block's outputs
+        for f2o in files_to_open: all_files_to_open.append(f2o)
+        for file_num in files_to_open:
+            # Select the columns to be read relative to each file and only for the signals of the scan block
+            cols = [num + 1 - 10 * (file_num - 1) for num in block.out_vars_ch if int(np.ceil(num / 10)) == file_num]
+            block.relative_cols[file_num] = cols
+            if verbose: print("\t Block ", block.name, " output file:", file_num,", columns:",cols)
 
     all_files_to_open = list(set(all_files_to_open))  # Get rid of repetitions
 
@@ -1418,6 +1389,25 @@ def read_one_line(file_path, nline):
                 break
             if line_number == nline + 1: selected_data = line.split()
     return selected_data
+
+def disable_pscad_outputs(canvas, target_variables=[], only_main_canvas=True):
+    all_pgb = canvas.find_all("master:pgb")  # Find all output channels in the canvas
+    for pgb in all_pgb:
+        if not (pgb.parameters()['Name'] in target_variables):  pgb.disable()  # Disable the non-selected outputs
+    all_multimeters = canvas.find_all("master:multimeter")  # Find all multimeters in the canvas
+    for multimeter in all_multimeters: multimeter.parameters(Dis=0)  # Animated display is disabled (0)
+    if not only_main_canvas:
+        # Go into the sub-canvases and disable outputs within as well: this can take a long time if there are many components and sub-canvases, so it is optional
+        # print(' Current canvas:', canvas)
+        components = canvas.find_all()  # Find all components in the canvas
+        for component in components:
+            try:
+                component_is_module = component.is_module()
+            except:
+                component_is_module = False
+            if component_is_module:
+                sub_canvas = component.canvas()  # Sub-canvas of the module
+                disable_pscad_outputs(sub_canvas, target_variables=target_variables,only_main_canvas=False)  # Disable outputs in the sub-canvas and its sub-canvases
 
 
 frequency_sweep.__doc__ = """

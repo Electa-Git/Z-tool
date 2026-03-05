@@ -24,7 +24,7 @@ from os import listdir
 import numpy as np  # Numerical python functions
 
 class Admittance:
-    def __init__(self, variables, admittance, f, node=False):
+    def __init__(self, variables, admittance, f, node=None):
         self.variables = variables  # Variable names including the block, side and d,q,dc
         self.vars = []  # Names of the variables without the block side for variable pairing
         self.y = admittance  # Admittance data
@@ -47,15 +47,17 @@ class Admittance:
         y_type = list(set(y_type))
         if len(y_type) != 1: y_type = ["ACDC"]
         # print(self.blocks[-1],self.blocks_info[self.blocks[-1]])  # Only the name of the blocks as they appear in the matrix (.txt file)
-        # print(self.vars)
         self.y_type = y_type[0]  # AC, DC or ACDC
-        # TODO: update the logic to define if the addmitance is part of the node or edge subsystems
-        if node or self.y_type == "ACDC" or (admittance.shape[1] == 2 and self.y_type == "AC") or (admittance.shape[1] == 1 and self.y_type == "DC"):
-            self.node = True
+        # The user can define if the matrix is part of the node or edge subsystem.
+        if node is None: # If this info is not provided, AC/DC matrices and single-port AC or DC components are considered as node matrices by default.
+            if self.y_type == "ACDC" or (admittance.shape[1] == 2 and self.y_type == "AC") or (admittance.shape[1] == 1 and self.y_type == "DC"):
+                self.node = True
+            else:
+                self.node = False
         else:
-            self.node = False
+            self.node = node
 
-def read_admittance(path=None, involved_blocks=None, file_name=None, file_root=None):
+def read_admittance(path=None, involved_blocks=None, file_name=None, file_root=None, node=None):
     if file_name is None:
         if (involved_blocks or path) is None: raise ValueError('Error: One or more required arguments are missing.')
 
@@ -77,7 +79,7 @@ def read_admittance(path=None, involved_blocks=None, file_name=None, file_root=N
     freq = np.real(data[:, 0])  # Extract frequency column
     data = data[:, 1:]  # Remove frequency column
 
-    return Admittance(variables[1:], data.reshape(data.shape[0], int(np.sqrt(data.shape[1])), int(np.sqrt(data.shape[1]))), freq)
+    return Admittance(variables[1:], data.reshape(data.shape[0], int(np.sqrt(data.shape[1])), int(np.sqrt(data.shape[1]))), freq, node)
 
 read_admittance.__doc__ = """
 Function to read the addmittance text files as obtained with the tool.
@@ -92,7 +94,7 @@ Required arguments
 Optional arguments
         involved_blocks     (list of strings) It contains the names of the PSCAD blocks with the side at the end separated with a hyphen, e.g. ["BlockA-2","BlockB-1"] denotes the admittance between side 2 of BlockA and side 1 of BlockB.
         file_root           (string) Starting part of the file name. It can be used when several study cases are performed with different names as the involved_blocks variable is the same.
-
+        node                (bool) If True (False), the function will read the file as a node (edge) admittance matrix. This is useful to distinguish between node and edge submatrices for system-level analysis.
 Returns
         Admittance object.
 
@@ -111,6 +113,7 @@ print(admittance.y.shape)
 print(admittance.variables)
 print(admittance.blocks)
 print(admittance.blocks_info)
-print(admittance.node)
+# print(admittance.y.y) # Admittance data
+# print(len(admittance.y.f)) # Frequency data
 
 """

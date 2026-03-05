@@ -56,7 +56,8 @@ Y_grid = read_admittance.read_admittance(path=results_folder, involved_blocks="P
 
 """ -------------------- Stability analysis ---------------------- """
 print("\nAnalysis of the PSCAD case")
-# You can call stability.stability_analysis but this case is simple enough so we can do it step-by-step
+# stability.stability_analysis() evaluates the main small-signal analysis functions as commented below, but this case is simple enough to do it step-by-step
+# stability.stability_analysis(results_folder=results_folder, file_root=output_files, indentations=[50.0], node_blocks=["PCC-1"]) # node_blocks specifies which blocks are considered as admittance in the stability analysis
 L = np.matmul(np.linalg.inv(Y_grid.y), Y_VSC.y)  # Loop gain matrix
 stability.nyquist(L, Y_VSC.f, results_folder=results_folder, filename=output_files)  # Application of the Generalized Nyquist Criterion
 stability.EVD(G= Y_grid.y + Y_VSC.y, frequencies=Y_VSC.f, results_folder=results_folder, filename=output_files, Z_closedloop=False, bus_names=["d axis","q axis"]) # Oscillation mode identification
