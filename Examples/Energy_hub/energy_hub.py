@@ -36,7 +36,7 @@ v_perturb_mag = 0.01/2.83 if multi_freq_scan else 0.01  # In per unit w.r.t. the
 output_files = 'ISGT2024_stable'  # Desired name for the output files
 results_folder = getcwd() + r'\Results'  # Location of the folder to store the results: if it doesn't exist, it is created
 
-# """ -------------------- RUN THE SCAN ---------------------- """
+""" -------------------- RUN THE SCAN ---------------------- """
 print("\n Case 1: stable system with base parameters \n")
 frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, multi_freq_scan=multi_freq_scan, num_parallel_sim=num_parallel_sim,
                 f_points=perturbations, f_base=f_base, f_max=f_max, f_min=f_min, f_exclude = [50.0], start_fft=start_fft, fft_periods=fft_periods,v_perturb_mag=v_perturb_mag,
@@ -47,7 +47,7 @@ frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_inje
 ## component_parameters=[["Name1", Value1], ["Name1", Value1], ...] is a list of ["Name",Value] where "Name" is the name of a constant in PSCAD to be set to Value before the scan
 
 """ -------------------- RUN THE STABILITY ANALYSIS ---------------------- """
-stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files, indentations = [50.0]) # Nyquist contour indentation around the fundamental frequency
+stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files, indentations = [50.0], run_nyquist_det=False) # Nyquist contour indentation around the fundamental frequency
 
 """ -------------------- CASE 2: UPDATED PARAMETERS: NEW SCAN & ANALYSIS ---------------------- """
 print("\n Case 2: updated control parameters at MMC 2\n")
@@ -73,6 +73,6 @@ for root, _, files in walk(results_folder):
 print(" All passive network files copied \n")
 
 # Now run the stability analysis using the scans with the updated controls
-stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files_case2, indentations = [50.0]) # Nyquist contour indentation around the fundamental frequency
+stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files_case2, indentations = [50.0], run_nyquist_det=False) # Nyquist contour indentation around the fundamental frequency
 
 print("\n ALL CASES COMPLETED! \n")

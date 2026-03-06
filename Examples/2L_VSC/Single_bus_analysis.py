@@ -42,11 +42,11 @@ output_files = 'PSCAD_case'  # Desired name for the output files
 """ -------------------- Frequency scan ---------------------- """
 freq = create_freq.loglist(f_min=f_min, f_max=f_max, f_points=f_points, f_base=f_base)
 
-frequency_sweep.frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, f_base=f_base,
-                                freq=freq, start_fft=start_fft, fft_periods=fft_periods, v_perturb_mag=v_perturb_mag,
-                                working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name,
-                                results_folder=results_folder, output_files=output_files, show_powerflow=True, 
-                                fortran_ext=fortran_ext, multi_freq_scan=multi_freq_scan)
+# frequency_sweep.frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, f_base=f_base,
+#                                 freq=freq, start_fft=start_fft, fft_periods=fft_periods, v_perturb_mag=v_perturb_mag,
+#                                 working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name,
+#                                 results_folder=results_folder, output_files=output_files, show_powerflow=True, 
+#                                 fortran_ext=fortran_ext, multi_freq_scan=multi_freq_scan)
 # Note that you can change any Main canvas constants via the component_parameters argument for parametric changes
 # E.g. the whole analysis/script can be run with ["pq_tau_meas",0.002] above for a different measurement filter time constant = different dynamics
 
@@ -88,17 +88,17 @@ for case in range(len(comp_level)):
     for f_point, f in enumerate(Y_grid.f):
         Y_C[f_point,...] = 1j*2*np.pi*f*C_g*np.identity(2) + w0*C_g*Wpu  # dq-frame admittance matrix of a capacitor in SI
     Z_RLC = np.linalg.inv(Y_C) + Z_RL  # Series-capacitor compensated line
-    # Evaluate the stability via the GNC using eigenvalue decomposition
-    stable = stability.nyquist(np.matmul(Z_RLC, Y_VSC.y), Y_VSC.f, results_folder=results_folder_SSCI, filename=filename_SSCI+str(case), verbose=False, indentations =[f0])
+    # Evaluate the stability via the GNC using eigenvalue decomposition: do plot all cases to speed up the screening but save the results as text files
+    stable = stability.nyquist(np.matmul(Z_RLC, Y_VSC.y), Y_VSC.f, results_folder=results_folder_SSCI, filename=filename_SSCI+str(case), verbose=False, indentations =[f0], make_plot=False)
     stability_assessment.append(stable)
-    if not stable:
-        verbose = True if sum(stability_assessment) == case else False # Show the participation factors only for the first unstable case
-        if verbose: print(" Fist unstable case found for a series compensation level of",round(comp_level[case]*100,0),"%")
-        stability.EVD(G=np.linalg.inv(Z_RLC) + Y_VSC.y, frequencies=Y_VSC.f, results_folder=results_folder_SSCI, filename=filename_SSCI+str(case), verbose=verbose, Z_closedloop=False, bus_names=["d axis","q axis"])
-        # stability.nyquist_det(L=np.matmul(Z_RLC, Y_VSC.y), frequencies=Y_VSC.f, results_folder=results_folder_SSCI, filename=filename_SSCI+str(case), verbose=False, indentations =[f0])
+    if sum(stability_assessment) == case:
+        # Show the participation factors and plot the Nyquist curve only for the first unstable case
+        print(" First unstable case found for a series compensation level of",round(comp_level[case]*100,0),"%")
+        stability.nyquist(np.matmul(Z_RLC, Y_VSC.y), Y_VSC.f, results_folder=results_folder_SSCI, filename=filename_SSCI+str(case), verbose=False, indentations =[f0], make_plot=True)
+        stability.EVD(G=np.linalg.inv(Z_RLC) + Y_VSC.y, frequencies=Y_VSC.f, results_folder=results_folder_SSCI, filename=filename_SSCI+str(case), verbose=True, Z_closedloop=False, bus_names=["d axis","q axis"])
 
-print(" Compensation larger than",round(comp_level[sum(stability_assessment)]*100,0),"% might result in small-signal instability")
-print("SSCI screening completed in", round(time.time()-t0_SSCI_screening,1),"seconds")
+print("\nCompensation larger than",round(comp_level[sum(stability_assessment)]*100,0),"% might result in small-signal instability")
+print("SSCI screening completed in", round(time.time()-t0_SSCI_screening,1),"seconds\n")
 
 """ -------------------- Example of the admittance conversion functions ---------------------- """
 # Convert from the dq frame to the stationary alpha-beta frame and plot the results

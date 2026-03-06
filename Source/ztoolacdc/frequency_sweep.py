@@ -900,7 +900,6 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         print(' Admittance computation finished in', round((t.time() - t2), 2), 'seconds')
 
     """ Perform the simulations for the scan of the multiport subsystems based on the topology information """
-    # The PSCAD project folder (i.e. out_dir) can be cleared here to decrease memory usage in large projects
     sim_select = {"d": 1, "q": 2, "dc": 1}  # Dict containing the perturbation type based on the name ending
 
     if verbose: print("Multiport subsystems scans:",[multiport_aux.names for multiport_aux in multiport_scans])
@@ -991,6 +990,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                 idx_selected_blocks.append(multiport_scan.blocks_idx[name])
                 sides_selected_blocks.append(name[-1])
 
+            if verbose: print("  Computing admittance between", ", ".join(multiport_scan.names))
             yz_computation.admittance(f_base=f_base, frequencies= None if multi_freq_scan else freq, fft_periods=fft_periods,
                                       dt=dt, start_idx=start_idx, make_plot=make_plot,
                                       zblocks=[ScanBlocksTool[ind] for ind in idx_selected_blocks],

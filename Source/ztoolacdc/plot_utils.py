@@ -82,58 +82,60 @@ def spectrum_plot(signals=None, time=None, results_folder=None, file_name='spect
     plt.close(fig)
 
 def bode_plot(Y=None, frequencies=None, results_folder=None, file_name='Bode_plot', style='scatter', show_plot=False, legend=[], save_data=False, return_plot=False, fig_handle=None, title=None, save_pickle=False, linear_mag=False):
-    """This function produces a Bode plot of the complex matrix and frequency list given as argument."""
+    """This function produces a Bode plot of the complex matrix/vector and frequency given as argument."""
     if results_folder is None and (not show_plot and not return_plot):
         raise ValueError("The destination folder must be provided via the 'results_folder' argument")
     if frequencies is None:
         raise ValueError("The list of frequencies must be provided via the 'frequencies' argument")
     
-    rows, cols = Y[0].shape if Y.ndim == 3 else (max(Y[0].shape if len(Y[0].shape) > 0 else [1]), 1)    
-    if rows == cols and rows > 1:
-        # Square matrix: generate pairwise labels' combinations
-        if legend is not None and len(legend) == rows:
-            labels = [ [legend[i]+", "+legend[j] for j in range(rows)] for i in range(rows) ]
+    rows, cols = Y[0].shape if Y.ndim == 3 else (max(Y[0].shape if len(Y[0].shape) > 0 else [1]), 1)
+    if cols > 1 and rows > 1:
+        if legend is not None and len(legend) == rows == cols:
+            # Square matrix: generate pairwise labels' combinations
+            labels = [ [legend[i]+", "+legend[j] for j in range(cols)] for i in range(rows) ]
+        elif legend is not None and (len(legend) == rows or len(legend) == cols):
+            labels = [ [legend[i]+", "+str(j+1) for j in range(cols)] for i in range(rows) ] if len(legend) == rows else [ [str(i+1) +", "+legend[j] for j in range(cols)] for i in range(rows) ] 
         elif legend is not None:
-            labels = [ [str(i)+", "+str(j) for j in range(rows)] for i in range(rows) ]
+            # Generate pairwise number combinations
+            labels = [ [str(i+1)+", "+str(j+1) for j in range(cols)] for i in range(rows) ]
     else:
         # Otherwise, the labels correspond to the rows of the matrix
         if legend is not None and len(legend) == rows:
             labels = [legend[i] for i in range(rows)]
         elif legend is not None:
-            labels = [str(i) for i in range(rows)]
-
+            labels = [str(i+1) for i in range(rows)]
 
     if fig_handle is not None:
         fig, ax = fig_handle # Retieve the figure and axes objects from the provided handle
     else:
         fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 6)) # Create the figure and axes
 
-    if Y.ndim == 3: # MIMO
+    if Y.ndim == 3 and cols != 1: # MIMO
         for row in range(Y.shape[1]):
             for col in range(Y.shape[2]):
                 if np.abs(Y[0,row,col]) != 0: # Only plot if non-zero
                     if style == 'scatter':
-                        ax[0].scatter(frequencies, 20*np.log10(np.abs(Y[:,row,col])) if not linear_mag else np.abs(Y[:,row,col]),linewidths=1.0,label=r'$'+labels[row][col]+r'$' if legend is not None else '_nolegend_')
-                        ax[1].scatter(frequencies, np.angle(Y[:,row,col],deg=True),linewidths=1.0,label=r'$'+labels[row][col]+r'$' if legend is not None else '_nolegend_')
+                        ax[0].scatter(frequencies, 20*np.log10(np.abs(Y[:,row,col])) if not linear_mag else np.abs(Y[:,row,col]),linewidths=1.0,label='$'+labels[row][col]+'$' if legend is not None else '_nolegend_')
+                        ax[1].scatter(frequencies, np.angle(Y[:,row,col],deg=True),linewidths=1.0,label='$'+labels[row][col]+'$' if legend is not None else '_nolegend_')
                     else:
-                        ax[0].plot(frequencies, 20*np.log10(np.abs(Y[:,row,col])) if not linear_mag else np.abs(Y[:,row,col]),linewidth=2.0,label=r'$'+labels[row][col]+r'$' if legend is not None else '_nolegend_')
-                        ax[1].plot(frequencies, np.angle(Y[:,row,col],deg=True),linewidth=2.0,label=r'$'+labels[row][col]+r'$' if legend is not None else '_nolegend_')
-    elif Y.ndim == 2: # SIMO
+                        ax[0].plot(frequencies, 20*np.log10(np.abs(Y[:,row,col])) if not linear_mag else np.abs(Y[:,row,col]),linewidth=2.0,label='$'+labels[row][col]+'$' if legend is not None else '_nolegend_')
+                        ax[1].plot(frequencies, np.angle(Y[:,row,col],deg=True),linewidth=2.0,label='$'+labels[row][col]+'$' if legend is not None else '_nolegend_')
+    elif Y.ndim == 2 or (Y.ndim == 3 and cols == 1): # SIMO
         for row in range(Y.shape[1]):
             if np.abs(Y[0,row]) != 0: # Only plot if non-zero
                 if style == 'scatter':
-                    ax[0].scatter(frequencies, 20*np.log10(np.abs(Y[:,row])) if not linear_mag else np.abs(Y[:,row]),linewidths=1.0,label=r'$'+labels[row]+r'$' if legend is not None else '_nolegend_')
-                    ax[1].scatter(frequencies, np.angle(Y[:,row],deg=True),linewidths=1.0,label=r'$'+labels[row]+r'$' if legend is not None else '_nolegend_')
+                    ax[0].scatter(frequencies, 20*np.log10(np.abs(Y[:,row])) if not linear_mag else np.abs(Y[:,row]),linewidths=1.0,label='$'+labels[row]+'$' if legend is not None else '_nolegend_')
+                    ax[1].scatter(frequencies, np.angle(Y[:,row],deg=True),linewidths=1.0,label='$'+labels[row]+'$' if legend is not None else '_nolegend_')
                 else:
-                    ax[0].plot(frequencies, 20*np.log10(np.abs(Y[:,row])) if not linear_mag else np.abs(Y[:,row]),linewidth=2.0,label=r'$'+labels[row]+r'$' if legend is not None else '_nolegend_')
-                    ax[1].plot(frequencies, np.angle(Y[:,row],deg=True),linewidth=2.0,label=r'$'+labels[row]+r'$' if legend is not None else '_nolegend_')
+                    ax[0].plot(frequencies, 20*np.log10(np.abs(Y[:,row])) if not linear_mag else np.abs(Y[:,row]),linewidth=2.0,label='$'+labels[row]+'$' if legend is not None else '_nolegend_')
+                    ax[1].plot(frequencies, np.angle(Y[:,row],deg=True),linewidth=2.0,label='$'+labels[row]+'$' if legend is not None else '_nolegend_')
     else: # SISO
         if style == 'scatter':
-            ax[0].scatter(frequencies, 20*np.log10(np.abs(Y)),linewidths=1.0,label=r'$'+labels[0]+r'$' if legend is not None else '_nolegend_')
-            ax[1].scatter(frequencies, np.angle(Y,deg=True),linewidths=1.0,label=r'$'+labels[0]+r'$' if legend is not None else '_nolegend_')
+            ax[0].scatter(frequencies, 20*np.log10(np.abs(Y)) if not linear_mag else np.abs(Y),linewidths=1.0,label='$'+labels[0]+'$' if legend is not None else '_nolegend_')
+            ax[1].scatter(frequencies, np.angle(Y,deg=True),linewidths=1.0,label='$'+labels[0]+'$' if legend is not None else '_nolegend_')
         else:
-            ax[0].plot(frequencies, 20*np.log10(np.abs(Y)),linewidth=2.0,label=r'$'+labels[0]+r'$' if legend is not None else '_nolegend_')
-            ax[1].plot(frequencies, np.angle(Y,deg=True),linewidth=2.0,label=r'$'+labels[0]+r'$' if legend is not None else '_nolegend_')
+            ax[0].plot(frequencies, 20*np.log10(np.abs(Y)) if not linear_mag else np.abs(Y),linewidth=2.0,label='$'+labels[0]+'$' if legend is not None else '_nolegend_')
+            ax[1].plot(frequencies, np.angle(Y,deg=True),linewidth=2.0,label='$'+labels[0]+'$' if legend is not None else '_nolegend_')
 
     if frequencies[0]>0:
         ax[0].set_xscale("log")
@@ -147,7 +149,7 @@ def bode_plot(Y=None, frequencies=None, results_folder=None, file_name='Bode_plo
     else:
         ax[0].set_title(title)
     if legend is not None and np.prod(Y.shape[1:]) < 6*6: # Limit the number of legend entries to avoid overcrowding the figure
-        ax[0].legend(loc='lower left', ncol=int(np.ceil(np.sqrt(np.prod(Y.shape[1:])))) if Y.ndim >= 2 else 1, prop={'size': 6}) # 'upper right' ,fancybox=True, shadow=True,
+        ax[0].legend(loc='lower left', ncol=int(np.ceil(np.sqrt(np.prod(Y.shape[1:])))) if Y.ndim >= 2 else 2, prop={'size': 6}) # 'upper right' ,fancybox=True, shadow=True,
     ax[1].set_ylim([-190, 190])
     ax[1].set_yticks([-180, -90, 0, 90, 180])
     ax[1].set_xlim([frequencies[0], frequencies[-1]])
@@ -166,7 +168,13 @@ def bode_plot(Y=None, frequencies=None, results_folder=None, file_name='Bode_plo
     if save_data and results_folder is not None:
         filename = results_folder + '\\' + file_name + '.txt'
         header = ["f"]
-        for label in legend: header.append(label)
+        if legend is not None:
+            if not isinstance(labels[0], list):
+                for label in labels: header.append(label)
+            else:
+                for label_row in labels:
+                    for label in label_row:
+                        header.append(label)
         np.savetxt(filename, np.column_stack((frequencies, Y if Y.ndim < 3 else Y.reshape(Y.shape[:-2] + (-1,), order='C'))), delimiter='\t', header='\t'.join(header), comments='')
     
     if return_plot: return fig, ax

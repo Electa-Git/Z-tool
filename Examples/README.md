@@ -52,7 +52,7 @@ The corresponding SLD file generated when calling `frequency_sweep` is shown bel
 4. Specify the basic simulation settings and frequency range for the study
 
 The next step is to introduce the scan parameters in the corresponding python script.
-The parameters, which are self-descriptive, are provided to the [frequency_sweep](../Source/ztoolacdc/frequency_sweep.py#L192) function which performs the frequency-domain characterization. You can read about the function's documentation by typing `help(name_of_the_function)` in a python terminal after importing the function, or at the end of the corresponding python file.
+The parameters, which are self-descriptive, are provided to the [frequency_sweep](../Source/ztoolacdc/frequency_sweep.py#L194) function which performs the frequency-domain characterization. You can read about the function's documentation by typing `help(name_of_the_function)` in a python terminal after importing the function, or at the end of the corresponding python file.
 
 ```
 """ Simple script template for the frequency sweep and frequency-domain analysis of an EMT model"""
@@ -92,12 +92,12 @@ frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, v_perturb_mag=v_pertu
 stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files)
 ```
 
-After running the script, the status of the scan process can be seen in real time. In addition, the main analysis outcomes are displayed on the screen for quick reference, e.g. stability conclusion and dominant oscillatory mode. 
+After running the script, the status of the scan process can be seen in real time. In addition, the main analysis outcomes are displayed on the screen for quick reference, e.g. stability conclusion and dominant oscillatory mode. You can customize the stability analysis by the arguments provided to the [stability_analysis](../Source/ztoolacdc/stability.py) function. 
 
 ![Printed information](../Doc/img_6.png)
 
 When the process is finished, we can access the results in the specificed results folder. The admittances are ploted in _.pdf_ and saved as _.txt_ tab-separated files. You can read these matrices into by calling the [read_admittance](../Source/ztoolacdc/read_admittance.py) function.
-If the [stability_analysis](../Source/ztoolacdc/stability.py) function is called, then the results also include detailed system stability properties, such as the application of the Nyquist criterion to determine system stability, the eigenvalue decomposition of the closed-loop impedance matrix to reveal the system oscillatory modes and participating buses for the dominant one, as well as the computation of the passivity index of the different system matrices.
+If the [stability_analysis](../Source/ztoolacdc/stability.py) function is called, then the results also include detailed system stability properties, such as the application of the Nyquist criterion to determine system stability, the eigenvalue decomposition of the closed-loop impedance matrix to reveal the system oscillatory modes and participating buses for the dominant modes, as well as the computation of the passivity index of the different system matrices. If only the stability of the system is of interest the calculation of the other metrics can be disabled by setting their corresponding argument to `False`, e.g. when `run_passivity=False`, `run_EVD=False` the function does not calculate the passivity index and the bus PFs, respectively. Furthermore, additional result logging can be disabled if desired, e.g. `make_plot=False` and `save_results=False`.
 
 ![Results](../Doc/pdf_out.png)
 

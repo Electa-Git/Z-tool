@@ -23,15 +23,17 @@ The simulation time step (in microseconds) is defined by the `t_step` argument a
 These and other parameters are provided to the `frequency_sweep` function which performs the frequency-domain characterization of both the VSC-side and the grid-side simultaneously. Note that for single-bus analysis, such as this one, the system topology file does not need to be provided. For more information on the function arguments, open a python shell, import the function e.g. `from ztoolacdc.frequency_sweep import frequency_sweep`, and type `help(frequency_sweep)`.
 
 ## Frequency scan
-After running the script [Single_bus_analysis.py](Single_bus_analysis.py), the status of the process can be seen in real time. When the scan is finished, the results can be found in the specificed `results_folder`. The admittances are ploted in _.pdf_ and saved as _.txt_ tab-separated files. You can read these matrices for further analysis by calling the [read_admittance](../../Source/ztoolacdc/read_admittance.py#L58) function.
+After running the script [Single_bus_analysis.py](Single_bus_analysis.py), the status of the process can be seen in real time. When the scan is finished, the results can be found in the specificed `results_folder`. The admittances are ploted in _.pdf_ and saved as _.txt_ tab-separated files. You can read these matrices for further analysis by calling the [read_admittance](../../Source/ztoolacdc/read_admittance.py#L60) function.
 
 ![Admittances](../../Doc/pdf_out_2LVSC.png)
 
 For a detailed stability analysis, we can simply call the different functions defined in [stability.py](./../../Source/ztoolacdc/stability.py):
-- [_nyquist_](./../../Source/ztoolacdc/stability.py#L347) for the application of the Generalized Nyquist Criterion (GNC) to determine system stability
-- [_EVD_](./../../Source/ztoolacdc/stability.py#L587) to reveal the closed-loop oscillatory modes and participating buses via eigenvalue decomposition
-- [_passivity_](./../../Source/ztoolacdc/stability.py#L267) for the computation of the passivity index of the different system matrices
-- [small_gain](./../../Source/ztoolacdc/stability.py#L522) for the application of the small-gain theorem.
+- [_nyquist_](./../../Source/ztoolacdc/stability.py#L382) for the application of the Generalized Nyquist Criterion (GNC) to determine system stability
+- [_EVD_](./../../Source/ztoolacdc/stability.py#L645) to reveal the closed-loop oscillatory modes and participating buses via eigenvalue decomposition
+- [_passivity_](./../../Source/ztoolacdc/stability.py#L302) for the computation of the passivity index of the different system matrices
+- [small_gain](./../../Source/ztoolacdc/stability.py#L573) for the application of the small-gain theorem.
+
+For convenience and for larger systems which require frame rotations, these functions are run when calling the _stability_analysis_ function. If only the stability of the system is of interest the calculation of the other metrics can be disabled by setting their corresponding argument to `False`, e.g. when `run_passivity=False`, `run_EVD=False` the function does not calculate the passivity index and the bus PFs, respectively. Furthermore, additional result logging can be disabled if desired to minimize data overhead, e.g. `make_plot=False` and `save_results=False`.
 
 The resulting eigenloci below shows a stable interconnected system, and the eigenvalue decomposition indicates two well-damped oscillatory modes. In addition, the passivity analysis points out that this device shows a negative passivitiy index below 48 Hz.
 
