@@ -3,7 +3,7 @@
 **/Simple_2L_VSC_RLC.gf46
 #**/Scan_options
 **/.vscode
-**/.github
+# **/.github
 **/dist
 **/build
 **/ztoolacdc.egg-info
