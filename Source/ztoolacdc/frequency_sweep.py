@@ -1457,7 +1457,12 @@ Optional
         
         show_powerflow          Bool: do you want to print the power flow after the snapshot (steady-state)? Default = False.
         visualize_network       Bool: create a primitive graph representing the provided network topology. Default = False.
-        
+
+        enforce_topology     	Bool flag to enforce the provided topology by nulling the addmitance between the components that are not expliclty connected according to the topology file. Default = True.
+                                When False, the admittance between nodes connected to common nodes in the topology file is not zeroed.
+                                For instance, consider a topology file defining a connection between nodes A-1 and B-1, and between nodes B-1 and C-1, but not between nodes A-1 and C-1. Note that both A-1 and C-1 are connected to B-1 but no explicit connection is defined between A-1 and C-1.
+                                Then, the 3-node admittance is zeroed at the entries relating A-1 and C-1 when enforce_topology=True, while the scanned admittance is not altered when enforce_topology=False.
+
 	    component_parameters	List of two-value lists containing the component parameter name and value to be modified in PSCAD. E.g. [["BRK_time", 2.50], ["P_load", 50]]
 	    
         delete_PSCAD_output_files Bool flag to delte the output files generated during the PSCAD simulations. Default = False.
