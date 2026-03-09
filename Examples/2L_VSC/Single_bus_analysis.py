@@ -42,11 +42,11 @@ output_files = 'PSCAD_case'  # Desired name for the output files
 """ -------------------- Frequency scan ---------------------- """
 freq = create_freq.loglist(f_min=f_min, f_max=f_max, f_points=f_points, f_base=f_base)
 
-# frequency_sweep.frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, f_base=f_base,
-#                                 freq=freq, start_fft=start_fft, fft_periods=fft_periods, v_perturb_mag=v_perturb_mag,
-#                                 working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name,
-#                                 results_folder=results_folder, output_files=output_files, show_powerflow=True, 
-#                                 fortran_ext=fortran_ext, multi_freq_scan=multi_freq_scan)
+frequency_sweep.frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, f_base=f_base,
+                                freq=freq, start_fft=start_fft, fft_periods=fft_periods, v_perturb_mag=v_perturb_mag,
+                                working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name,
+                                results_folder=results_folder, output_files=output_files, show_powerflow=True, 
+                                fortran_ext=fortran_ext, multi_freq_scan=multi_freq_scan)
 # Note that you can change any Main canvas constants via the component_parameters argument for parametric changes
 # E.g. the whole analysis/script can be run with ["pq_tau_meas",0.002] above for a different measurement filter time constant = different dynamics
 

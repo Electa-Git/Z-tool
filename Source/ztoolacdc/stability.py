@@ -926,7 +926,7 @@ def nyquist_det(L, frequencies, results_folder=None, filename='nyquist_det', ver
 def loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, results_folder=None, filename='loci_sensitivity', Z=None, selected_loci=[], bus_names=[],
                      normalize=False, loci=None, Y=None, make_plot=True, save_pickle=False, save_results=True):
     # Compute different sensitivities of the eigenloci of a given matrix for the frequencies of interest.
-    # 1) The most basic calculation is with respect to changes in the diagonal elements of the original matrix, i.e. below diag_sensitivity[freq, diag_element, locus] gives the sensitivity of the locus to the diag_element of the matrix for the frequency freq.
+    # 1) The most basic calculation is with respect to changes in the diagonal elements of the original matrix, i.e. below diag_sensitivity[freq_idx, diag_element, locus] gives the sensitivity of the locus to the diag_element of the matrix for the frequency at freq_idx.
     # 2) If the Z matrix is provided, the sensitivity of the selected open-loop (L=Z*Y) loci with respect to changes in the elements of Y is computed by applying the chain rule
     diag_sensitivity = right_eigenvectors * left_eigenvectors.transpose(0,2,1) # Sensitivity of the eigenvalues (loci) to changes in the diagonal elements of the matrix
     
@@ -1157,9 +1157,10 @@ Optional arguments
 
 loci_sensitivity.__doc__ = """
 Computation of the sensitivity of the eigenloci of a given matrix for the frequencies of interest. The results and their interpretation depend on the original matrix and arguments provided to the function:
-1) The most basic sensitivity calculation is with respect to changes in the diagonal elements of the original matrix, i.e. each entry [freq, diag_element, locus] gives the sensitivity of the locus to the diag_element of the matrix for the frequency freq.
+1) The most basic sensitivity calculation is with respect to changes in the diagonal elements of the original matrix, i.e. each entry [freq_idx, diag_element, locus] gives the sensitivity of the locus to the diag_element of the matrix for the frequency at freq_idx.
 2) If the Z matrix is provided, the sensitivity of the selected open-loop (L=Z*Y) loci with respect to changes in the elements of Y is computed by applying the chain rule.
 Note that plotting or saving the sensitivity of all the loci to changes in all the diagonal elements can be time and memory intensive. Consider specifying selected_loci before calling the function.
+Lastly, the results can be normalized with respect to the magnitude of each locus and/or the magnitude of the elements of Y by providing the corresponding arguments.
 
 Required arguments
         right_eigenvectors  (numpy ndarray of complex double) Right eigenvectors of the matrix for the frequencies of interest.
@@ -1173,9 +1174,9 @@ Optional arguments
         Z                   (numpy ndarray of complex double) If provided, the sensitivity of the open-loop locus to changes in each (i, j) element of Y is computed by applying the chain rule. Default = None.
         selected_loci       (list of int) List of loci indexes to compute the sensitivity for. Default = [], which results in the computation of the sensitivity for all the loci with respect to the diagonal elements.
         bus_names           (list of str) Names of the buses in the system for labeling the sensitivity results. Default = [] which generates numeric labels.
-        normalize           (bool) Bool flag to normalize the sensitivity of each locus with respect to the locus magnitude. Default = False.
-        loci                (numpy array) Array of shape (number of frequencies, number of loci) with all eigenloci for each frequency. It is used for normalization if normalize = True. Default = None.
-        Y                   (numpy ndarray of complex double) If provided, the sensitivity of the open-loop locus to changes in Y is normalized with respect to the Y matrix elements. Default = None.
+        normalize           (bool) Bool flag to normalize the sensitivity of each locus with respect to the locus magnitude. Default = False (no normalization).
+        loci                (numpy array) Array of shape (number of frequencies, number of loci) with all eigenloci for each frequency. It is used for normalization if normalize = True. Default = None (no locus-based normalization).
+        Y                   (numpy ndarray of complex double) If provided, the sensitivity of the open-loop locus to changes in Y is normalized with respect to the Y matrix elements. Default = None (no normalization with respect to Y).
         make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files.
         save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
         save_results        (bool) Bool flag to save the results in a text file. Default = True.
