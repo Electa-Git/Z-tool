@@ -40,7 +40,7 @@ v_perturb_mag = 0.01/2.83 if multi_freq_scan else 0.01 # In per unit w.r.t. the 
 output_files = 'PSCAD_case'  # Desired name for the output files
 
 """ -------------------- Frequency scan ---------------------- """
-freq = create_freq.loglist(f_min=f_min, f_max=f_max, f_points=f_points, f_base=f_base)
+freq = create_freq.loglist(f_min=f_min, f_max=f_max, f_points=f_points, f_base=f_base, f_exclude=50.0)
 
 frequency_sweep.frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_injections, f_base=f_base,
                                 freq=freq, start_fft=start_fft, fft_periods=fft_periods, v_perturb_mag=v_perturb_mag,
