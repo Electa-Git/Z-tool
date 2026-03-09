@@ -4,7 +4,7 @@ The core functionalities are measurement/characterization of EMT models in the f
 The analysis relies on an existing system model in the EMT simulation software [PSCAD]([url](https://www.pscad.com/)) and/or input frequency response data.
 
 The following features are currently implemented and validated:
-- Voltage perturbation-based admittance scan at several nodes, including converter-based systems and black-box components, via ([frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L194))
+- Voltage perturbation-based admittance scan at several nodes, including converter-based systems and black-box components, via ([frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L194
 - Stability assessment via [Generalized Nyquist Criteria](Source/ztoolacdc/stability.py#L382) applicable to standalone-stable MIMO systems
 - Oscillation mode identification via closed-loop eigenvalue decomposition and bus participation factors, [EVD](Source/ztoolacdc/stability.py#L645)
 - [Passivity](Source/ztoolacdc/stability.py#L302) assessment and [small gain](Source/ztoolacdc/stability.py#L573) theorem application
@@ -34,7 +34,7 @@ A generic usage of the package can be summarized in the following steps:
 Follow the example(s) described [here](./Examples) for more guidance. More details on the approach and implemented functions can be found in the papers below and/or this [webinar](https://www.youtube.com/watch?v=AqK5q3ediU0) with the complementary [slides](./Doc/Z_tool_webinar_slides_13-02-2025.pdf). The GUI is currently under development.
 
 ## Other features
-- Sensitivity of the Nyquist loci with respect to the components' admittance via the [loci_sensitivity](./Source/ztoolacdc/loci_sensitivity.py#L926) function
+- Sensitivity of the Nyquist loci with respect to the components' admittance via the [loci_sensitivity](./Source/ztoolacdc/stability.py#L926) function
 - Transfer function scan via the [frequency_sweep_TF](./Source/ztoolacdc/frequency_sweep.py#L1015) function, see the example [here](./Examples/Transfer_function)
 - Change of PSCAD component values for parametric studies, see the example [here](Examples/Parametric_sweep)
 - PSCAD control arguments: clear temporary files, keep PSCAD open, retain certificate, etc.

@@ -28,4 +28,4 @@ The progress is reported during the execution, and the results can be accessed i
 
 ![TF results and validation](../../Doc/TF_results.png)
 
-Note that the `frequency_sweep_TF` function only works with _TF scan_ blocks, while `frequency_sweep` only works with _AC scan_ and _DC scan_ blocks. In addition, `frequency_sweep_TF` currently only supports SISO scans, while `frequency_sweep` allows for MIMO scans of any size and between any analysis points. Ongoing work includes the improvement of `frequency_sweep_TF` to also retrieve MIMO TFs.
+Note that the `frequency_sweep_TF` function only works with _TF scan_ blocks, while `frequency_sweep` only works with _AC scan_ and _DC scan_ blocks. In addition, `frequency_sweep_TF` currently only supports SISO scans, while `frequency_sweep` allows for MIMO scans of any size and between any analysis points. Note that you can retrieve single-input multiple-output transfer functions by using a main scan block to excite the system (single input) and other dummy scan blocks to measure the multiple outputs of interest. Ongoing work includes the improvement of `frequency_sweep_TF` to also retrieve MIMO TFs.
