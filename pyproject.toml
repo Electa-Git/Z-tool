@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name='ztoolacdc'
-version='0.1.38'
+version='0.1.39'
 description='Frequency domain small-signal analysis toolbox for EMT models'
 license = {text = "GNU GPL v3"}
 readme = "README.md"
