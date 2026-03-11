@@ -7,6 +7,8 @@
 **/dist
 **/build
 **/ztoolacdc.egg-info
+*.egg-info/
+*.egg-info
 *.out
 *.inf
 *.infx
