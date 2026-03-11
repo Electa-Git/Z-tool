@@ -26,7 +26,10 @@ email = "franciscojavier.cifuentesgarcia@kuleuven.be"
 [project.urls]
 Homepage = "https://www.esat.kuleuven.be/electa/ztool"
 Documentation = "https://www.esat.kuleuven.be/electa/ztool"
-  
+
+[tool.setuptools]
+package-dir = { "" = "Source" }
+
 [tool.setuptools.packages.find]
 where = ["Source"]
 

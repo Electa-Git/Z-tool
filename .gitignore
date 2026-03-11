@@ -17,7 +17,5 @@
 *.snp
 *.pickle
 distnotes.txt
-setup.py
 test.py
 test_interactive.py
-ztool.egg-info
