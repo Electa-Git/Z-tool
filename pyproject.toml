@@ -29,12 +29,10 @@ Documentation = "https://www.esat.kuleuven.be/electa/ztool"
 
 [tool.setuptools]
 package-dir = { "" = "Source" }
+include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["Source"]
-
-[tool.setuptools]
-include-package-data = true
 
 [tool.setuptools.package-data]
 "ztoolacdc" = ["Scan/**/*", "Scan/**/.*"]
