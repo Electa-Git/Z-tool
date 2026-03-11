@@ -4,11 +4,13 @@ The core functionalities are measurement/characterization of EMT models in the f
 The analysis relies on an existing system model in the EMT simulation software [PSCAD]([url](https://www.pscad.com/)) and/or input frequency response data.
 
 The following features are currently implemented and validated:
-- Voltage perturbation-based admittance scan at several nodes, including converter-based systems and black-box components, via ([frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L194
+- Voltage perturbation-based admittance scan at several nodes, including converter-based systems and black-box components, via [frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L194)
 - Stability assessment via [Generalized Nyquist Criteria](Source/ztoolacdc/stability.py#L382) applicable to standalone-stable MIMO systems
 - Oscillation mode identification via closed-loop eigenvalue decomposition and bus participation factors, [EVD](Source/ztoolacdc/stability.py#L645)
 - [Passivity](Source/ztoolacdc/stability.py#L302) assessment and [small gain](Source/ztoolacdc/stability.py#L573) theorem application
-- [Frame conversion](Source/ztoolacdc/frame_conversion.py) functions, e.g. from dq-frame to alpha/beta-frame
+- Sensitivity of the Nyquist loci with respect to the components' admittance via [loci_sensitivity](./Source/ztoolacdc/stability.py#L926)
+- Comprehensive stability analysis computing previous and other metrics via [stability_analysis](./Source/ztoolacdc/stability.py#L73)
+- [Frame conversion](Source/ztoolacdc/frame_conversion.py) functions, e.g. from dq-frame to alpha/beta-frame and to positive/negative sequence
 
 The flowchart below summarizes a common usage of the tool for stability studies, including frequency-domain system identification ([frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L194)) and several stability analysis functions ([stability](Source/ztoolacdc/stability.py#L73)):
 
@@ -21,7 +23,7 @@ To use the toolbox, the following pre-requisites are needed.
    * [Numpy](https://numpy.org/), [Scipy](https://scipy.org/), and [Matplotlib](https://matplotlib.org/) (included in common python installations such as Anaconda)
    * [PSCAD automation library]([url](https://www.pscad.com/webhelp-v5-al/index.html))
 2. PSCAD v5 or higher is recommended.
-3. Install the Z-tool via cmd `py -m pip install ztoolacdc` or using the repository files.
+3. Install the Z-tool via cmd `py -m pip install ztoolacdc` or using the repository files. Similarly, cmd `py -m pip install ztoolacdc --upgrade` updates the package.
 
 ## Usage
 A generic usage of the package can be summarized in the following steps:
@@ -34,7 +36,6 @@ A generic usage of the package can be summarized in the following steps:
 Follow the example(s) described [here](./Examples) for more guidance. More details on the approach and implemented functions can be found in the papers below and/or this [webinar](https://www.youtube.com/watch?v=AqK5q3ediU0) with the complementary [slides](./Doc/Z_tool_webinar_slides_13-02-2025.pdf). The GUI is currently under development.
 
 ## Other features
-- Sensitivity of the Nyquist loci with respect to the components' admittance via the [loci_sensitivity](./Source/ztoolacdc/stability.py#L926) function
 - Transfer function scan via the [frequency_sweep_TF](./Source/ztoolacdc/frequency_sweep.py#L1015) function, see the example [here](./Examples/Transfer_function)
 - Change of PSCAD component values for parametric studies, see the example [here](Examples/Parametric_sweep)
 - PSCAD control arguments: clear temporary files, keep PSCAD open, retain certificate, etc.
@@ -73,7 +74,7 @@ For queries about the package or related work please feel free to reach out to [
 This is a free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Z-tool is distributed in the hope that it will be useful, but without any warranty; without even the implied warranty of merchantability or fitness for a particular purpose. See the GNU General Public License for more details.
 
 ## Contributors
-* Fransciso Javier Cifuentes Garcia: Main developer
+* Francisco Javier Cifuentes Garcia: Main developer
 * Thomas Roose: Initial stability analysis functions
 * Jan Kircheis, Eros Avdiaj and Özgür Can Sakinci: Validation and support
 

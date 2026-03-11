@@ -101,15 +101,15 @@ If the [stability_analysis](../Source/ztoolacdc/stability.py) function is called
 
 ![Results](../Doc/pdf_out.png)
 
-We recommend reading [these](.././README.md#citing-z-tool) openly available papers and checking the webinar [slides](.././Doc/Z_tool_webinar_slides_13-02-2025.pdf) and [recording](https://www.youtube.com/watch?v=AqK5q3ediU0) to better understand the package's functioning principles. You can find three step-by-step examples in the following subfolders: [2L_VSC](2L_VSC), [parametric sweep](Parametric_sweep) and [Energy_hub](Energy_hub). Feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512) in case of questions!
+We recommend reading [these](.././README.md#citing-z-tool) openly available papers and checking the webinar [slides](.././Doc/Z_tool_webinar_slides_13-02-2025.pdf) and [recording](https://www.youtube.com/watch?v=AqK5q3ediU0) to better understand the package's functioning principles. You can find four step-by-step examples in the following subfolders: [2L_VSC](2L_VSC), [Parametric_sweep](Parametric_sweep), [Energy_hub](Energy_hub) and the [Transfer_function](Transfer_function). Feel free to reach out to [Fransciso Javier Cifuentes Garcia](https://www.kuleuven.be/wieiswie/en/person/00144512) in case of questions!
 
 ## Basic installation of Python dependencies
 After installing Python or using an exsiting Python version >3.7, you can add the necessary packages with the use of _pip_ following the steps below.
-To install the packages we just need to open a comand window and call pip through python followed by the package we want to instal.
-Firstly, we can verify that the python version we call with **py** is the intended one by typing `py --version`
+To install the packages you need to open a comand window and call pip through python followed by the package we want to instal.
+Firstly, it can be verified that the python version called with **py** is the intended one by typing `py --version`
 Then, the installation syntax looks like this: `py -m pip install NAMEofTHEpackage`. 
-   * The _Z-tool_ package can be installed and/or updated via `py -m pip install ztoolacdc` 
+   * The _Z-tool_ package can be installed via `py -m pip install ztoolacdc` and updated with `py -m pip install ztoolacdc --upgrade`
    * _Numpy_, _Scipy_ and _Matplotlib_. Numpy and Scipy packages contain the mathematical functions to handle the numerical data, such as rFFT, inverse matrix computations and EVD. Matplotlib is used to plot the results.
-   * _PSCAD automation library_. It is automatically downloaded to your computed after installing PSCAD v5. It should be located in a directory similar to _C:\Users\Public\Documents\Manitoba Hydro International\Python\Packages_. Here there should be a file named _mhi_pscad-2.2.1-py3-none-any.whl_ or similar. Use the same cmd + _pip_ commands as before, but first go to the folder where the package is located using cmd commands. More information on the PSCAD automation library can be found [here](https://www.pscad.com/software/pscad/automation-library).
+   * _PSCAD automation library_. It is automatically downloaded to your computer after installing PSCAD v5. It should be located in a directory similar to _C:\Users\Public\Documents\Manitoba Hydro International\Python\Packages_. Here there should be a file named _mhi_pscad-2.2.1-py3-none-any.whl_ or similar. Use the same cmd + _pip_ commands as before, but first go to the folder where the package is located using cmd commands. More information on the PSCAD automation library can be found [here](https://www.pscad.com/software/pscad/automation-library).
 
 ![Figure of the Numpy, matplotlib and PSCAD automation library installation](../Doc/img_8.png)

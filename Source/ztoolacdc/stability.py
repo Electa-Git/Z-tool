@@ -73,7 +73,7 @@ class Graph:
 def stability_analysis(topology=None, results_folder=None, file_root=None, indentations=[], node_blocks=None, rotate_edge=False, rotate_node=False,
                        check_conditioning=False, condition_number_th=10e6, make_plot=True, save_pickle=False, save_results=True, save_Y=False, save_loop_gain=False,
                        verbose=True, run_nyquist=True, run_nyquist_det=True, run_EVD=True, run_EVD_PFs=True, run_passivity=True, run_small_gain=True,
-                       run_GNC_sensitivity=False, normalize_GNC_sensitivity=True):
+                       run_GNC_sensitivity=False, normalize_GNC_sensitivity=False):
     # This function loads and builds the edge and node admittance matrices and applies the most common stability analysis functions
     # 0) Firstly, read the terminal angle information for the AC blocks if rotations are required
     if rotate_edge or rotate_node:
@@ -1081,19 +1081,21 @@ Required arguments
         file_root           (str) Name root of the files used in the analysis
 
 Optional arguments
-        indentations        (list of double) Frequencies [Hz] at which indentations around open-loop poles are performed in the GNC.
-        node_blocks         (list of strings) List of strings where each entry is "BlockName-side" corresponding to the node matrix components. Default = None, which results in the automated identification of the blocks as per the read_admittance function.
-        check_conditioning  (bool) Bool flag to discard values with poor numerical conditioning of the system matrices.
-        condition_number_th (double) Condition number threshold of the system matrices above which the data is ignored.
-                            This threshold can be set based on the expected input error and maximum acceptable ouTput error.
-        make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files.
-        save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
-        save_results        (bool) Bool flag to save the results in a text file. Default = True.
-        run_nyquist         (bool) Bool flag to run the Generalized Nyquist Criteria (GNC) based on the eigenvalues of the open-loop matrix L. Default = True.
-        run_nyquist_det     (bool) Bool flag to run the determinant-based Nyquist stability assessment. Default = True.
-        run_EVD             (bool) Bool flag to run the eigenvalue decomposition (EVD) of the closed-loop system for oscillation modes identification and bus participation factors computation. Default = True.
-        run_passivity       (bool) Bool flag to run the passivity assessment of the system matrices. Default = True.
-        run_small_gain      (bool) Bool flag to run the small-gain theorem based on the system matrices. Default = True.
+        indentations            (list of double) Frequencies [Hz] at which indentations around open-loop poles are performed in the GNC.
+        node_blocks             (list of strings) List of strings where each entry is "BlockName-side" corresponding to the node matrix components. Default = None, which results in the automated identification of the blocks as per the read_admittance function.
+        check_conditioning      (bool) Bool flag to discard values with poor numerical conditioning of the system matrices.
+        condition_number_th     (double) Condition number threshold of the system matrices above which the data is ignored.
+                                This threshold can be set based on the expected input error and maximum acceptable ouTput error.
+        make_plot               (bool) Bool flag to enable/disable the generation of pdf plot files.
+        save_pickle             (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
+        save_results            (bool) Bool flag to save the results in a text file. Default = True.
+        run_nyquist             (bool) Bool flag to run the Generalized Nyquist Criteria (GNC) based on the eigenvalues of the open-loop matrix L. Default = True.
+        run_nyquist_det         (bool) Bool flag to run the determinant-based Nyquist stability assessment. Default = True.
+        run_EVD                 (bool) Bool flag to run the eigenvalue decomposition (EVD) of the closed-loop system for oscillation modes identification and bus participation factors computation. Default = True.
+        run_passivity           (bool) Bool flag to run the passivity assessment of the system matrices. Default = True.
+        run_small_gain          (bool) Bool flag to run the small-gain theorem based on the system matrices. Default = True.
+        run_GNC_sensitivity     (bool) Bool flag to run the sensitivity analysis of the critical loci when applying the GNC with respect to the diagonal elements of L as well as with respect to Y with L=Z*Y. Default = False.
+        normalize_GNC_sensitivity (bool) Bool flag to normalize the sensitivity of the critical loci in the GNC with respect to changes in each element of Y with L=Z*Y. The normalization is with respect to each admittance magnitude and locus magnitude. Default = False.
 """
 
 passivity.__doc__ = """
