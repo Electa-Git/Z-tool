@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0,<70","wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name='ztoolacdc'
-version='0.1.39'
+version='0.1.40'
 description='Frequency domain small-signal analysis toolbox for EMT models'
 license = {text = "GNU GPL v3"}
 readme = "README.md"
