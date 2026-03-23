@@ -6,13 +6,13 @@ The analysis relies on an existing system model in the EMT simulation software [
 The following features are currently implemented and validated:
 - Voltage perturbation-based admittance scan at several nodes, including converter-based systems and black-box components, via [frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L194)
 - Stability assessment via [Generalized Nyquist Criteria](Source/ztoolacdc/stability.py#L382) applicable to standalone-stable MIMO systems
-- Oscillation mode identification via closed-loop eigenvalue decomposition and bus participation factors, [EVD](Source/ztoolacdc/stability.py#L645)
+- Oscillation mode identification via closed-loop eigenvalue decomposition and bus participation factors, [EVD](Source/ztoolacdc/stability.py#L648)
 - [Passivity](Source/ztoolacdc/stability.py#L302) assessment and [small gain](Source/ztoolacdc/stability.py#L573) theorem application
-- Sensitivity of the Nyquist loci with respect to the components' admittance via [loci_sensitivity](./Source/ztoolacdc/stability.py#L926)
-- Comprehensive stability analysis computing previous and other metrics via [stability_analysis](./Source/ztoolacdc/stability.py#L73)
+- Sensitivity of the Nyquist loci with respect to the components' admittance via [loci_sensitivity](./Source/ztoolacdc/stability.py#L943)
+- Comprehensive stability analysis computing previous and other metrics via [stability_analysis](./Source/ztoolacdc/stability.py#L74)
 - [Frame conversion](Source/ztoolacdc/frame_conversion.py) functions, e.g. from dq-frame to alpha/beta-frame and to positive/negative sequence
 
-The flowchart below summarizes a common usage of the tool for stability studies, including frequency-domain system identification ([frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L194)) and several stability analysis functions ([stability](Source/ztoolacdc/stability.py#L73)):
+The flowchart below summarizes a common usage of the tool for stability studies, including frequency-domain system identification ([frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L194)) and several stability analysis functions ([stability](Source/ztoolacdc/stability.py#L74)):
 
 ![Tool flowchart](Doc/flowchart.png)
 ![Tool summary](Doc/Ztool_summary.png)
@@ -40,7 +40,7 @@ Follow the example(s) described [here](./Examples) for more guidance. More detai
 - Change of PSCAD component values for parametric studies, see the example [here](Examples/Parametric_sweep)
 - PSCAD control arguments: clear temporary files, keep PSCAD open, retain certificate, etc.
 - Exploit the symmetric properties of the system to reduce the scan time (optional)
-- Different computation of participation factors, e.g. admittance-based calculation via [EVD](./Source/ztoolacdc/stability.py#L645)
+- Different computation of participation factors, e.g. extended PFs via [EVD](./Source/ztoolacdc/stability.py#L648)
 - Allow previous snapshots to be re-used
 - Snapshot simulation plots
 

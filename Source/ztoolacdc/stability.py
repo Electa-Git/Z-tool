@@ -21,10 +21,11 @@ Copyright (C) 2026  Francisco Javier Cifuentes Garcia
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-__all__ = ['stability_analysis','passivity','nyquist','small_gain','EVD','nyquist_det']
+__all__ = ['stability_analysis','passivity','nyquist','small_gain','EVD','nyquist_det','loci_sensitivity']
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
+from scipy.signal import argrelmax
 import matplotlib.pyplot as plt
 from .read_admittance import read_admittance
 from os import path, makedirs
@@ -72,8 +73,8 @@ class Graph:
 
 def stability_analysis(topology=None, results_folder=None, file_root=None, indentations=[], node_blocks=None, rotate_edge=False, rotate_node=False,
                        check_conditioning=False, condition_number_th=10e6, make_plot=True, save_pickle=False, save_results=True, save_Y=False, save_loop_gain=False,
-                       verbose=True, run_nyquist=True, run_nyquist_det=True, run_EVD=True, run_EVD_PFs=True, run_passivity=True, run_small_gain=True,
-                       run_GNC_sensitivity=False, normalize_GNC_sensitivity=False):
+                       verbose=True, run_nyquist=True, run_nyquist_det=True, run_EVD=True, run_EVD_PFs=True, run_EVD_PFs_extended=False, run_passivity=True, run_small_gain=True,
+                       run_GNC_sensitivity=False, normalize_GNC_sensitivity=False, run_PMD=False):
     # This function loads and builds the edge and node admittance matrices and applies the most common stability analysis functions
     # 0) Firstly, read the terminal angle information for the AC blocks if rotations are required
     if rotate_edge or rotate_node:
@@ -239,6 +240,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
         np.seterr(divide='warn')
 
     # 6) Perform stability analysis
+    stability = [] # Store the stability conclusion by a boolean: True means stable
 
     if run_nyquist or run_nyquist_det or run_small_gain:
         Zedge = np.linalg.inv(Yedge)
@@ -248,17 +250,20 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
         L = np.matmul(Zedge,Ynode)  # Loop gain matrix
         stable = nyquist(L, frequencies, results_folder, file_root, verbose=verbose, check_conditioning=check_conditioning, condition_number_th=condition_number_th, make_plot=make_plot,
                          indentations=indentations, run_sensitivity=run_GNC_sensitivity, Z=Zedge, Y=Ynode if normalize_GNC_sensitivity else None, bus_names=node_variables, save_pickle=save_pickle, save_results=save_results)
+        stability.append(stable)
     
     # Stability via determinant
     if run_nyquist_det:
         if not run_nyquist: L = np.matmul(Zedge,Ynode)  # Loop gain matrix
         stable_det = nyquist_det(L,frequencies, results_folder, file_root, verbose=verbose, offset=0.0, draw_arrows=True, show_plot=False,
                                  make_plot=make_plot, indentations=indentations, save_pickle=save_pickle, save_results=save_results) 
+        stability.append(stable_det)
 
     # Oscillatory frequencies and bus participation factors based on the closed-loop impedance: the admittance is provided to avoid inversion so Z_closedloop=False
-    if run_EVD:
-        EVD(Yedge+Ynode, frequencies, node_variables, results_folder, file_root, Z_closedloop=False, PFs=run_EVD_PFs,
-            verbose=verbose, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
+    if run_EVD or run_PMD:
+        stable_PMD = EVD(Yedge+Ynode, frequencies, node_variables, results_folder, file_root, Z_closedloop=False, PFs=run_EVD_PFs, PFs_extended=run_EVD_PFs_extended,
+                         run_PMD=run_PMD, verbose=verbose, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
+        stability.append(stable_PMD)
 
     # Save the admittance matrices
     if save_results and save_Y:
@@ -292,12 +297,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
         small_gain(G2=Ynode, G1=Zedge, frequencies=frequencies, results_folder=results_folder, filename=file_root,
                    variables=node_variables, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
 
-    if run_nyquist and run_nyquist_det:
-        return stable, stable_det
-    elif run_nyquist:
-        return stable
-    elif run_nyquist_det:
-        return stable_det
+    return stability
 
 def passivity(G, frequencies, results_folder=None, filename='passivity', variables=None, Yedge=None, make_plot=True, save_pickle=False, save_results=True):
     # The passivity index is computed as half of the minimum eigenvalue of the matrix plus its conjugate transpose
@@ -552,6 +552,9 @@ def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=Tru
         plt.close(fig)
         bode_plot(Y=1/(1+eigenvalues_sorted),  frequencies=frequencies, results_folder=results_folder, file_name=filename+"_inv(1+L)", style="solid",
                   title=r"Bode plot of $1/(1+\lambda(L))$ over "+str(len(frequencies))+' frequencies', legend=[str(idx+1) for idx in range(eigenvalues_sorted.shape[1])])
+        for locus in unstable_loci:
+            bode_plot(Y=1/(1+eigenvalues_sorted[:,locus]), frequencies=frequencies, results_folder=results_folder, file_name=filename+"_inv(1+L"+str(locus+1)+")", style="solid",
+                      title=r"Bode plot of $1/(1+\lambda_"+str(locus+1)+r"(L))$ over "+str(len(frequencies))+' frequencies', legend=[str(locus+1)])
 
     if (make_plot or save_results) and run_sensitivity:
         idx_eigen_closest = np.argmin(np.min(np.abs(eigenvalues_sorted + 1.0), axis=0))  # Index of the eigen-locus with the smallest distance to the critical point
@@ -642,7 +645,8 @@ def small_gain(G2, frequencies,  G1=None, results_folder=None, filename='small_g
         
     return S1_max_times_S2_max
 
-def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', verbose=True, Z_closedloop=True, make_plot=True, save_pickle=False, save_results=True, PFs=True):
+def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', verbose=True, Z_closedloop=True, make_plot=True, save_pickle=False, save_results=True,
+        PFs=True, PFs_extended=False, run_PMD=False):
     if bus_names is None: bus_names = [str(bus+1) for bus in range(G.shape[1])]  # Sorted numbers if names not provided
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
 
@@ -672,27 +676,34 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', ver
 
     # 2) Oscillation modes identification
     lambda_re = np.real(eigenvalues_sorted)  # Real part
-    lambda_imag = np.real(eigenvalues_sorted)  # Imaginary part
+    lambda_imag = np.imag(eigenvalues_sorted)  # Imaginary part
     lambda_abs = np.abs(eigenvalues_sorted)  # Absolute value (magnitude)
 
-    # 2.1) Oscillation mode identification based on the magnitude peaks of G = closed-loop impedance matrix
+    # Oscillation mode identification based on the magnitude peaks of the closed-loop impedance matrix
     idx_lambda_max = np.argmax(lambda_abs,axis=0)  # Frequency index of the maximum magnitude of each eigenvalue
     idx_lambda_max_max = np.argmax([lambda_abs[idx_lambda_max[idx],idx] for idx in range(eigenvalues.shape[1])])  # Critical mode = the highest mag peak
     freq_idx = idx_lambda_max[idx_lambda_max_max]  # Oscillation frequency index; or also freq_indices[idx_lambda_min]
     if verbose: print("The main oscillation frequency is around",round(frequencies[freq_idx],2),"Hz based on the magnitude of eigenvalue",idx_lambda_max_max+1,"=",np.round(eigenvalues_sorted[idx_lambda_max[idx_lambda_max_max],idx_lambda_max_max], 5))
+    idx_lambda_envelope = np.argmax(lambda_abs, axis=1)  # Index of the maximum magnitude eigenvalue at each frequency
 
-    # # 2.2) Based on the minimum real part at imaginary zero-crossing (used in the Positive Net Damping criterion)
-    # sign_changes = np.diff(np.sign(lambda_imag),axis=0)
-    # critical_points = np.nonzero(sign_changes)  # Frequency of sign change from + to - or viceversa of the imaginary parts
-    # freq_indices = critical_points[0]
-    # lambda_indices = critical_points[1]
-    # # Frequency index of the minimum real part of each eigenvalue over the critical frequencies
-    # critical_lambdas = [lambda_re[freq_indices[idx], lambda_indices[idx]] for idx in range(len(freq_indices))]  # Real part at the critical frequencies
-    # idx_lambda_min = np.argmin(critical_lambdas)
-    # print("According to the PND, the critical mode is at",round(frequencies[freq_indices[idx_lambda_min]],3),"Hz based on the minimum real part of eigenvalue",lambda_indices[idx_lambda_min]+1)
-    # print(" Eigenvalue",lambda_indices[idx_lambda_min]+1, "=",round(eigenvalues_sorted[freq_indices[idx_lambda_min],lambda_indices[idx_lambda_min]],5))
-    # print(" The slope of the imaginary part is",round(lambda_imag[freq_indices[idx_lambda_min],lambda_indices[idx_lambda_min]]-lambda_imag[freq_indices[idx_lambda_min]-1,lambda_indices[idx_lambda_min]],5))
-    # freq_idx = freq_indices[idx_lambda_min] # Oscillation frequency index or also round(critical_lambdas[idx_lambda_min],5)
+    if run_PMD:
+        # Apply the Positive Mode Damping (PMD) criterion, more information here: https://doi.org/10.1016/j.ijepes.2023.108957
+        lambda_envelope = np.take_along_axis(eigenvalues_sorted, idx_lambda_envelope[:,None], axis=1)  # Eigenvalues with the largest magnitude at each frequency
+        critical_points = argrelmax(np.abs(lambda_envelope), order=2)[0]
+        print("Critical frequencies:",frequencies[critical_points])
+        PMD_indexes = []
+        for critical_point in critical_points:
+            # Three-point formula to approximate the derivate of the imaginary part around the local maxima of the mangnitude
+            d1 = frequencies[critical_point] -frequencies[critical_point-1]
+            d2 = frequencies[critical_point+1] - frequencies[critical_point]
+            c_minus = -d2 / ( d1*(d1+d2) )
+            c_zero  =  (d2 - d1) / ( d1*d2 )
+            c_plus  =  d1 / ( d2*(d1+d2) )
+            dImag_df = c_minus*np.imag(lambda_envelope[critical_point-1]) + c_zero*np.imag(lambda_envelope[critical_point]) + c_plus*np.imag(lambda_envelope[critical_point+1])
+            PMD_index = dImag_df*np.real(lambda_envelope[critical_point]) # PMD criterion index: if > 0 then this is a potential unstable mode
+            PMD_indexes.append(PMD_index)
+            if PMD_index > 0 and verbose:
+                print("Unstable mode by the PMD criterion at",round(frequencies[critical_point], 2),"Hz for eigenvalue", np.round(lambda_envelope[critical_point], 5))
 
     # 3) Compute the bus participation factors (PFs) of the critical eigenvalue at the oscillation frequency
     # Controllability (right eigenvectors) and observability (transpose of left eigenvectors)
@@ -701,7 +712,6 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', ver
     # PF[frequency, row = bus, column = mode]
     if PFs:
         PF = right_eigenvectors * left_eigenvectors.transpose(0,2,1)  # Element-wise product of right eigenvectors and the transposed left eigenvectors
-        idx_lambda_envelope = np.argmax(lambda_abs,axis=1)  # Index of the maximum magnitude eigenvalue at each frequency
         PF_envelope = np.take_along_axis(PF, idx_lambda_envelope[:,None,None], axis=2)[:, :, 0]  # PF of the maximum magnitude eigenvalue at each frequency
     PF_freq_idx = Obs * Cont  # Element-wise product
     PF_mode = PF_freq_idx[:,idx_lambda_max_max]  # Select the target mode
@@ -772,15 +782,22 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', ver
         if PFs:
             bode_plot(PF_envelope, frequencies, results_folder, filename+"_EVD_max_PFs", title='Sensitivity of the largest closed-loop modal impedance w.r.t. its diagonal elements',
                        legend=bus_names, style="solid", save_pickle=save_pickle, linear_mag=True)
-            # Sensitivity of each modal impedance locus to each diagonal element
-            # loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, loci=eigenvalues_sorted, selected_loci=[i for i in range(eigenvalues_sorted.shape[1])], bus_names=bus_names,
-            #                  results_folder=results_folder, filename=filename+"_EVD_sens", make_plot=make_plot, save_pickle=save_pickle, save_results=save_results, normalize=False)   
+        if PFs_extended:
+            # Sensitivity of the critical modal impedance to each matrix element
+            loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, loci=eigenvalues_sorted, selected_loci=[idx_lambda_max_max], bus_names=bus_names, wrt_all_elements=PFs_extended,
+                             results_folder=results_folder, filename=filename+"_EVD_PFs_extended_locus", make_plot=make_plot, save_pickle=save_pickle, save_results=save_results, normalize=False)   
 
      # Save the EVD and PFs of the envelope into a text file
     if save_results:
         np.savetxt(results_folder + '\\' + filename + '_EVD.txt', np.column_stack((frequencies, eigenvalues_sorted)), delimiter='\t', header="Frequency [Hz]\t" + "\t".join([str(i+1) for i in range(len(bus_names))]), comments='')
         if PFs:
             np.savetxt(results_folder + '\\' + filename + '_EVD_max_PFs.txt', np.column_stack((frequencies, PF_envelope)), delimiter='\t', header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
+
+    if run_PMD:
+        if any(np.array(PMD_indexes) > 0):
+            return False  # Unstable mode by the PMD criterion
+        else:
+            return True  # Stable by the PMD criterion
 
 def nyquist_det(L, frequencies, results_folder=None, filename='nyquist_det', verbose=True, offset=0.0, draw_arrows=True, make_plot=True, show_plot=False, f0=50.0,
                 indentations=[], save_pickle=False, save_results=True):
@@ -924,11 +941,15 @@ def nyquist_det(L, frequencies, results_folder=None, filename='nyquist_det', ver
     return stable_system
 
 def loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, results_folder=None, filename='loci_sensitivity', Z=None, selected_loci=[], bus_names=[],
-                     normalize=False, loci=None, Y=None, make_plot=True, save_pickle=False, save_results=True):
+                     normalize=False, loci=None, Y=None, wrt_all_elements=False, make_plot=True, save_pickle=False, save_results=True):
     # Compute different sensitivities of the eigenloci of a given matrix for the frequencies of interest.
     # 1) The most basic calculation is with respect to changes in the diagonal elements of the original matrix, i.e. below diag_sensitivity[freq_idx, diag_element, locus] gives the sensitivity of the locus to the diag_element of the matrix for the frequency at freq_idx.
     # 2) If the Z matrix is provided, the sensitivity of the selected open-loop (L=Z*Y) loci with respect to changes in the elements of Y is computed by applying the chain rule
-    diag_sensitivity = right_eigenvectors * left_eigenvectors.transpose(0,2,1) # Sensitivity of the eigenvalues (loci) to changes in the diagonal elements of the matrix
+    # 3) If the Z matrix is not provided but wrt_all_elements is True, then the sensitivity of the selected loci with respect to all the elements of the original matrix is computed. This is useful to extend the closed-loop participation factors beyond the diagonal elements.
+   
+    if wrt_all_elements: print("Plotting or saving the sensitivity with respect to changes in all the matrix elements can be time and memory intensive.")
+    
+    diag_sensitivity = right_eigenvectors * left_eigenvectors.transpose(0,2,1) # Element-wise product: sensitivity of the eigenvalues (loci) to changes in the diagonal elements of the matrix
     
     if len(selected_loci) == 0:
         loci_range = range(right_eigenvectors.shape[1]) # Loop over all the loci if selected_loci is not provided and there are multiple loci
@@ -948,6 +969,7 @@ def loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, results
             bode_plot(diag_sensitivity[:, :, locus], frequencies, results_folder=results_folder, file_name=filename+"_"+str(locus+1)+"_wrt_diag",
                       title='Sensitivity of the locus ' + str(locus+1) + ' with respect to the matrix diagonal elements', style="solid", save_pickle=save_pickle,
                       linear_mag=True, legend=bus_names)
+
         if save_results:
             np.savetxt(results_folder+'\\'+filename+"_"+str(locus+1)+'_wrt_diag.txt', np.column_stack((frequencies, diag_sensitivity[:, :, locus])), delimiter='\t',
                        header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
@@ -965,14 +987,36 @@ def loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, results
                 S = S * np.abs(Y)  # Normalized sensitivity w.r.t. the magnitude of each element of Y
 
             if make_plot:
-                bode_plot(S, frequencies, results_folder=results_folder, file_name=filename+"_"+str(locus+1)+"_wrt_Y",style="solid", save_pickle=save_pickle,
-                            title='Sensitivity of locus ' + str(locus+1) + ' with respect to the elements of Y', save_data=save_results, linear_mag=True, legend=bus_names)
+                if wrt_all_elements:
+                    bode_plot(S, frequencies, results_folder=results_folder, file_name=filename+"_"+str(locus+1)+"_wrt_Y",style="solid", save_pickle=save_pickle,
+                              title='Sensitivity of locus ' + str(locus+1) + ' with respect to the elements of Y', linear_mag=True, legend=bus_names)
                 bode_plot(np.diagonal(S,axis1=1,axis2=2), frequencies, results_folder=results_folder, file_name=filename+"_"+str(locus+1)+"_wrt_Y_diag",
-                            title='Sensitivity of locus ' + str(locus+1) + ' with respect to the diagonal elements of Y', style="solid",
-                            save_pickle=save_pickle, save_data=save_results, linear_mag=True, legend=bus_names)
-    
+                          title='Sensitivity of locus ' + str(locus+1) + ' with respect to the diagonal elements of Y', style="solid",
+                          save_pickle=save_pickle, linear_mag=True, legend=bus_names)
+            if save_results:
+                if wrt_all_elements:
+                    np.savetxt(results_folder+'\\'+filename+"_"+str(locus+1)+"_wrt_Y.txt", np.column_stack((frequencies, S.reshape(S.shape[:-2] + (-1,), order='C'))), delimiter='\t',
+                               header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
+
+                np.savetxt(results_folder+'\\'+filename+"_"+str(locus+1)+"_wrt_Y_diag.txt", np.column_stack((frequencies, np.diagonal(S,axis1=1,axis2=2))), delimiter='\t',
+                           header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
+        
+        if wrt_all_elements:
+            # Compute the matrix product of right and left eigenvectors for the selected locus to get its sensitivity to changes in all the elements of the original matrix
+            if Z is not None:
+                PFs = B.transpose(0,2,1) # Re-use the matrix product
+            else:
+                PFs = right_eigenvectors[:, :, locus][:, :, None] @ left_eigenvectors[:, locus, :][:, None, :] # Compute the matrix product
+
+            if make_plot:
+                bode_plot(PFs, frequencies, results_folder=results_folder, file_name=filename+"_"+str(locus+1),style="solid", save_pickle=save_pickle,
+                          title='Sensitivity of locus ' + str(locus+1) + ' with respect to all matrix elements', linear_mag=True, legend=bus_names)
+            if save_results:
+                np.savetxt(results_folder+'\\'+filename+"_"+str(locus+1)+".txt", np.column_stack((frequencies, PFs.reshape(PFs.shape[:-2] + (-1,), order='C'))), delimiter='\t',
+                           header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
+
+    # Plotting and saving the sensitivity of all the loci to changes in all the diagonal elements of the matrix
     if len(selected_loci) == 0:
-        # Plotting and saving the sensitivity of all the loci to changes in all the diagonal elements of the matrix
         warn("Plotting or saving the sensitivity of all the loci to changes in all the diagonal elements can be time and memory intensive. Consider selecting a specific loci.")
         if make_plot:
             bode_plot(diag_sensitivity, frequencies, results_folder=results_folder, file_name=filename+"_wrt_diag",
@@ -1092,10 +1136,15 @@ Optional arguments
         run_nyquist             (bool) Bool flag to run the Generalized Nyquist Criteria (GNC) based on the eigenvalues of the open-loop matrix L. Default = True.
         run_nyquist_det         (bool) Bool flag to run the determinant-based Nyquist stability assessment. Default = True.
         run_EVD                 (bool) Bool flag to run the eigenvalue decomposition (EVD) of the closed-loop system for oscillation modes identification and bus participation factors computation. Default = True.
+        run_EVD_PFs             (bool) Bool flag to compute the bus participation factors (PFs) of the largest magnitude modal impedance magnitude. Default = True.
+        run_EVD_PFs_extended    (bool) Bool flag to compute the sensitivity of the critical locus to changes all elements of the original matrix. This is the extension of the bus PFs beyond the diagonal elements. Default = False.
         run_passivity           (bool) Bool flag to run the passivity assessment of the system matrices. Default = True.
         run_small_gain          (bool) Bool flag to run the small-gain theorem based on the system matrices. Default = True.
         run_GNC_sensitivity     (bool) Bool flag to run the sensitivity analysis of the critical loci when applying the GNC with respect to the diagonal elements of L as well as with respect to Y with L=Z*Y. Default = False.
         normalize_GNC_sensitivity (bool) Bool flag to normalize the sensitivity of the critical loci in the GNC with respect to changes in each element of Y with L=Z*Y. The normalization is with respect to each admittance magnitude and locus magnitude. Default = False.
+Returns
+        List of bool flags indicating closed-loop or interconnected stability assessment by different methods where True means stable.
+        
 """
 
 passivity.__doc__ = """
@@ -1133,6 +1182,13 @@ Optional arguments
         save_pickle        (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
         save_results       (bool) Bool flag to save the results in a text file. Default = True.
         PFs                (bool) Bool flag to compute the bus participation factors (PFs) of the largest magnitude modal impedance magnitude. Default = True.
+        PFs_extended       (bool) Bool flag to compute the sensitivity of the critical locus to changes the elements of the original matrix. This is the extension of the bus PFs beyond the diagonal elements. Default = False.
+        run_PMD            (bool) Bool flag to run the positive mode damping (PMD) criterion. Default = False. Find more information on the PMD on the following paper
+                            Luis Orellana, et al. "Study of black-box models and participation factors for the Positive-Mode Damping stability criterion",2023 https://doi.org/10.1016/j.ijepes.2023.108957
+
+Returns
+        Bool flag indicating closed-loop or interconnected stability assessment by the PMD criterion: True means stable.                     
+                            
 """
 
 small_gain.__doc__ = """
@@ -1161,6 +1217,7 @@ loci_sensitivity.__doc__ = """
 Computation of the sensitivity of the eigenloci of a given matrix for the frequencies of interest. The results and their interpretation depend on the original matrix and arguments provided to the function:
 1) The most basic sensitivity calculation is with respect to changes in the diagonal elements of the original matrix, i.e. each entry [freq_idx, diag_element, locus] gives the sensitivity of the locus to the diag_element of the matrix for the frequency at freq_idx.
 2) If the Z matrix is provided, the sensitivity of the selected open-loop (L=Z*Y) loci with respect to changes in the elements of Y is computed by applying the chain rule.
+3) If the Z matrix is not provided but wrt_all_elements is True, then the sensitivity of the selected loci with respect to all the elements of the original matrix is computed. This is useful to extend the closed-loop participation factors beyond the diagonal elements.
 Note that plotting or saving the sensitivity of all the loci to changes in all the diagonal elements can be time and memory intensive. Consider specifying selected_loci before calling the function.
 Lastly, the results can be normalized with respect to the magnitude of each locus and/or the magnitude of the elements of Y by providing the corresponding arguments.
 
@@ -1179,6 +1236,7 @@ Optional arguments
         normalize           (bool) Bool flag to normalize the sensitivity of each locus with respect to the locus magnitude. Default = False (no normalization).
         loci                (numpy array) Array of shape (number of frequencies, number of loci) with all eigenloci for each frequency. It is used for normalization if normalize = True. Default = None (no locus-based normalization).
         Y                   (numpy ndarray of complex double) If provided, the sensitivity of the open-loop locus to changes in Y is normalized with respect to the Y matrix elements. Default = None (no normalization with respect to Y).
+        wrt_all_elements    (bool) Bool flag to compute the sensitivity of the selected loci with respect to all the elements of the original matrix. This is useful to extend the closed-loop participation factors beyond the diagonal elements. Default = False.
         make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files.
         save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
         save_results        (bool) Bool flag to save the results in a text file. Default = True.

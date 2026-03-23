@@ -194,7 +194,10 @@ def admittance(f_base=None, frequencies=None, freq_multi=None, fft_periods=1,
             # Enforce network connectivity constraints
             Yextended = np.copy(multiport.adj_matrix)
             np.fill_diagonal(Yextended, 1)
-            if scan_type == "AC": Yextended = np.kron(Yextended, np.ones((2, 2), dtype=int))
+            if scan_type == "AC":
+                Yextended = np.kron(Yextended, np.ones((2, 2), dtype=int))
+            elif scan_type == "ACDC":
+                Yextended = np.ones((N,N)) # Do not enforce topology for ACDC subsystems (TODO)
             Y[freq_idx, :, :] = np.multiply(Yextended, np.matmul(deltaI[freq_idx, :, :], np.linalg.inv(deltaV[freq_idx, :, :])))
         else:
             Y[freq_idx, :, :] = np.matmul(deltaI[freq_idx, :, :],  np.linalg.inv(deltaV[freq_idx, :, :]))

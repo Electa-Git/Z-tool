@@ -399,7 +399,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                         scan_type.append("AC")
                     else:
                         scan_type.append("DC")
-                multiport_scans.append(Multiport(multiport_names, scan_type, Ytopology[net, :][:, net], False))
+                multiport_scans.append(Multiport(multiport_names, scan_type, Ytopology[net, :][:, net], enforce_topology))
                 if verbose: print("   AC/DC multiport scan involving", multiport_names)
 
         else:
@@ -996,7 +996,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                                       zblocks=[ScanBlocksTool[ind] for ind in idx_selected_blocks],
                                       sides=[side for side in sides_selected_blocks],
                                       freq_multi=freq_multi if multi_freq_scan else None, multiport=multiport_scan,
-                                      results_folder=results_folder, results_name=output_files, exploit_dq_sym=edge_dq_sym)
+                                      results_folder=results_folder, results_name=output_files, exploit_dq_sym=edge_dq_sym if multiport_scan.scan_type != "ACDC" else False)
                 
             if verbose and make_plot:
                 print(' Admittance matrix involving',", ".join(multiport_scan.names),'computed and plotted in',round((t.time() - t2), 2), 'seconds')
@@ -1447,7 +1447,7 @@ Optional
 
         scan_single_ports       Bool flag to scan the components with single AC/DC ports, i.e. systems identified by 1 in the diagonal entries of the topology file and/or AC/DC converters with only one AC and/or DC connection. Default = True.
         scan_multi_ports        Bool flag to scan all other subsystems which have more than one AC and/or DC port, including passive networks or aggregated subsystems. Default = True. It can be set to False in case the edge matrix does not need to be scanned.
-        edge_dq_sym             Bool to consider the AC networks dq symmetric so to halve the necessary perturbations and thus their computation time.
+        edge_dq_sym             Bool to consider the AC multiport subsystems dq-symmetric so to halve the necessary perturbations and thus the computation time.
         
         freq			        Frequency list to perform the injections [Hz]. Alternatively, the user can provide info to compute the list.
         fft_periods 		    Number of periods used to compute the FFT. Default = 1.
