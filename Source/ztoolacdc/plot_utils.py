@@ -17,7 +17,7 @@ Copyright (C) 2026  Francisco Javier Cifuentes Garcia
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-__all__ = ['bode_plot', 'spectrum_plot']
+__all__ = ['bode_plot', 'spectrum_plot', 'sparsity_plot']
 
 import matplotlib.pyplot as plt
 import numpy as np  # Numerical python functions
@@ -179,6 +179,20 @@ def bode_plot(Y=None, frequencies=None, results_folder=None, file_name='Bode_plo
     
     if return_plot: return fig, ax
 
+def sparsity_plot(Y=None, title="Sparsity plot", results_folder=None, file_name='Sparsity_plot',  variables=None, save_pickle=False):
+    np.seterr(divide='ignore')
+    Y_nan = np.zeros_like(Y, dtype=np.float64)
+    Y_nan.fill(np.nan)
+    plt.imshow(20*np.log10(np.abs(Y), out=Y_nan, where=(np.abs(Y)!=0.0)), cmap='spring', interpolation='nearest')
+    plt.colorbar()
+    plt.xticks(ticks=np.arange(0, len(variables), step=1), labels=[])
+    plt.yticks(ticks=np.arange(0, len(variables), step=1), labels=variables)
+    plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
+    plt.title(title)
+    plt.savefig(results_folder + '\\' + file_name + ".pdf", format="pdf", bbox_inches="tight")
+    if save_pickle:
+        with open(results_folder + '\\' + file_name + ".pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
+    plt.close()
 
 bode_plot.__doc__ = """
 Draws a Bode plot of the complex vector or array Y: to each frequency in the list 'frequencies',
@@ -216,4 +230,18 @@ Optional
     save_data       If True, the data is saved in a text file. Default = False.
     show_dc         If True, the DC component is plotted, otherwise a x-log scale is used. Default = False.
     save_pickle     If True, the figure is saved in a pickle file. Default = False.
+ """
+
+sparsity_plot.__doc__ = """
+Draws a sparsity plot of the matrix Y.
+
+Required
+    Y               (2d-array) Complex matrix to be plotted.
+    title           (string) Title of the plot.
+    results_folder  (string) Absolute path where the plot is to be stored.
+    file_name       (string) Name of the plot files.
+    variables       (list of strings) List of variable names for the rows and columns.
+
+    Optional
+    save_pickle     (Bool) If True, the figure is saved in a pickle file. Default = False.
  """

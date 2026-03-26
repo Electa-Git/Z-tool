@@ -47,7 +47,7 @@ frequency_sweep(t_snap=t_snap, t_sim=t_sim, t_step=t_step, dt_injections=dt_inje
 ## component_parameters=[["Name1", Value1], ["Name1", Value1], ...] is a list of ["Name",Value] where "Name" is the name of a constant in PSCAD to be set to Value before the scan
 
 """ -------------------- RUN THE STABILITY ANALYSIS ---------------------- """
-stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files, indentations = [50.0], run_nyquist_det=False) # Nyquist contour indentation around the fundamental frequency
+stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files, indentations = [50.0]) # Nyquist contour indentation around the fundamental frequency
 
 """ -------------------- CASE 2: UPDATED PARAMETERS: NEW SCAN & ANALYSIS ---------------------- """
 print("\n Case 2: updated control parameters at MMC 2\n")
@@ -73,6 +73,6 @@ for root, _, files in walk(results_folder):
 print(" All passive network files copied \n")
 
 # Now run the stability analysis using the scans with the updated controls
-stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files_case2, indentations = [50.0], run_nyquist_det=False) # Nyquist contour indentation around the fundamental frequency
+stability_analysis(topology=topology, results_folder=results_folder, file_root=output_files_case2, indentations = [50.0]) # Nyquist contour indentation around the fundamental frequency
 
 print("\n ALL CASES COMPLETED! \n")

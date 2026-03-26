@@ -31,7 +31,7 @@ from .read_admittance import read_admittance
 from os import path, makedirs
 from warnings import warn
 import pickle
-from .plot_utils import bode_plot
+from .plot_utils import bode_plot, sparsity_plot
 from matplotlib import rcParams  # Text's parameters for plots
 rcParams['mathtext.fontset'] = 'cm'  # Font selection
 rcParams['font.family'] = 'STIXGeneral'  # 'cmu serif'
@@ -71,9 +71,9 @@ class Graph:
                 cc.append(self.DFSUtil(temp, v, visited))
         return cc
 
-def stability_analysis(topology=None, results_folder=None, file_root=None, indentations=[], node_blocks=None, rotate_edge=False, rotate_node=False,
+def stability_analysis(topology=None, results_folder=None, file_root=None, indentations=[], node_blocks=None, rotate_edge=False, rotate_node=False, reference_buses=None, relative_angles=True,
                        check_conditioning=False, condition_number_th=10e6, make_plot=True, save_pickle=False, save_results=True, save_Y=False, save_loop_gain=False,
-                       verbose=True, run_nyquist=True, run_nyquist_det=True, run_EVD=True, run_EVD_PFs=True, run_EVD_PFs_extended=False, run_passivity=True, run_small_gain=True,
+                       verbose=True, run_nyquist=True, run_nyquist_det=False, run_EVD=True, run_EVD_PFs=True, run_EVD_PFs_extended=False, run_passivity=True, run_small_gain=True,
                        run_GNC_sensitivity=False, normalize_GNC_sensitivity=False, run_PMD=False):
     # This function loads and builds the edge and node admittance matrices and applies the most common stability analysis functions
     # 0) Firstly, read the terminal angle information for the AC blocks if rotations are required
@@ -84,14 +84,26 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
             for line in file:
                 content = [str(line.strip().split("\t")[0]),int(line.strip().split("\t")[1]),float(line.strip().split("\t")[2])]
                 block_area_angle.append(content) # For each element in block_area_angle, the first element is the block name, the second is the area number, and the third is the angle
-        # Define a reference bus for each area
-        reference_angle = {i: -100 for i in set([bus[1] for bus in block_area_angle])}  # Unrealistic intial value for each area 
-        for bus in block_area_angle:
-            if reference_angle[bus[1]] == -100: 
-                reference_angle[bus[1]] = float(bus[2])  # If the reference angle of this block's area is not defined yet, then use the angle of the current block as the reference
+        
+        # Define a reference bus for each area when using relative angles. Otherwise, use the absolute angles as in the '_angles.txt' file.
+        if relative_angles:
+            reference_angle = {i: -100 for i in set([bus[1] for bus in block_area_angle])}  # Unrealistic intial value to later define the reference bus for each are when relative angles are used
+        else:
+            reference_angle = {i: 0.0 for i in set([bus[1] for bus in block_area_angle])} # The reference angle is zero for each area so the absolute angles as in the '_angles.txt' file are used
+        if verbose and relative_angles: print("The reference buses are:")
+        if reference_buses is not None and relative_angles:
+            for bus in block_area_angle:
+                if bus[0] in reference_buses: 
+                    reference_angle[bus[1]] = float(bus[2])  # If the block of this bus is in the reference_buses list, then use the angle of this bus as the reference for its area
+                    if verbose: print(" "+bus[0]+", for area",bus[1])
+        elif -100 in reference_angle.values(): # If the user does not specify all reference buses, asign them automatically as the first bus of each area in the file
+            for bus in block_area_angle:
+                if reference_angle[bus[1]] == -100: 
+                    reference_angle[bus[1]] = float(bus[2])  # If the reference angle of this block's area is not defined yet, then use the angle of the current block as the reference
+                    if verbose: print(" "+bus[0]+", for area",bus[1])
     
     if rotate_edge and rotate_node:
-        warn("Rotating both the edge and node matrices results in matrices with the unchanged eigenvalues; this also applies to the open and closed-loop matrices.")
+        print("Rotating both the edge and node matrices results in matrices with unchanged eigenvalues; this also applies to the open and closed-loop matrices.")
 
     # 1) Read the topology matrix and extract block names
     if topology is not None:
@@ -162,38 +174,10 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
         #             yedge.y[:, row, col] = np.zeros(yedge.y[:, row, col].shape)
         Yedge_aux[:, y_edge_idx:y_edge_idx + len(yedge.vars), y_edge_idx:y_edge_idx + len(yedge.vars)] = yedge.y
         y_edge_idx = y_edge_idx + len(yedge.vars)  # Update the matrix index for the next admittance block
-
-    # Sparsity plot for verification at the lowest frequency
-    if save_results:
-        np.seterr(divide='ignore')
-        Yedge_aux_nan = np.zeros_like(Yedge_aux[0,:,:], dtype=np.float64)
-        Yedge_aux_nan.fill(np.nan)
-        plt.imshow(20*np.log10(np.abs(Yedge_aux[0,:,:]), out=Yedge_aux_nan, where=(np.abs(Yedge_aux[0, :, :])!=0.0)),cmap='spring', interpolation='nearest')
-        plt.colorbar()
-        plt.xticks(ticks=np.arange(0, len(edge_aux_variables), step=1), labels=[])
-        plt.yticks(ticks=np.arange(0, len(edge_aux_variables), step=1), labels=edge_aux_variables)
-        plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
-        plt.title('Auxiliary edge admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
-        plt.savefig(results_folder + '\\' + file_root + "_Edge_aux.pdf", format="pdf", bbox_inches="tight")
-        # with open(results_folder + '\\' + file_root + "_Edge_aux.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
-        plt.close()
-
-        # Re-sort the edge matrix acording to the node matrix variables
-        Yedge = Yedge_aux[:,:,edge_ordering]  # Sort the columns
-        Yedge = Yedge[:,edge_ordering,:]  # Sort the rows
-
-        # Plot the sorted edge admittance for verification at the lowest frequency
-        Yedge_nan = np.zeros_like(Yedge[0,:,:], dtype=np.float64)
-        Yedge_nan.fill(np.nan)
-        plt.imshow(20*np.log10(np.abs(Yedge[0, :, :]), out=Yedge_nan, where=(np.abs(Yedge[0,:,:])!=0.0)), cmap='spring', interpolation='nearest')
-        plt.colorbar()
-        plt.xticks(ticks=np.arange(0, len(node_variables), step=1), labels=[])
-        plt.yticks(ticks=np.arange(0, len(node_variables), step=1), labels=node_variables)
-        plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
-        plt.title('Edge admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
-        plt.savefig(results_folder + '\\' + file_root + "_Edge.pdf", format="pdf", bbox_inches="tight")
-        # with open(results_folder + '\\' + file_root + "_Edge.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
-        plt.close()
+    
+    # Sort the edge matrix acording to the node matrix variables
+    Yedge = Yedge_aux[:,:,edge_ordering]  # Sort the columns
+    Yedge = Yedge[:,edge_ordering,:]  # Sort the rows
 
     # 5) Build the block-diagonal node admittance and define the rotation matrix (if needed)
     Ynode = np.zeros((len(frequencies), len(node_variables), len(node_variables)),dtype='cdouble')  # Or dtype='csingle'
@@ -220,24 +204,15 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
                     T[y_node_idx+sub_block_idx:y_node_idx+sub_block_idx+1, y_node_idx+sub_block_idx:y_node_idx+sub_block_idx+1] = 1.0
                     sub_block_idx = sub_block_idx + 1
 
-    # Rotate the system matrices: T is orthogonal so T^-1 = T'; Note that rotating both matrices does not alter the eigenvalues!
+    # Rotate the system matrices: T is orthogonal so T^-1 = T'; Note that rotating both matrices does not alter the eigenvalues of their product or sum!
     if rotate_node: Ynode = T.transpose() @ Ynode @ T # Equivalent to np.matmul(T.transpose(),np.matmul(Ynode,T))
-    if rotate_edge: Yedge = T.transpose() @ Yedge @ T
+    if rotate_edge: Yedge = T.transpose() @ Yedge @ T 
 
-    # Scatter verification of the node admittance for the lowest frequency
+    # Sparsity plot for verification at the lowest frequency
     if save_results:
-        Ynode_nan = np.zeros_like(Ynode[0,:,:], dtype=np.float64)
-        Ynode_nan.fill(np.nan)
-        plt.imshow(20*np.log10(np.abs(Ynode[0,:,:]), out=Ynode_nan, where=(np.abs(Ynode[0,:,:])!=0.0)), cmap='spring', interpolation='nearest')
-        plt.colorbar()
-        plt.xticks(ticks=np.arange(0, len(node_variables), step=1), labels=[])
-        plt.yticks(ticks=np.arange(0, len(node_variables), step=1), labels=node_variables)
-        plt.grid(visible=True, which='minor', alpha=0.3, color='k', linestyle='-', linewidth=0.5)
-        plt.title('Node admittance matrix at '+format(frequencies[0], '.1f')+' Hz')
-        plt.savefig(results_folder + '\\' + file_root + "_Node.pdf", format="pdf", bbox_inches="tight")
-        # with open(results_folder + '\\' + file_root + "_Node.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
-        plt.close()
-        np.seterr(divide='warn')
+        sparsity_plot(Yedge_aux[0,:,:], title='Auxiliary edge admittance matrix at '+format(frequencies[0], '.2f')+' Hz', results_folder=results_folder, file_name=file_root+"_Edge_aux",  variables=edge_aux_variables)
+        sparsity_plot(Yedge[0,:,:], title='Edge admittance matrix at '+format(frequencies[0], '.2f')+' Hz', results_folder=results_folder, file_name=file_root+"_Edge",  variables=node_variables)
+        sparsity_plot(Ynode[0,:,:], title='Node admittance matrix at '+format(frequencies[0], '.2f')+' Hz', results_folder=results_folder, file_name=file_root+"_Node",  variables=node_variables)
 
     # 6) Perform stability analysis
     stability = [] # Store the stability conclusion by a boolean: True means stable
@@ -1133,6 +1108,11 @@ Optional arguments
         make_plot               (bool) Bool flag to enable/disable the generation of pdf plot files.
         save_pickle             (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
         save_results            (bool) Bool flag to save the results in a text file. Default = True.
+        save_Y                  (bool) Bool flag to save the system admittance matrices in text files. Default = True.
+        save_loop_gain          (bool) Bool flag to save the loop gain matrix as a text file. Default = True.
+        verbose                 (bool) Bool flag to show detailed analysis information, such as the crossings in the GNC and the participation factors of the dominant mode. Default = True.
+        reference_buses         (list of str) List of AC bus names (e.g. Z-tool scan block names) which define the reference angles for each area. Default = None, which results in the use of the first block of each area as reference.
+        relative_angles         (bool) Bool flag to use the relative angles for the matrix rotations. If set to True, the relative angle between each bus and the reference buses is used; otherwise the angles in the text file are used directly. Default = True.
         run_nyquist             (bool) Bool flag to run the Generalized Nyquist Criteria (GNC) based on the eigenvalues of the open-loop matrix L. Default = True.
         run_nyquist_det         (bool) Bool flag to run the determinant-based Nyquist stability assessment. Default = True.
         run_EVD                 (bool) Bool flag to run the eigenvalue decomposition (EVD) of the closed-loop system for oscillation modes identification and bus participation factors computation. Default = True.
@@ -1142,6 +1122,7 @@ Optional arguments
         run_small_gain          (bool) Bool flag to run the small-gain theorem based on the system matrices. Default = True.
         run_GNC_sensitivity     (bool) Bool flag to run the sensitivity analysis of the critical loci when applying the GNC with respect to the diagonal elements of L as well as with respect to Y with L=Z*Y. Default = False.
         normalize_GNC_sensitivity (bool) Bool flag to normalize the sensitivity of the critical loci in the GNC with respect to changes in each element of Y with L=Z*Y. The normalization is with respect to each admittance magnitude and locus magnitude. Default = False.
+
 Returns
         List of bool flags indicating closed-loop or interconnected stability assessment by different methods where True means stable.
         
