@@ -657,7 +657,7 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', ver
     # Oscillation mode identification based on the magnitude peaks of the closed-loop impedance matrix
     idx_lambda_max = np.argmax(lambda_abs,axis=0)  # Frequency index of the maximum magnitude of each eigenvalue
     idx_lambda_max_max = np.argmax([lambda_abs[idx_lambda_max[idx],idx] for idx in range(eigenvalues.shape[1])])  # Critical mode = the highest mag peak
-    freq_idx = idx_lambda_max[idx_lambda_max_max]  # Oscillation frequency index; or also freq_indices[idx_lambda_min]
+    freq_idx = idx_lambda_max[idx_lambda_max_max]  # Main oscillation frequency index
     if verbose: print("The main oscillation frequency is around",round(frequencies[freq_idx],2),"Hz based on the magnitude of eigenvalue",idx_lambda_max_max+1,"=",np.round(eigenvalues_sorted[idx_lambda_max[idx_lambda_max_max],idx_lambda_max_max], 5))
     idx_lambda_envelope = np.argmax(lambda_abs, axis=1)  # Index of the maximum magnitude eigenvalue at each frequency
 
@@ -901,16 +901,16 @@ def nyquist_det(L, frequencies, results_folder=None, filename='nyquist_det', ver
         ax[1].set_xlabel('Real axis')
         ax[1].set_ylabel('Imaginary axis')
 
-        fig.savefig(results_folder + '\\' + filename + "_det.pdf", format="pdf", bbox_inches="tight")
+        fig.savefig(results_folder + '\\' + filename + "_GNC_det.pdf", format="pdf", bbox_inches="tight")
         if save_pickle:
-            with open(results_folder + '\\' + filename + "_det.pickle", 'wb') as f: pickle.dump(fig, f)
+            with open(results_folder + '\\' + filename + "_GNC_det.pickle", 'wb') as f: pickle.dump(fig, f)
         if show_plot: plt.show()  # Visualize the plot interactively
         plt.close(fig)
-        bode_plot(det,  frequencies, results_folder, file_name=filename + "_det_Bode", title='Bode plot of '+str(offset)+r' + det[$I + L(j \omega)$] over '+str(len(frequencies))+' frequencies', style="solid", save_pickle=save_pickle, legend=None)
+        bode_plot(det,  frequencies, results_folder, file_name=filename + "_GNC_det_Bode", title='Bode plot of '+str(offset)+r' + det[$I + L(j \omega)$] over '+str(len(frequencies))+' frequencies', style="solid", save_pickle=save_pickle, legend=None)
 
     # Save the results
     if save_results:
-        np.savetxt(results_folder + '\\' + filename + '_det.txt', np.stack((frequencies,det), axis=-1), delimiter='\t',
+        np.savetxt(results_folder + '\\' + filename + '_GNC_det.txt', np.stack((frequencies,det), axis=-1), delimiter='\t',
                 header="Frequency [Hz]\t"+str(offset)+"+det[I + L(s)]", comments='')
     
     return stable_system
@@ -1114,7 +1114,7 @@ Optional arguments
         reference_buses         (list of str) List of AC bus names (e.g. Z-tool scan block names) which define the reference angles for each area. Default = None, which results in the use of the first block of each area as reference.
         relative_angles         (bool) Bool flag to use the relative angles for the matrix rotations. If set to True, the relative angle between each bus and the reference buses is used; otherwise the angles in the text file are used directly. Default = True.
         run_nyquist             (bool) Bool flag to run the Generalized Nyquist Criteria (GNC) based on the eigenvalues of the open-loop matrix L. Default = True.
-        run_nyquist_det         (bool) Bool flag to run the determinant-based Nyquist stability assessment. Default = True.
+        run_nyquist_det         (bool) Bool flag to run the determinant-based Nyquist stability assessment. Default = False.
         run_EVD                 (bool) Bool flag to run the eigenvalue decomposition (EVD) of the closed-loop system for oscillation modes identification and bus participation factors computation. Default = True.
         run_EVD_PFs             (bool) Bool flag to compute the bus participation factors (PFs) of the largest magnitude modal impedance magnitude. Default = True.
         run_EVD_PFs_extended    (bool) Bool flag to compute the sensitivity of the critical locus to changes all elements of the original matrix. This is the extension of the bus PFs beyond the diagonal elements. Default = False.

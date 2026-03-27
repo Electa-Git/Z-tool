@@ -41,19 +41,38 @@ def spectrum_plot(signals=None, time=None, results_folder=None, file_name='spect
     xf = np.fft.fftfreq(N, T)[:N//2]  # Frequencies
 
     fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(8, 4))
+    prop_cycle = plt.rcParams['axes.prop_cycle'] # Get the color cycle
+    colors = prop_cycle.by_key()['color']
     for signal_col in range(signals.shape[1]):
-        label = r'$'+str(signal_col)+'$' if labels is None else labels[signal_col]
+        label = r'$'+str(signal_col)+'$' if labels is None else r'$'+labels[signal_col]+'$'
         label = label + ', DC: ' + format(1.0/N*np.abs(yf[0, signal_col]), f".{4}e")
-        ax[0].plot(time, signals[:, signal_col], linewidth=1.0, label=label)
-        if style == 'line':
-            ax[1].plot(xf, 2.0/N*np.abs(yf[0:N//2, signal_col]), linewidth=1.0, label=label)
+        # If the signal label starts with "v" then it is voltage so use the left y-axis, and if it starts with "i" is a current so it goes to the right y-axis
+        # Otherwise, it uses a common left y-axis
+        if labels is not None:
+            if label.split("$")[1][0] == "v": # Voltage signal
+                ax[0].plot(time, signals[:, signal_col], linewidth=1.0, label=label, color=colors[signal_col%10])
+                ax[0].set_ylabel('Voltage [kV]')
+            elif label.split("$")[1][0] == "i": # Current signal
+                if not('ax_right' in locals()): # Create the right y-axis 
+                    ax_right = ax[0].twinx()
+                    ax_right.set_ylabel('Current [kA]') # Set the label only once
+                    ax_right.minorticks_on()
+                ax_right.plot(time, signals[:, signal_col], linewidth=1.0, label=label, color=colors[signal_col%10])
+            else: # Generic signal
+                ax[0].plot(time, signals[:, signal_col], linewidth=1.0, label=label, color=colors[signal_col%10])
+                ax[0].set_ylabel('Signal')
         else:
-            ax[1].scatter(xf, 2.0/N*np.abs(yf[0:N//2, signal_col]), linewidths=1, label=label)
+            ax[0].plot(time, signals[:, signal_col], linewidth=1.0, label=label)
+            ax[0].set_ylabel('Signal')
+
+        if style == 'line':
+            ax[1].plot(xf, 2.0/N*np.abs(yf[0:N//2, signal_col]), linewidth=1.0, label=label, color=colors[signal_col%10])
+        else:
+            ax[1].scatter(xf, 2.0/N*np.abs(yf[0:N//2, signal_col]), linewidths=1, label=label, color=colors[signal_col%10])
 
     ax[0].set_xlim([time[0], time[-1]])
     ax[0].minorticks_on()
     ax[0].grid(visible=True, which='major', color='k', linestyle='-', alpha=0.5, linewidth=0.5)
-    ax[0].set_ylabel('Signal')
     ax[0].set_xlabel('Time [s]')
     ax[0].set_title('Time domain and FFT plots')
     
@@ -67,7 +86,7 @@ def spectrum_plot(signals=None, time=None, results_folder=None, file_name='spect
     ax[1].grid(visible=True, which='major', color='k', linestyle='-', alpha=0.5, linewidth=0.5)
     ax[1].set_ylabel('Amplitude')
     ax[1].set_xlabel('Frequency [Hz]')
-    ax[1].legend(loc='lower right', ncol=int(np.floor(np.sqrt(np.prod(signals.shape[1:])))), prop={'size': 6})    # ,fancybox=True, shadow=True,
+    ax[1].legend(loc='lower right', ncol=int(np.floor(np.sqrt(np.prod(signals.shape[1:])))), prop={'size': 8})    # ,fancybox=True, shadow=True,
 
     if results_folder is not None:
         fig.savefig(results_folder + '\\' + file_name + ".pdf", format="pdf", bbox_inches="tight")
@@ -217,6 +236,7 @@ Optional
 
 spectrum_plot.__doc__ = """
 Draws a spectrum plot of the real-valued signals provided in the 'signals' argument.
+If the labels are provided it checks the first character to plot voltages (starting with "v") and currents (first character "i") in different y-axes.
 
 Required
     signals         2D array where each column is a signal to be plotted.
