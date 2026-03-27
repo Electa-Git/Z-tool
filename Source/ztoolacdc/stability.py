@@ -184,9 +184,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
     if rotate_edge or rotate_node: T = np.zeros((len(node_variables), len(node_variables)), dtype='double') # Block-diagonal rotation matrix
     y_node_idx = 0 # Block index for the node matrix
     for ynode in node_matrix:
-        Ynode[:, y_node_idx:y_node_idx+len(ynode.vars), y_node_idx:y_node_idx+len(ynode.vars)] = ynode.y  # Block-by-block construction of the node matrix
-        y_node_idx = y_node_idx + len(ynode.vars)  # Update the matrix index for the next admittance block
-        
+        Ynode[:, y_node_idx:y_node_idx+len(ynode.vars), y_node_idx:y_node_idx+len(ynode.vars)] = ynode.y  # Block-by-block construction of the node matrix        
         # Define the rotation matrix for the current node block if needed
         if rotate_edge or rotate_node: 
             sub_block_idx = 0 # Block index for the node matrix sub-blocks
@@ -203,6 +201,8 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
                     # print("Node submatrix",idx,"between:",y_node_idx,"and",y_node_idx+len(ynode.vars),"DC type for block",block,"between",str(y_node_idx+sub_block_idx),"and",str(y_node_idx+sub_block_idx+1))
                     T[y_node_idx+sub_block_idx:y_node_idx+sub_block_idx+1, y_node_idx+sub_block_idx:y_node_idx+sub_block_idx+1] = 1.0
                     sub_block_idx = sub_block_idx + 1
+                    
+        y_node_idx = y_node_idx + len(ynode.vars)  # Update the matrix index for the next admittance block
 
     # Rotate the system matrices: T is orthogonal so T^-1 = T'; Note that rotating both matrices does not alter the eigenvalues of their product or sum!
     if rotate_node: Ynode = T.transpose() @ Ynode @ T # Equivalent to np.matmul(T.transpose(),np.matmul(Ynode,T))
