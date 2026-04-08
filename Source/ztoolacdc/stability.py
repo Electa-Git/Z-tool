@@ -74,7 +74,7 @@ class Graph:
 def stability_analysis(topology=None, results_folder=None, file_root=None, indentations=[], node_blocks=None, rotate_edge=False, rotate_node=False, reference_buses=None, relative_angles=True,
                        check_conditioning=False, condition_number_th=10e6, make_plot=True, save_pickle=False, save_results=True, save_Y=False, save_loop_gain=False,
                        verbose=True, run_nyquist=True, run_nyquist_det=False, run_EVD=True, run_EVD_PFs=True, run_EVD_PFs_extended=False, run_passivity=True, run_small_gain=True,
-                       run_GNC_sensitivity=False, normalize_GNC_sensitivity=False, run_PMD=False):
+                       run_GNC_sensitivity=False, normalize_GNC_sensitivity=False, run_PMD=False, Ibase={}, Vbase={}):
     # This function loads and builds the edge and node admittance matrices and applies the most common stability analysis functions
     # 0) Firstly, read the terminal angle information for the AC blocks if rotations are required
     if rotate_edge or rotate_node:
@@ -208,6 +208,23 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
     if rotate_node: Ynode = T.transpose() @ Ynode @ T # Equivalent to np.matmul(T.transpose(),np.matmul(Ynode,T))
     if rotate_edge: Yedge = T.transpose() @ Yedge @ T 
 
+    # Apply a conversion of the matrices to the per-unit system if the base values are provided by the user, i.e. Y_pu = Ib^-1 @ Y_SI @ Vb
+    if Ibase and Vbase:
+        Ib = [] # Base currents in the order of the node variables
+        Vb = [] # Base voltages in the order of the node variables
+        variables = [var.split("_")[0] for var in node_variables] # Remove the ending, i.e. "dc", "d" and "q" to retrieve the node names
+        if all(variable in Ibase.keys() for variable in variables) and all(variable in Vbase.keys() for variable in variables):
+            for variable in variables:
+                Ib.append(Ibase[variable])
+                Vb.append(Vbase[variable])
+            Vb = np.diag(Vb) # Diagonal matrix with the voltage base at each node
+            Ib_inv = np.diag([1/Ibase_i for Ibase_i in Ib]) # Diagonal matrix with the inverse of the current base quantities at each node
+            if verbose: print(" The matrices are converted to per unit.")
+            Yedge = Ib_inv @ Yedge @ Vb # Base conversion of the edge matrix
+            Ynode = Ib_inv @ Ynode @ Vb # Base conversion of the node matrix
+        else:
+            print(" The keys in the base quantities provided by the user do not match the node variables. The matrices are not be converted to per unit.")
+    
     # Sparsity plot for verification at the lowest frequency
     if save_results:
         sparsity_plot(Yedge_aux[0,:,:], title='Auxiliary edge admittance matrix at '+format(frequencies[0], '.2f')+' Hz', results_folder=results_folder, file_name=file_root+"_Edge_aux",  variables=edge_aux_variables)
@@ -219,17 +236,16 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
 
     if run_nyquist or run_nyquist_det or run_small_gain:
         Zedge = np.linalg.inv(Yedge)
+        L = np.matmul(Zedge,Ynode)  # Loop gain matrix
 
     # Stability via eigenvalue loci
     if run_nyquist:
-        L = np.matmul(Zedge,Ynode)  # Loop gain matrix
         stable = nyquist(L, frequencies, results_folder, file_root, verbose=verbose, check_conditioning=check_conditioning, condition_number_th=condition_number_th, make_plot=make_plot,
                          indentations=indentations, run_sensitivity=run_GNC_sensitivity, Z=Zedge, Y=Ynode if normalize_GNC_sensitivity else None, bus_names=node_variables, save_pickle=save_pickle, save_results=save_results)
         stability.append(stable)
     
     # Stability via determinant
     if run_nyquist_det:
-        if not run_nyquist: L = np.matmul(Zedge,Ynode)  # Loop gain matrix
         stable_det = nyquist_det(L,frequencies, results_folder, file_root, verbose=verbose, offset=0.0, draw_arrows=True, show_plot=False,
                                  make_plot=make_plot, indentations=indentations, save_pickle=save_pickle, save_results=save_results) 
         stability.append(stable_det)
@@ -529,7 +545,7 @@ def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=Tru
                   title=r"Bode plot of $1/(1+\lambda(L))$ over "+str(len(frequencies))+' frequencies', legend=[str(idx+1) for idx in range(eigenvalues_sorted.shape[1])])
         for locus in unstable_loci:
             bode_plot(Y=1/(1+eigenvalues_sorted[:,locus]), frequencies=frequencies, results_folder=results_folder, file_name=filename+"_inv(1+L"+str(locus+1)+")", style="solid",
-                      title=r"Bode plot of $1/(1+\lambda_"+str(locus+1)+r"(L))$ over "+str(len(frequencies))+' frequencies', legend=[str(locus+1)])
+                      title=r"Bode plot of $1/(1+\lambda_{"+str(locus+1)+r"}(L))$ over "+str(len(frequencies))+' frequencies', legend=[str(locus+1)])
 
     if (make_plot or save_results) and run_sensitivity:
         idx_eigen_closest = np.argmin(np.min(np.abs(eigenvalues_sorted + 1.0), axis=0))  # Index of the eigen-locus with the smallest distance to the critical point
@@ -752,10 +768,10 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', ver
             with open(results_folder + '\\' + filename + "_EVD.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
         plt.close(fig)
 
-        bode_plot(eigenvalues_sorted, frequencies, results_folder, filename+"_EVD_Bode", title='Modal impedance: EVD of the closed-loop impedance over '+str(len(frequencies))+' frequencies',
+        bode_plot(eigenvalues_sorted, frequencies, results_folder, filename+"_EVD_Bode", title='Modal impedance: EVD of the impedance matrix over '+str(len(frequencies))+' frequencies',
                   legend=[format(idx+1,'.0f') for idx in range(eigenvalues_sorted.shape[1])], style="solid", save_pickle=save_pickle)
         if PFs:
-            bode_plot(PF_envelope, frequencies, results_folder, filename+"_EVD_max_PFs", title='Sensitivity of the largest closed-loop modal impedance w.r.t. its diagonal elements',
+            bode_plot(PF_envelope, frequencies, results_folder, filename+"_EVD_max_PFs", title='Sensitivity of the largest modal impedance w.r.t. its diagonal elements',
                        legend=bus_names, style="solid", save_pickle=save_pickle, linear_mag=True)
         if PFs_extended:
             # Sensitivity of the critical modal impedance to each matrix element
@@ -1122,6 +1138,8 @@ Optional arguments
         run_small_gain          (bool) Bool flag to run the small-gain theorem based on the system matrices. Default = True.
         run_GNC_sensitivity     (bool) Bool flag to run the sensitivity analysis of the critical loci when applying the GNC with respect to the diagonal elements of L as well as with respect to Y with L=Z*Y. Default = False.
         normalize_GNC_sensitivity (bool) Bool flag to normalize the sensitivity of the critical loci in the GNC with respect to changes in each element of Y with L=Z*Y. The normalization is with respect to each admittance magnitude and locus magnitude. Default = False.
+        Ibase                   (dict) Dictionary of base currents per node used to per-unitize the system matrices. The node name, i.e. scan block name, is used as key. Default = None, which results in no per-unitization.
+        Vbase                   (dict) Dictionary of base voltages per node used to per-unitize the system matrices. The node name, i.e. scan block name, is used as key. Default = None, which results in no per-unitization.
 
 Returns
         List of bool flags indicating closed-loop or interconnected stability assessment by different methods where True means stable.

@@ -199,7 +199,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
                     results_folder=None, output_files='results', compute_yz=True, save_td=False, plot_snapshot=False,
                     fft_periods=1, start_fft=None, pscad_plot=False, show_powerflow=False, visualize_network=False,
                     run_sim=True, verbose=False, make_plot=True, delete_PSCAD_output_files=False, release_certificates=True,
-                    enforce_topology=True, f_exclude=[], launch_and_load_PSCAD=True, close_PSCAD=True):
+                    enforce_topology=True, f_exclude=[], launch_and_load_PSCAD=True, close_PSCAD=True, previous_snapshot=None, previous_snapshot_time=0.0):
 
     # Debugging control: run_sim enables or dissables all PSCAD simulations; verbose enables or disables script run info
     """ --- Input data handling --- """
@@ -442,7 +442,8 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     ScanBlocks.sort(key=lambda x: int(x.parameters()['block_id']))  # Sort the blocks by their block id
     for idx, block in enumerate(ScanBlocks):
         # Set snapshot parameters in the scan blocks
-        block.parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0)
+        block.parameters(Tdecoupling=t_snap + previous_snapshot_time if previous_snapshot is not None else t_snap,
+                         T_inj=t_snap_internal + previous_snapshot_time if previous_snapshot is not None else t_snap_internal, selector=0)
         ScanBlocksTool.append(Scanblock(block, block.parameters()['Name'], int(block.parameters()['block_id'])))
         # if verbose: print(" Scan block type ",block.defn_name[1])
         for area_id, blocks in enumerate(cc_new):
@@ -507,7 +508,8 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
             # Run first just to take a snapshot without saving the data
             # This because with dll files the states can be more efficiently saved only at the end of the (snapshot) run
             simset_task.overrides(duration=t_snap_internal, time_step=t_step, plot_step=sample_step,
-                                  start_method=0, timed_snapshots=1, snapshot_file=snapshot_file + '.snp',
+                                  start_method=1 if previous_snapshot is not None else 0, startup_inputfile= previous_snapshot + '.snp' if previous_snapshot is not None else 'None.snp',
+                                  timed_snapshots=1, snapshot_file=snapshot_file + '.snp',
                                   snap_time=t_snap_internal, save_channels_file=snapshot_file + '.out', save_channels=0)
             if run_sim: simset.run()
             # Run again to record the steady-state waveforms (no perturbations)
@@ -518,7 +520,8 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         else:
             # Run the snapshot and a bit longer to record the steady-state waveforms
             simset_task.overrides(duration=t_snap_internal + t_sim_internal, time_step=t_step, plot_step=sample_step,
-                                  start_method=0, timed_snapshots=1, snapshot_file=snapshot_file + '.snp',
+                                  start_method=1 if previous_snapshot is not None else 0, startup_inputfile= previous_snapshot + '.snp' if previous_snapshot is not None else 'None.snp',
+                                  timed_snapshots=1, snapshot_file=snapshot_file + '.snp',
                                   snap_time=t_snap_internal, save_channels_file=snapshot_file + '.out', save_channels=1)
             if run_sim: simset.run()
         print(' Snapshot completed in', round((t.time() - t1), 2), 'seconds')
@@ -1019,7 +1022,7 @@ def frequency_sweep_TF(t_snap=None, t_sim=None, t_step=None, sample_step=None, v
                        component_parameters=None, results_folder=None, output_files='results', save_td=False,
                        fft_periods=1, start_fft=None, run_sim=True, verbose=False, make_plot=True, pscad_plot=False,
                        delete_PSCAD_output_files=False, release_certificates=True, plot_snapshot=False, plot_perturbation=0, f_exclude=[], 
-                       launch_and_load_PSCAD=True, close_PSCAD=True, target_blocks=None):
+                       launch_and_load_PSCAD=True, close_PSCAD=True, target_blocks=None, previous_snapshot=None, previous_snapshot_time=0.0):
 
     # Debugging control: run_sim enables or dissables all PSCAD simulations; verbose enables or disables script run info
     """ --- Input data handling --- """
@@ -1137,7 +1140,8 @@ def frequency_sweep_TF(t_snap=None, t_sim=None, t_step=None, sample_step=None, v
     
     for idx, block in enumerate(blocks):
         # Set snapshot parameters and block ID in the scan blocks
-        block.parameters(Tdecoupling=t_snap, T_inj=t_snap_internal, selector=0, block_id=idx+1)
+        block.parameters(Tdecoupling=t_snap + previous_snapshot_time if previous_snapshot is not None else t_snap,
+                         T_inj=t_snap_internal + previous_snapshot_time if previous_snapshot is not None else t_snap_internal, selector=0, block_id=idx+1)
         ScanBlocksTool.append(Scanblock(block, block.parameters()['Name'], int(block.parameters()['block_id'])))
         ScanBlocksTool[idx].perturbation_data = {i: {} for i in range(f_points)}  # Dict of dicts
         ScanBlocksTool_names.append(ScanBlocksTool[idx].name)
@@ -1173,7 +1177,8 @@ def frequency_sweep_TF(t_snap=None, t_sim=None, t_step=None, sample_step=None, v
             # Run first just to take a snapshot without saving the data
             # This because with dll files the states can be more efficiently saved only at the end of the (snapshot) run
             simset_task.overrides(duration=t_snap_internal, time_step=t_step, plot_step=sample_step,
-                                  start_method=0, timed_snapshots=1, snapshot_file=snapshot_file + '.snp',
+                                  start_method=1 if previous_snapshot is not None else 0, startup_inputfile= previous_snapshot + '.snp' if previous_snapshot is not None else 'None.snp',
+                                  timed_snapshots=1, snapshot_file=snapshot_file + '.snp',
                                   snap_time=t_snap_internal, save_channels_file=snapshot_file + '.out', save_channels=0)
             if run_sim: simset.run()
             # Run again to record the steady-state waveforms (no perturbations)
@@ -1184,7 +1189,8 @@ def frequency_sweep_TF(t_snap=None, t_sim=None, t_step=None, sample_step=None, v
         else:
             # Run the snapshot and a bit longer to record the steady-state waveforms
             simset_task.overrides(duration=t_snap_internal + t_sim_internal, time_step=t_step, plot_step=sample_step,
-                                  start_method=0, timed_snapshots=1, snapshot_file=snapshot_file + '.snp',
+                                  start_method=1 if previous_snapshot is not None else 0, startup_inputfile= previous_snapshot + '.snp' if previous_snapshot is not None else 'None.snp',
+                                  timed_snapshots=1, snapshot_file=snapshot_file + '.snp',
                                   snap_time=t_snap_internal, save_channels_file=snapshot_file + '.out', save_channels=1)
             if run_sim: simset.run()
         print(' Snapshot completed in', round((t.time() - t1), 2), 'seconds')
@@ -1440,10 +1446,12 @@ Optional
         num_parallel_sim 	    Number of parallel simulations. Default = 8. This is limited by the number of cores available in the machine as well as the PSCAD license.
         
         sample_step		        Sample time of the output channels [us]. The default value is computed based on the Nyquist frequency.
-        snapshot_file		    Name of the snapshot file so it can be re-used or in case a previous snapshot is used.
+        snapshot_file		    Name of the new snapshot file so it can be re-used. In case this is the name of a previous snapshot, it can be used as is when "take_snapshot" is set to False. Default = 'Snapshot'.
         take_snapshot	        Bool: Does the user want to take a snapshot? Default = True. A previous snapshot can still be used if snapshot_file is specified.
                                 The snapshot simulation runs for t_snap_internal + t_sim_internal so as to also save the steady-state unperturbed waveforms.
-        dedicated_SS_sim        Bool flag to perform a dedicated simulation just to record the steady-state waveforms
+        dedicated_SS_sim        Bool flag to perform a dedicated simulation just to record the steady-state waveforms starting from the snapshot_file.
+        previous_snapshot       Name of the previous snapshot file to be re-used as starting point for the new snapshot. Default = None, meaning cold start. The simulation time step needs to match between the snapshot and the frequency scan simulations.
+        previous_snapshot_time  Absolute simulation time in seconds corresponding to the previous_snapshot file time. It is used to set the time of decoupling and injections in case previous_snapshot is used to star-up the simulations. Default = 0.
 
         scan_single_ports       Bool flag to scan the components with single AC/DC ports, i.e. systems identified by 1 in the diagonal entries of the topology file and/or AC/DC converters with only one AC and/or DC connection. Default = True.
         scan_multi_ports        Bool flag to scan all other subsystems which have more than one AC and/or DC port, including passive networks or aggregated subsystems. Default = True. It can be set to False in case the edge matrix does not need to be scanned.
@@ -1508,10 +1516,12 @@ Optional
         num_parallel_sim 	    Number of parallel simulations. Default = 8.
         
         sample_step		        Sample time of the output channels [us]. The default value is computed based on the Nyquist frequency.
-        snapshot_file		    Name of the snapshot file so it can be re-used or in case a previous snapshot is used.
+        snapshot_file		    Name of the new snapshot file so it can be re-used. In case this is the name of a previous snapshot, it can be used as is when "take_snapshot" is set to False. Default = 'Snapshot'.
         take_snapshot	        Bool: Does the user want to take a snapshot? Default = True. A previous snapshot can still be used if snapshot_file is specified.
                                 The snapshot simulation runs for t_snap_internal + t_sim_internal so as to also save the steady-state unperturbed waveforms.
-        dedicated_SS_sim        Bool flag to perform a dedicated simulation just to record the steady-state waveforms
+        dedicated_SS_sim        Bool flag to perform a dedicated simulation just to record the steady-state waveforms starting from the snapshot_file.
+        previous_snapshot       Name of the previous snapshot file to be re-used as starting point for the new snapshot. Default = None, meaning cold start. The simulation time step needs to match between the snapshot and the frequency scan simulations.
+        previous_snapshot_time  Absolute simulation time in seconds corresponding to the previous_snapshot file time. It is used to set the time of decoupling and injections in case previous_snapshot is used to star-up the simulations. Default = 0.
 
         freq			        Frequency list to perform the injections [Hz]. Alternatively, the user can provide info to compute the list.
         fft_periods 		    Number of periods used to compute the FFT. Default = 1.

@@ -81,6 +81,5 @@ This is a free software: you can redistribute it and/or modify it under the term
 ## Future work
 - Scans in split projects
 - Switch between current and voltage perturbation
-- Computation of stability margins: phase, gain and vector margins
+- Computation of stability margin
 <!--- - [ ] Minimum simulation time before starting FFT (does it need to be at least as long as the period of the perturbation or could it be smaller?) --->
-<!--- - [ ] Transformation to positive and negative sequence representation 

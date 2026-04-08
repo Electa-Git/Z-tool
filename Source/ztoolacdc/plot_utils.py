@@ -36,7 +36,7 @@ def spectrum_plot(signals=None, time=None, results_folder=None, file_name='spect
     
     # Compute the FFT
     N = signals.shape[0] # Number of sample points
-    T = time[1] - time[0]  # Sampling period [s]
+    T = round(time[1] - time[0], 12) # Sampling period [s]
     yf = np.fft.rfft(signals, axis=0) # FFT of the signal
     xf = np.fft.fftfreq(N, T)[:N//2]  # Frequencies
 
