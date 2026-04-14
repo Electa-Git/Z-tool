@@ -89,8 +89,8 @@ for case in range(len(comp_level)):
         Y_C[f_point,...] = 1j*2*np.pi*f*C_g*np.identity(2) + w0*C_g*Wpu  # dq-frame admittance matrix of a capacitor in SI
     Z_RLC = np.linalg.inv(Y_C) + Z_RL  # Series-capacitor compensated line
     # Evaluate the stability via the GNC using eigenvalue decomposition: no plots to speed up the screening. Results are saved as text files
-    stable = stability.nyquist(np.matmul(Z_RLC, Y_VSC.y), Y_VSC.f, results_folder=results_folder_SSCI, filename=filename_SSCI+str(case), verbose=False, indentations =[f0], make_plot=False)
-    stability_assessment.append(stable)
+    GNC = stability.nyquist(np.matmul(Z_RLC, Y_VSC.y), Y_VSC.f, results_folder=results_folder_SSCI, filename=filename_SSCI+str(case), verbose=False, indentations =[f0], make_plot=False)
+    stability_assessment.append(GNC["stability"])
     if sum(stability_assessment) == case:
         # Show the participation factors and plot the Nyquist curve only for the first unstable case
         print(" First unstable case found for a series compensation level of",round(comp_level[case]*100,0),"%")

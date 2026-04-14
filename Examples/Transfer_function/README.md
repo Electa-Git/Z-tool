@@ -28,4 +28,8 @@ The progress is reported during the execution, and the results can be accessed i
 
 ![TF results and validation](../../Doc/TF_results.png)
 
+The last part of the script is optional and shows how to obtain a continous-time approximation via the [mode_estimation](../../Source/ztoolacdc/stability.py#L1105) function. This function can be used to fit a rational model to the frequency response data around a frequency band of interest. Its arguments control the target frequency band and the fitted model order. The fitted modes provide an estimate of the damping ratio of the system as well as other modal properties, or to interface the model with other software.
+
+![TF results and validation](../../Doc/TF_fitting_results.png)
+
 Note that the `frequency_sweep_TF` function only works with _TF scan_ blocks, while `frequency_sweep` only works with _AC scan_ and _DC scan_ blocks. In addition, `frequency_sweep_TF` currently only supports SISO scans, while `frequency_sweep` allows for MIMO scans of any size and between any analysis points. Note that you can retrieve single-input multiple-output transfer functions by using a main scan block to excite the system (single input) and other dummy scan blocks to measure the multiple outputs of interest. Ongoing work includes the improvement of `frequency_sweep_TF` to also retrieve MIMO TFs.

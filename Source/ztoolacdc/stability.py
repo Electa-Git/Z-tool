@@ -1,5 +1,6 @@
 """
 This program contains several functions for frequency-domain stability analysis including:
+    0) Loading and building of (multi-infeed) subsystem matrices for subsequent small-signal analysis
     1) Generalized Nyquist Criterion (GNC) application to determine system stability: via eigenvalue decomposition and via the determinant
     2) Eigenvalue Decomposition (EVD) of the closed-loop matrix to determine oscillatory modes and bus participation factors
     3) Passivity index (for the application of the passivity theorem) and singular value decomposition (small-gain theorem) of target matrices
@@ -21,10 +22,10 @@ Copyright (C) 2026  Francisco Javier Cifuentes Garcia
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-__all__ = ['stability_analysis','passivity','nyquist','small_gain','EVD','nyquist_det','loci_sensitivity']
+__all__ = ['stability_analysis','passivity','nyquist','small_gain','EVD','nyquist_det','loci_sensitivity','mode_estimation']
 
 import numpy as np
-from scipy.optimize import linear_sum_assignment
+from scipy.optimize import linear_sum_assignment, least_squares
 from scipy.signal import argrelmax
 import matplotlib.pyplot as plt
 from .read_admittance import read_admittance
@@ -74,7 +75,8 @@ class Graph:
 def stability_analysis(topology=None, results_folder=None, file_root=None, indentations=[], node_blocks=None, rotate_edge=False, rotate_node=False, reference_buses=None, relative_angles=True,
                        check_conditioning=False, condition_number_th=10e6, make_plot=True, save_pickle=False, save_results=True, save_Y=False, save_loop_gain=False,
                        verbose=True, run_nyquist=True, run_nyquist_det=False, run_EVD=True, run_EVD_PFs=True, run_EVD_PFs_extended=False, run_passivity=True, run_small_gain=True,
-                       run_GNC_sensitivity=False, normalize_GNC_sensitivity=False, run_PMD=False, Ibase={}, Vbase={}):
+                       run_GNC_sensitivity=False, normalize_GNC_sensitivity=False, run_PMD=False, run_sigma=False, modal_estimation_nyquist=False, modal_estimation_EVD=False,
+                       order_maxima=3, extra_poles=0, samples_fitting=12, Ibase={}, Vbase={}):
     # This function loads and builds the edge and node admittance matrices and applies the most common stability analysis functions
     # 0) Firstly, read the terminal angle information for the AC blocks if rotations are required
     if rotate_edge or rotate_node:
@@ -102,7 +104,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
                     reference_angle[bus[1]] = float(bus[2])  # If the reference angle of this block's area is not defined yet, then use the angle of the current block as the reference
                     if verbose: print(" "+bus[0]+", for area",bus[1])
     
-    if rotate_edge and rotate_node:
+    if rotate_edge and rotate_node and verbose:
         print("Rotating both the edge and node matrices results in matrices with unchanged eigenvalues; this also applies to the open and closed-loop matrices.")
 
     # 1) Read the topology matrix and extract block names
@@ -212,7 +214,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
     if Ibase and Vbase:
         Ib = [] # Base currents in the order of the node variables
         Vb = [] # Base voltages in the order of the node variables
-        variables = [var.split("_")[0] for var in node_variables] # Remove the ending, i.e. "dc", "d" and "q" to retrieve the node names
+        variables = [var[:-len(var.split("_")[-1])-1] for var in node_variables] # Remove the ending, i.e. "dc", "d" and "q" to retrieve the node names
         if all(variable in Ibase.keys() for variable in variables) and all(variable in Vbase.keys() for variable in variables):
             for variable in variables:
                 Ib.append(Ibase[variable])
@@ -223,7 +225,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
             Yedge = Ib_inv @ Yedge @ Vb # Base conversion of the edge matrix
             Ynode = Ib_inv @ Ynode @ Vb # Base conversion of the node matrix
         else:
-            print(" The keys in the base quantities provided by the user do not match the node variables. The matrices are not be converted to per unit.")
+            print(" The keys in the base quantities provided by the user do not match the node variables. The matrices are not converted to per unit.")
     
     # Sparsity plot for verification at the lowest frequency
     if save_results:
@@ -232,29 +234,26 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
         sparsity_plot(Ynode[0,:,:], title='Node admittance matrix at '+format(frequencies[0], '.2f')+' Hz', results_folder=results_folder, file_name=file_root+"_Node",  variables=node_variables)
 
     # 6) Perform stability analysis
-    stability = [] # Store the stability conclusion by a boolean: True means stable
-
     if run_nyquist or run_nyquist_det or run_small_gain:
         Zedge = np.linalg.inv(Yedge)
         L = np.matmul(Zedge,Ynode)  # Loop gain matrix
 
     # Stability via eigenvalue loci
     if run_nyquist:
-        stable = nyquist(L, frequencies, results_folder, file_root, verbose=verbose, check_conditioning=check_conditioning, condition_number_th=condition_number_th, make_plot=make_plot,
-                         indentations=indentations, run_sensitivity=run_GNC_sensitivity, Z=Zedge, Y=Ynode if normalize_GNC_sensitivity else None, bus_names=node_variables, save_pickle=save_pickle, save_results=save_results)
-        stability.append(stable)
+        GNC_results = nyquist(L, frequencies, results_folder, file_root, verbose=verbose, check_conditioning=check_conditioning, condition_number_th=condition_number_th, make_plot=make_plot,
+                              indentations=indentations, run_sensitivity=run_GNC_sensitivity, Z=Zedge, Y=Ynode if normalize_GNC_sensitivity else None, bus_names=node_variables, run_sigma=run_sigma,
+                              modal_estimation=modal_estimation_nyquist, extra_poles=extra_poles, order_maxima=order_maxima, samples_fitting=samples_fitting, save_pickle=save_pickle, save_results=save_results)
     
     # Stability via determinant
     if run_nyquist_det:
-        stable_det = nyquist_det(L,frequencies, results_folder, file_root, verbose=verbose, offset=0.0, draw_arrows=True, show_plot=False,
-                                 make_plot=make_plot, indentations=indentations, save_pickle=save_pickle, save_results=save_results) 
-        stability.append(stable_det)
+        GNC_det_results = nyquist_det(L,frequencies, results_folder, file_root, verbose=verbose, offset=0.0, draw_arrows=True, show_plot=False,
+                                      make_plot=make_plot, indentations=indentations, save_pickle=save_pickle, save_results=save_results, run_sigma=run_sigma) 
 
     # Oscillatory frequencies and bus participation factors based on the closed-loop impedance: the admittance is provided to avoid inversion so Z_closedloop=False
     if run_EVD or run_PMD:
-        stable_PMD = EVD(Yedge+Ynode, frequencies, node_variables, results_folder, file_root, Z_closedloop=False, PFs=run_EVD_PFs, PFs_extended=run_EVD_PFs_extended,
-                         run_PMD=run_PMD, verbose=verbose, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
-        stability.append(stable_PMD)
+        EVD_results = EVD(Yedge+Ynode, frequencies, node_variables, results_folder, file_root, Z_closedloop=False, PFs=run_EVD_PFs, PFs_extended=run_EVD_PFs_extended,
+                          run_PMD=run_PMD, modal_estimation=modal_estimation_EVD, extra_poles=extra_poles, order_maxima=order_maxima, samples_fitting=samples_fitting,
+                          verbose=verbose, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results, run_sigma=run_sigma)
 
     # Save the admittance matrices
     if save_results and save_Y:
@@ -283,12 +282,13 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
     if run_passivity:
         passivity(G=Ynode,frequencies=frequencies,results_folder=results_folder,filename=file_root+"_Ynode", variables=node_variables, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
         passivity(G=Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root + "_Yedge", make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
-        passivity(G=Ynode+Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root+"_Ynode_+_Yedge", make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
+        passivity_index = passivity(G=Ynode+Yedge, frequencies=frequencies, results_folder=results_folder, filename=file_root+"_Ynode_+_Yedge", make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
     if run_small_gain:
-        small_gain(G2=Ynode, G1=Zedge, frequencies=frequencies, results_folder=results_folder, filename=file_root,
-                   variables=node_variables, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
+        small_gain_index = small_gain(G2=Ynode, G1=Zedge, frequencies=frequencies, results_folder=results_folder, filename=file_root,
+                                      variables=node_variables, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
 
-    return stability
+    return dict(nyquist=GNC_results if run_nyquist else None, stability_nyquist_det=GNC_det_results if run_nyquist_det else None, EVD=EVD_results if run_EVD else None,
+                passivity_index=passivity_index if run_passivity else None, small_gain_index=small_gain_index if run_small_gain else None)
 
 def passivity(G, frequencies, results_folder=None, filename='passivity', variables=None, Yedge=None, make_plot=True, save_pickle=False, save_results=True):
     # The passivity index is computed as half of the minimum eigenvalue of the matrix plus its conjugate transpose
@@ -370,8 +370,8 @@ def passivity(G, frequencies, results_folder=None, filename='passivity', variabl
 
     return passivity_index
 
-def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=True, check_conditioning=False, condition_number_th=0.01/5e-9,
-            make_plot=True, show_plot=False, indentations =[], save_pickle=False, save_results=True, run_sensitivity=False, Z=None, Y=None, bus_names=None):
+def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=True, check_conditioning=False, condition_number_th=0.01/5e-9, make_plot=True, show_plot=False,
+            indentations =[], save_pickle=False, save_results=True, run_sensitivity=False, Z=None, Y=None, bus_names=None, modal_estimation=False, extra_poles=0, order_maxima=3, samples_fitting=12, run_sigma=False):
     # Generalized Nyquist Criteria (GNC) for stability analysis: graphically determine the number of unstable closed-loop poles from the encirclements of the critical point by the loci of the open-loop gain matrix
     if verbose: print("Performing Nyquist stability assessment based on the eigenvalues of L")
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
@@ -496,7 +496,7 @@ def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=Tru
         
         if cwi - ccwi > 0:
             if verbose: print("CW encirclements for lambda =",str(idx+1)+":",cwi-ccwi)
-            unstable_loci.append(idx)
+            unstable_loci.append(idx) # Add the locus index to the list of unstable loci
 
         cw.append(cwi)  # Add the counters to the list
         ccw.append(ccwi)
@@ -543,16 +543,37 @@ def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=Tru
         plt.close(fig)
         bode_plot(Y=1/(1+eigenvalues_sorted),  frequencies=frequencies, results_folder=results_folder, file_name=filename+"_inv(1+L)", style="solid",
                   title=r"Bode plot of $1/(1+\lambda(L))$ over "+str(len(frequencies))+' frequencies', legend=[str(idx+1) for idx in range(eigenvalues_sorted.shape[1])])
+    
+    # Unstable closed-loop poles estimation by analyzing the maxima of 1/(1+L)
+    if modal_estimation:
+        unstable_modes = {}  # Dict of identified unstable oscillatory modes per locus (key is locus, modes are stored in a list)
         for locus in unstable_loci:
-            bode_plot(Y=1/(1+eigenvalues_sorted[:,locus]), frequencies=frequencies, results_folder=results_folder, file_name=filename+"_inv(1+L"+str(locus+1)+")", style="solid",
-                      title=r"Bode plot of $1/(1+\lambda_{"+str(locus+1)+r"}(L))$ over "+str(len(frequencies))+' frequencies', legend=[str(locus+1)])
+            unstable_modes[locus] = [] # Initialize the list of unstable modes for this locus
+            unstable_freqs = unstable_frequency(eigenvalues_sorted[:,locus], frequencies, results_folder=results_folder, filename=filename+"_inv(1+L"+str(locus+1)+")", order_maxima=order_maxima, make_plot=make_plot)
+            mode_samples = samples_fitting//2  # Number of samples around the unstable frequency to consider for mode estimation
+            for freq in unstable_freqs:
+                idx_mode = np.argmin(np.abs(frequencies - freq)) # Find the index of the frequency closest to the unstable frequency
+                idx_min = idx_mode-mode_samples-1 if idx_mode-mode_samples-1 >= 0 else 0 # Minimum index for mode estimation larger than zero
+                idx_max = idx_mode+mode_samples-1 if idx_mode+mode_samples-1 <= len(frequencies) else len(frequencies) # Maximum index for mode estimation within array bounds
+                mode_parameters = mode_estimation(1/(1+eigenvalues_sorted[idx_min:idx_max,locus]), 2*np.pi*np.array(frequencies[idx_min:idx_max]), zeta0=-0.05, omega0=2*np.pi*freq, extra_poles=extra_poles)
+                sigma = mode_parameters[0]
+                omega = mode_parameters[1]
+                unstable_modes[locus].append(sigma+1j*omega) # Add the identified unstable mode to the list of unstable modes for this locus
+                if verbose:
+                    print(f"Unstable mode at {freq:.2f} Hz with z = {-sigma/np.sqrt(sigma**2 + omega**2):.4e} from fitted pole: {sigma:.4e} +/- {np.abs(omega):.4e}j rad/s")
+                    # print(f"Mode estimation results:")
+                    # for modes in range(extra_poles+1):
+                    #     p = mode_parameters[4*modes] + 1j*mode_parameters[4*modes+1]
+                    #     r = mode_parameters[4*modes+2] + 1j*mode_parameters[4*modes+3]
+                    #     print(f" Pole {modes+1}: {p.real:.4e} + {p.imag:.4e}j rad/s, and residue {r.real:.4e} + {r.imag:.4e}j")
+                    # print(f" Direct term: {mode_parameters[-1]:.4e}\n")
 
     if (make_plot or save_results) and run_sensitivity:
         idx_eigen_closest = np.argmin(np.min(np.abs(eigenvalues_sorted + 1.0), axis=0))  # Index of the eigen-locus with the smallest distance to the critical point
         selected_loci = [idx_eigen_closest] if stable_system else unstable_loci
-        loci_sensitivity(right_eigenvectors, np.linalg.inv(right_eigenvectors), frequencies, results_folder=results_folder, bus_names=bus_names,
-                         selected_loci=selected_loci, loci=eigenvalues_sorted, Z=Z, normalize=True if Y is not None else False, Y=Y,
-                         filename=filename+"_GNC_sens_of_locus", make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
+        diag_sensitivity = loci_sensitivity(right_eigenvectors, np.linalg.inv(right_eigenvectors), frequencies, results_folder=results_folder, bus_names=bus_names,
+                                            selected_loci=selected_loci, loci=eigenvalues_sorted, Z=Z, normalize=True if Y is not None else False, Y=Y,
+                                            filename=filename+"_GNC_sens_of_locus", make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
 
     # Save the eigenloci
     if save_results:
@@ -562,7 +583,12 @@ def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=Tru
         np.savetxt(results_folder + '\\' + filename + '_GNC.txt', np.stack(loci, axis=1), delimiter='\t',
                 header="f\t"+"\t".join(["lambda_"+format(idx+1,'.0f') for idx in range(eigenvalues_sorted.shape[1])]), comments='')
 
-    return stable_system
+    if run_sigma:
+        sigmas = np.linalg.svd(np.identity(L.shape[1]) + L, compute_uv=False)
+        bode_plot(np.min(sigmas, axis=1), frequencies, results_folder, filename+"_GNC_sigma", title='Minimum singular value of $I + L(j\omega)$ over '+str(len(frequencies))+' frequencies',
+                  legend=["\sigma_{min}"], style="solid", save_pickle=save_pickle, save_data=save_results)
+
+    return dict(stability = stable_system, unstable_loci = unstable_loci, unstable_modes = unstable_modes if modal_estimation else {}, diag_sensitivity = diag_sensitivity if run_sensitivity else None, sigmas = sigmas if run_sigma else None)
 
 def small_gain(G2, frequencies,  G1=None, results_folder=None, filename='small_gain', variables=None, make_plot=True, save_pickle=False, save_results=True):
     # Applies a conservative version of the small-gain theorem as |L| = |G1*G2| <= |G1|*|G2| < 1
@@ -637,7 +663,7 @@ def small_gain(G2, frequencies,  G1=None, results_folder=None, filename='small_g
     return S1_max_times_S2_max
 
 def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', verbose=True, Z_closedloop=True, make_plot=True, save_pickle=False, save_results=True,
-        PFs=True, PFs_extended=False, run_PMD=False):
+        PFs=True, PFs_extended=False, run_PMD=False, modal_estimation=False, order_maxima=3, extra_poles=0, samples_fitting=12, run_sigma=False):
     if bus_names is None: bus_names = [str(bus+1) for bus in range(G.shape[1])]  # Sorted numbers if names not provided
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
 
@@ -677,24 +703,43 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', ver
     if verbose: print("The main oscillation frequency is around",round(frequencies[freq_idx],2),"Hz based on the magnitude of eigenvalue",idx_lambda_max_max+1,"=",np.round(eigenvalues_sorted[idx_lambda_max[idx_lambda_max_max],idx_lambda_max_max], 5))
     idx_lambda_envelope = np.argmax(lambda_abs, axis=1)  # Index of the maximum magnitude eigenvalue at each frequency
 
-    if run_PMD:
+    if run_PMD or modal_estimation:
         # Apply the Positive Mode Damping (PMD) criterion, more information here: https://doi.org/10.1016/j.ijepes.2023.108957
         lambda_envelope = np.take_along_axis(eigenvalues_sorted, idx_lambda_envelope[:,None], axis=1)  # Eigenvalues with the largest magnitude at each frequency
-        critical_points = argrelmax(np.abs(lambda_envelope), order=2)[0]
-        print("Critical frequencies:",frequencies[critical_points])
-        PMD_indexes = []
-        for critical_point in critical_points:
-            # Three-point formula to approximate the derivate of the imaginary part around the local maxima of the mangnitude
-            d1 = frequencies[critical_point] -frequencies[critical_point-1]
-            d2 = frequencies[critical_point+1] - frequencies[critical_point]
-            c_minus = -d2 / ( d1*(d1+d2) )
-            c_zero  =  (d2 - d1) / ( d1*d2 )
-            c_plus  =  d1 / ( d2*(d1+d2) )
-            dImag_df = c_minus*np.imag(lambda_envelope[critical_point-1]) + c_zero*np.imag(lambda_envelope[critical_point]) + c_plus*np.imag(lambda_envelope[critical_point+1])
-            PMD_index = dImag_df*np.real(lambda_envelope[critical_point]) # PMD criterion index: if > 0 then this is a potential unstable mode
-            PMD_indexes.append(PMD_index)
-            if PMD_index > 0 and verbose:
-                print("Unstable mode by the PMD criterion at",round(frequencies[critical_point], 2),"Hz for eigenvalue", np.round(lambda_envelope[critical_point], 5))
+        critical_points = argrelmax(np.abs(lambda_envelope), order=order_maxima)[0]
+        if verbose: print("Critical frequencies:",frequencies[critical_points])
+        if run_PMD:
+            PMD_indexes = []
+            for critical_point in critical_points:
+                # Three-point formula to approximate the derivate of the imaginary part around the local maxima of the mangnitude
+                d1 = frequencies[critical_point] -frequencies[critical_point-1]
+                d2 = frequencies[critical_point+1] - frequencies[critical_point]
+                c_minus = -d2 / ( d1*(d1+d2) )
+                c_zero  =  (d2 - d1) / ( d1*d2 )
+                c_plus  =  d1 / ( d2*(d1+d2) )
+                dImag_df = c_minus*np.imag(lambda_envelope[critical_point-1]) + c_zero*np.imag(lambda_envelope[critical_point]) + c_plus*np.imag(lambda_envelope[critical_point+1])
+                PMD_index = dImag_df*np.real(lambda_envelope[critical_point]) # PMD criterion index: if > 0 then this is a potential unstable mode
+                PMD_indexes.append(PMD_index)
+                if PMD_index > 0 and verbose:
+                    print("Unstable mode by the PMD criterion at",round(frequencies[critical_point], 2),"Hz for eigenvalue", np.round(lambda_envelope[critical_point], 5))
+        
+        if modal_estimation:
+            modes = [] # Initialize the list of unstable modes
+            mode_samples = samples_fitting//2  # Number of samples around the unstable frequency to consider for mode estimation
+            for critical_point in critical_points:
+                idx_min = critical_point-mode_samples-1 if critical_point-mode_samples-1 >= 0 else 0 # Minimum index for mode estimation larger than zero
+                idx_max = critical_point+mode_samples-1 if critical_point+mode_samples-1 <= len(frequencies) else len(frequencies) # Maximum index for mode estimation 
+                mode_parameters = mode_estimation(np.squeeze(lambda_envelope)[idx_min:idx_max], 2*np.pi*np.array(frequencies[idx_min:idx_max]), zeta0=0.05, omega0=2*np.pi*frequencies[critical_point], extra_poles=extra_poles)
+                sigma = mode_parameters[0]
+                omega = mode_parameters[1]
+                modes.append(sigma+1j*omega) # Add the identified mode to the list of modes
+                if verbose: print(f"Mode at {frequencies[critical_point]:.2f} Hz with z = {-sigma/np.sqrt(sigma**2 + omega**2):.4e} from fitted pole: {sigma:.4e} +/- {np.abs(omega):.4e}j rad/s")
+                # print(f"Mode estimation results:")
+                # for mods in range(extra_poles+1):
+                #     p = mode_parameters[4*mods] + 1j*mode_parameters[4*mods+1]
+                #     r = mode_parameters[4*mods+2] + 1j*mode_parameters[4*mods+3]
+                #     print(f" Pole {mods+1}: {p.real:.4e} + {p.imag:.4e}j rad/s, and residue {r.real:.4e} + {r.imag:.4e}j")
+                # print(f" Direct term: {mode_parameters[-1]:.4e} \n")
 
     # 3) Compute the bus participation factors (PFs) of the critical eigenvalue at the oscillation frequency
     # Controllability (right eigenvectors) and observability (transpose of left eigenvectors)
@@ -783,15 +828,16 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', ver
         np.savetxt(results_folder + '\\' + filename + '_EVD.txt', np.column_stack((frequencies, eigenvalues_sorted)), delimiter='\t', header="Frequency [Hz]\t" + "\t".join([str(i+1) for i in range(len(bus_names))]), comments='')
         if PFs:
             np.savetxt(results_folder + '\\' + filename + '_EVD_max_PFs.txt', np.column_stack((frequencies, PF_envelope)), delimiter='\t', header="Frequency [Hz]\t" + "\t".join(bus_names), comments='')
+    
+    if run_sigma:
+        sigmas = np.linalg.svd(G, compute_uv=False)
+        bode_plot(np.max(sigmas, axis=1) if Z_closedloop else 1/np.min(sigmas, axis=1), frequencies, results_folder, filename+"_sigma_CL", title='Maximum singular value of the closed-loop dynamics over '+str(len(frequencies))+' frequencies',
+                  legend=["\sigma_{max}"], style="solid", save_pickle=save_pickle, save_data=save_results)
 
-    if run_PMD:
-        if any(np.array(PMD_indexes) > 0):
-            return False  # Unstable mode by the PMD criterion
-        else:
-            return True  # Stable by the PMD criterion
+    return dict(stability = not any(np.array(PMD_indexes) > 0) if run_PMD else None, modes = modes if modal_estimation else [], sigmas = sigmas if run_sigma else None, modal_impedances = eigenvalues_sorted, PFs = PF_envelope if PFs else PF_mode)
 
 def nyquist_det(L, frequencies, results_folder=None, filename='nyquist_det', verbose=True, offset=0.0, draw_arrows=True, make_plot=True, show_plot=False, f0=50.0,
-                indentations=[], save_pickle=False, save_results=True):
+                indentations=[], run_sigma=False, save_pickle=False, save_results=True):
     # Stability assessment based on the determinant of I + L
     if verbose: print("Performing Nyquist stability assessment based on det(I + L) +",offset)
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
@@ -929,7 +975,12 @@ def nyquist_det(L, frequencies, results_folder=None, filename='nyquist_det', ver
         np.savetxt(results_folder + '\\' + filename + '_GNC_det.txt', np.stack((frequencies,det), axis=-1), delimiter='\t',
                 header="Frequency [Hz]\t"+str(offset)+"+det[I + L(s)]", comments='')
     
-    return stable_system
+    if run_sigma:
+        sigmas = np.linalg.svd(np.identity(L.shape[1]) + L, compute_uv=False)
+        bode_plot(np.min(sigmas, axis=1), frequencies, results_folder, filename+"_GNC_sigma", title='Minimum singular value of $I + L(j\omega)$ over '+str(len(frequencies))+' frequencies',
+                  legend=["\sigma_{min}"], style="solid", save_pickle=save_pickle, save_data=save_results)
+        
+    return dict(stable=stable_system, sigmas= sigmas if run_sigma else None, net_crossings=N)
 
 def loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, results_folder=None, filename='loci_sensitivity', Z=None, selected_loci=[], bus_names=[],
                      normalize=False, loci=None, Y=None, wrt_all_elements=False, make_plot=True, save_pickle=False, save_results=True):
@@ -1019,6 +1070,109 @@ def loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, results
 
     return diag_sensitivity
 
+def unstable_frequency(locus, frequencies, results_folder=None, filename='unstable_frequency', order_maxima=3, make_plot=True, save_pickle=False, open_loop=True):
+    G = 1/(1+locus) if open_loop else locus  # Built the function to be analised containing the closed-loop poles
+    G_mag = np.abs(G)
+    G_ph = np.unwrap(np.angle(G)) # Unwrapped phase to avoid discontinuities
+    critical_points = argrelmax(np.abs(G_mag), order=order_maxima)[0] # Peaks = potential unstable modes
+    unstable_freqs = [] # List to store the frequencies of the unstable modes
+    for critical_point in critical_points:
+        # Three-point formula to approximate the derivate of the phase around the local maxima of the magnitude
+        d1 = frequencies[critical_point] -frequencies[critical_point-1]
+        d2 = frequencies[critical_point+1] - frequencies[critical_point]
+        c_minus = -d2 / ( d1*(d1+d2) )
+        c_zero  =  (d2 - d1) / ( d1*d2 )
+        c_plus  =  d1 / ( d2*(d1+d2) )
+        dtheta_df = c_minus*G_ph[critical_point-1] + c_zero*G_ph[critical_point] + c_plus*G_ph[critical_point+1]
+        if not np.signbit(dtheta_df):
+            unstable_freqs.append(frequencies[critical_point]) # Unstable frequency if the phase derivative is positive
+
+    if make_plot and results_folder is not None:
+        fig_bode, ax_bode = bode_plot(Y=G, frequencies=frequencies, results_folder=None, style="solid", legend=None, return_plot=True,
+                                      title=r"Unstable mode identification: $1/(1+\lambda)$ over "+str(len(frequencies))+' frequencies')
+        for freq in unstable_freqs:
+            ax_bode[0].axvline(x=freq, color='red', linestyle=':', linewidth=1, label='_nolegend_')
+            ax_bode[0].text(freq, 0.20, str(round(freq,2)), color='r', ha='right', va='bottom', rotation=90, transform=ax_bode[0].get_xaxis_transform())
+            ax_bode[1].axvline(x=freq, color='red', linestyle=':', linewidth=1, label='_nolegend_')
+            ax_bode[1].text(freq, 0.20, str(round(freq,2)), color='r', ha='right', va='bottom', rotation=90, transform=ax_bode[1].get_xaxis_transform())
+
+        fig_bode.savefig(results_folder + '\\' + filename + ".pdf", format="pdf", bbox_inches="tight")
+        if save_pickle:
+            with open(results_folder + '\\' + filename + ".pickle", 'wb') as f: pickle.dump(fig_bode, f)
+        
+    return unstable_freqs
+             
+def mode_estimation(G, omegas, zeta0=0.05, omega0=None, extra_poles=0, weight=None, reg=1e-3, enable_d=False, verbose=False):
+    if omega0 is None: omega0 = np.sum(omegas * np.abs(G)) / np.sum(np.abs(G)) # Initial guess of the frequency 
+    p0 = -zeta0*omega0 + 1j*omega0 # Initial guess of the complex conjugate pole 
+    r0 = G[np.argmin(np.abs(omegas - omega0))] * (1j*omega0 - p0) # Initial residue guess
+    d0 = (G[0] + G[-1])/2 # Initial guess of the direct term based on the average of the first and last points of G (baseline estimation)
+    # "parameters0" containes the real and imaginary parts of each poles and residues, as well as the direct term at the last entry
+    parameters0 = np.array([p0.real, p0.imag, r0.real, r0.imag]) # Complex conjugate mode first
+    # Add as many extra poles as specified by extra_poles, each with its own initial guess of pole and residue
+    poles_guess = -np.logspace(np.log10(omegas[0]), np.log10(omegas[-1]), extra_poles) # Initial guess of the pole
+    for k in range(extra_poles):
+        pk = poles_guess[k] # Initial guess of the pole
+        rk = 0.0 # Initial guess of the residue
+        parameters0 = np.append(parameters0, [pk.real, pk.imag, rk.real, rk.imag]) # Real and imaginary parts of the pole and residue
+    parameters0 = np.append(parameters0, d0.real) # Add the direct term
+    
+    # Define the frequency-wise weights for the least-squares optimization
+    if weight is None:
+        dw = np.gradient(omegas)
+        weight = dw / np.mean(dw)
+    # Perform least-squares optimization
+    res = least_squares(lsq_residuals, parameters0, args=(omegas, G, extra_poles, weight, reg, enable_d) ) 
+    parameters_opt = res.x
+    if not enable_d: parameters_opt[-1] = 0.0 # Set the direct term to zero if it is not enabled in the optimization
+
+    if verbose:
+        print(f"Modal estimation results with a final cost of {res.cost:.4e} and success status {res.success}:")
+        for modes in range(extra_poles+1):
+            p = parameters_opt[4*modes] + 1j*parameters_opt[4*modes+1]
+            r = parameters_opt[4*modes+2] + 1j*parameters_opt[4*modes+3]
+            print(f" Pole {modes+1}: {p.real:.4e} + {p.imag:.4e}j rad/s, and residue {r.real:.4e} + {r.imag:.4e}j")
+        print(f" Direct term: {parameters_opt[-1]:.4e}\n")
+
+    return parameters_opt
+
+def lsq_residuals(parameters, omegas, G, extra_poles=1, weight=None, reg=1e-3, enable_d=False):
+    # Simple function to solve the least-squares optimization problem for rational fitting in the mode_estimation function.
+    # It computes the residuals between the given G and the estimated G based on the given pole and residue parameters.
+    # The first four elements in "parameters" correspond to the real and imaginary parts of the complex conjugate pole and its residue,
+    # The rest of the "parameters" entries correspond to the real and imaginary parts of each extra pole and residue, and the direct term at the end.
+    # Frequency-wise weights can be applied to the residuals to prioritize certain frequency ranges in the optimization.
+    # An optional regularization term "reg" can be used to promote small absolute real parts of the poles.
+    # The "enable_d" flag can be used to include (True) or exclude (False) the direct term in the optimization.
+
+    s = 1j * omegas
+    # Second order system with at least one pair of complex conjugate poles
+    sigma, omega = parameters[0], parameters[1]
+    r0 = parameters[2] + 1j*parameters[3]
+    G_est = r0/(s-(sigma+1j*omega)) + np.conj(r0)/(s-(sigma-1j*omega)) # Complex conjugate mode
+
+    # Optional extra poles and colleaction of real parts for optional regularization
+    p_re = [parameters[0]]  # Sigma of oscillatory mode
+    idx = 4 # Four parameters already defined
+    for k in range(extra_poles):
+        p = parameters[idx] + 1j*parameters[idx+1]
+        r = parameters[idx+2] + 1j*parameters[idx+3]
+        p_re.append(parameters[idx]) # Real part of the pole for regularization
+        G_est += r / (s - p) # Rational function with the given poles and residues at s
+        idx += 4
+    G_est += parameters[-1] if enable_d else 0.0 # Add the direct term
+
+    if weight is None:
+        weight = 1.0
+    else:
+        weight = np.sqrt(weight).repeat(2)
+    e = weight * np.hstack([(G - G_est).real,  (G - G_est).imag]) # Error vector
+
+    p_re = np.array(p_re) # Pole real-part regularization (optional)
+    reg_term = np.sqrt(reg) * p_re
+
+    return np.hstack([e, reg_term])
+
 nyquist.__doc__ = """
 Stability assessment based the Generalized Nyquist Criteria (GNC): eigenvalue decomponsition (EVD) of the open-loop (minor-loop) matrix over the frequency.
 
@@ -1056,6 +1210,11 @@ Optional arguments
                             The critical loci are selected as those showing encirclements of (-1,0j) or that closest to the critical point (-1,0j).
         Y                   (numpy ndarray of complex double) If provided together with Z, the sensitivity is normalized. Default = None.
         bus_names           (list of str) List of bus names to be used in the sensitivity analysis. Default = empty list, which results in the use of sorted numbers as bus names.
+        order_maxima       (int) Points on each side of each local maximum used for the comparison and maxima identification in the unstable frequency identification, i.e., the 'order' argument of the 'argrelmax' function. Default = 3.
+        modal_estimation   (bool) Bool flag to run the modal estimation of the dominant modes based on least-squares rational fitting around the unstable modes. Default = False.
+        extra_poles        (int) Number of extra poles to be added in the least-squares rational fitting for modal estimation. Default = 0, which results in a second-order fit with one pair of complex conjugate poles.
+        samples_fitting    (int) Number of frequency samples to be used in the least-squares rational fitting for modal estimation. Default = 12, which results in a fitting around the unstable modes with 6 points on each side.
+        run_sigma          (bool) Bool flag to run the sigma analysis for the identification of the frequencies at which the system is most prone to de-stabilization. Default = False.
 
 Returns
         Bool flag indicating closed-loop or interconnected stability: True means stable.
@@ -1138,16 +1297,24 @@ Optional arguments
         run_small_gain          (bool) Bool flag to run the small-gain theorem based on the system matrices. Default = True.
         run_GNC_sensitivity     (bool) Bool flag to run the sensitivity analysis of the critical loci when applying the GNC with respect to the diagonal elements of L as well as with respect to Y with L=Z*Y. Default = False.
         normalize_GNC_sensitivity (bool) Bool flag to normalize the sensitivity of the critical loci in the GNC with respect to changes in each element of Y with L=Z*Y. The normalization is with respect to each admittance magnitude and locus magnitude. Default = False.
+        order_maxima            (int) Points on each side of each local maximum used for the comparison and maxima identification in the PMD criterion and unstable frequency identification, i.e., the 'order' argument of the 'argrelmax' function. Default = 3.
+        modal_estimation_nyquist(bool) Bool flag to run the modal estimation of the unstable modes based on least-squares rational fitting around the peaks of 1/(1+lambda) where lambda are the critical eigenvalues of the open-loop matrix. Default = False.
+        modal_estimation_EVD    (bool) Bool flag to run the modal estimation of the dominant closed-loop modes based on least-squares rational fitting around the peaks of the closed-loop modal impedance. Default = False.
+        extra_poles             (int) Number of extra poles to be added in the least-squares rational fitting for modal estimation. Default = 0, which results in a second-order fit with one pair of complex conjugate poles.
+        samples_fitting         (int) Number of frequency samples to be used in the least-squares rational fitting for modal estimation. Default = 12, which results in a fitting around the unstable mode with 6 points on each side.
+        run_sigma               (bool) Bool flag to run the sigma analysis for the identification of the frequencies at which the system is most sensitive to perturbations. Default = False.
         Ibase                   (dict) Dictionary of base currents per node used to per-unitize the system matrices. The node name, i.e. scan block name, is used as key. Default = None, which results in no per-unitization.
         Vbase                   (dict) Dictionary of base voltages per node used to per-unitize the system matrices. The node name, i.e. scan block name, is used as key. Default = None, which results in no per-unitization.
-
+        
 Returns
-        List of bool flags indicating closed-loop or interconnected stability assessment by different methods where True means stable.
+        Dictionary of dynamic analysis results. The keys correspond to the different methods, e.g., "nyquist", "nyquist_det", "EVD", "passivity_index", "small_gain_index", etc., depending on the analyses performed.
+        The values are the corresponding results, such as boolean flags for stability assessments, arrays of modal frequencies and damping ratios, participation factors, passivity indices, etc.
         
 """
 
 passivity.__doc__ = """
 Passivity assessment based on the minimum eigenvalue value of the Hermitian part of the system matrices over the frequency.
+The passivity index is defined as the minimum eigenvalue of the Hermitian part of G, i.e., 0.5*(G + G^H), where G^H is the conjugate transpose of G.
 If the system under evaluation is stable with a positive passivity index across all frequencies, then no instability can arise when interconnected to another passive system.
 Required arguments
         G                   (numpy ndarray of complex double) System matrix at different frequencies.
@@ -1160,6 +1327,9 @@ Optional arguments
         make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files.
         save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
         save_results        (bool) Bool flag to save the results in a text file. Default = True.
+
+Returns
+        (numpy array) Passivity index value over the frequency.
 """
 
 EVD.__doc__ = """
@@ -1183,10 +1353,15 @@ Optional arguments
         PFs                (bool) Bool flag to compute the bus participation factors (PFs) of the largest magnitude modal impedance magnitude. Default = True.
         PFs_extended       (bool) Bool flag to compute the sensitivity of the critical locus to changes the elements of the original matrix. This is the extension of the bus PFs beyond the diagonal elements. Default = False.
         run_PMD            (bool) Bool flag to run the positive mode damping (PMD) criterion. Default = False. Find more information on the PMD on the following paper
-                            Luis Orellana, et al. "Study of black-box models and participation factors for the Positive-Mode Damping stability criterion",2023 https://doi.org/10.1016/j.ijepes.2023.108957
+                           Luis Orellana, et al. "Study of black-box models and participation factors for the Positive-Mode Damping stability criterion",2023 https://doi.org/10.1016/j.ijepes.2023.108957
+        order_maxima       (int) Points on each side of each local maximum used for the comparison and maxima identification in the PMD criterion, i.e., the 'order' argument of the 'argrelmax' function. Default = 3.
+        modal_estimation   (bool) Bool flag to run the modal estimation of the dominant modes based on least-squares rational fitting around the mode. Default = False.
+        extra_poles        (int) Number of extra poles to be added in the least-squares rational fitting for modal estimation. Default = 0, which results in a second-order fit with one pair of complex conjugate poles.
+        samples_fitting    (int) Number of frequency samples to be used in the least-squares rational fitting for modal estimation. Default = 12, which results in a fitting around the unstable mode with 6 points on each side.
+        run_sigma          (bool) Bool flag to run the sigma analysis for the identification of the frequencies at which the system is most sensitive to perturbations. Default = False.
 
 Returns
-        Bool flag indicating closed-loop or interconnected stability assessment by the PMD criterion: True means stable.                     
+        Dictionary including main results such as stability assessment by the PMD criterion (True means stable), the modal impedances and participation factors, the fitted modes if modal_estimation is True, and other relevant metrics.
                             
 """
 
@@ -1210,6 +1385,9 @@ Optional arguments
         make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files.
         save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
         save_results        (bool) Bool flag to save the results in a text file. Default = True.
+
+Returns
+        (numpy array) Array of the frequency-wise product of the maximum singular value of G1 and the maximum singular value of G2.
 """
 
 loci_sensitivity.__doc__ = """
@@ -1240,4 +1418,27 @@ Optional arguments
         save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
         save_results        (bool) Bool flag to save the results in a text file. Default = True.
 
+"""
+
+mode_estimation.__doc__ = """
+Mode estimation based on least-squares optimization to fit a rational function to the provided frequency response data.
+The rational fit contains a complex-conjugate pole pair, an additional number of extra poles defined by the user and a direct term.
+The function relies on the lsq_residuals function to compute the residuals of the least-squares optimization.
+This lsq_residuals includes an optional regularization term on the real part of the poles to penalize too large real-parts poles.
+See the book "System Identification: Theory for the User" by Lennart Ljung for more information on the rational approximation of frequency response data.
+
+Required arguments
+        G           (numpy ndarray of complex double) Frequency response data to be fitted.
+        omegas      (numpy array) Frequencies [rad/s] corresponding to the frequency response data in G.
+Optional arguments
+        zeta0       (double) Initial guess of the damping ratio of the complex-conjugate pole pair. Default = 0.05.
+        omega0      (double) Initial guess of the natural frequency of the complex-conjugate pole pair. Default = None, which uses the weighted average of the frequencies.
+        extra_poles (int) Number of extra poles to be added to the rational fit. Default = 1.
+        weight      (numpy array) Frequency-wise weights for the least-squares optimization. Default = None, which uses the normalized frequency spacing as weights.
+        reg         (double) Regularization parameter for penalizing too large real parts of the poles. Default = 1e-3.
+        enable_d    (bool) Bool flag to include the direct term in the optimization. Default = False.
+        verbose     (bool) Bool flag to show the fitting results: the estimated poles and residues. Default = True.
+Returns
+        parameters_opt (numpy array) Array containing the optimized parameters of the rational fit.
+                        The first four entries correspond to the real and imaginary parts of the complex-conjugate pole pair and its residue. Next, the real and imaginary parts of the extra poles and their residues, and lastly the direct term.
 """

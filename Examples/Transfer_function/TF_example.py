@@ -4,8 +4,9 @@ The script sets up the parameters for the frequency sweep, including the time se
 It then calls the frequency_sweep_TF function to execute the analysis and store the results in a specified folder.
 """
 from ztoolacdc.frequency_sweep import frequency_sweep_TF
+from ztoolacdc.mode_estimation import mode_estimation
 from os import getcwd
-
+import numpy as np
 """ -------------------- PSCAD PROJECT ---------------------- """
 pscad_folder = getcwd()  # Absolute location of the PSCAD workspace
 results_folder = getcwd() + r'\Results'  # Location of the folder to store the results (if it doesn't exit, it is created)
@@ -38,3 +39,9 @@ frequency_sweep_TF(t_snap=t_snap, t_sim=t_sim, t_step=t_step, v_perturb_mag=v_pe
                    f_points=f_points, f_base=f_base, f_max=f_max, f_min=f_min, multi_freq_scan=multi_freq_scan, delete_PSCAD_output_files=True,
                    start_fft=start_fft, fft_periods=fft_periods, working_dir=pscad_folder, fortran_ext=fortran_ext, workspace_name=workspace_name,
                    project_name=project_name, results_folder=results_folder, output_files=output_name, plot_snapshot=True, plot_perturbation=1, target_blocks=['CL', 'OL'])
+
+""" -------------------- Rational fitting of the frequency response data ---------------------- """
+scanned_data = np.loadtxt(results_folder+r'\\'+output_name+'#SISO_TF_#CL#.txt', dtype='cdouble', skiprows=1) # Load the frequency response
+frequencies = np.real(scanned_data[:, 0]) # Extract frequency column
+scanned_data = np.squeeze(scanned_data[:, 1:]) # Remove frequency column
+mode_estimation(scanned_data, 2*np.pi*frequencies, zeta0=0.10, omega0=2*np.pi*frequencies[np.argmax(np.abs(scanned_data))], extra_poles=1, verbose=True)
