@@ -85,7 +85,7 @@ with open(results_file, "w") as f:
                         working_dir=pscad_folder, workspace_name=workspace_name, project_name=project_name, results_folder=results_folder,
                         output_files=output_files, fortran_ext=fortran_ext, component_parameters=component_parameters, snapshot_file="Snapshot",
                         take_snapshot=True, show_powerflow=False, multi_freq_scan=multi_freq_scan, make_plot=False, delete_PSCAD_output_files=False,
-                        release_certificates=False, launch_and_load_PSCAD= True if case==0 else False, close_PSCAD=True if case==number_of_cases-1 else False) # Only launch PSCAD for the first case and keep it open until the last case is done
+                        release_certificates=case==number_of_cases-1, launch_and_load_PSCAD= case==0, close_PSCAD= case==number_of_cases-1) # Only launch PSCAD for the first case and keep it open until the last case is done
         
         Y = read_admittance(path=results_folder, involved_blocks=["PCC-1"], file_root=output_files) # "involved_blocks" specifies the side of the scan block to retrieve the admittance: IBR is at side 1 of the PCC block
         Y_flat = Y.y.ravel(order='C') # Flatten the admittance

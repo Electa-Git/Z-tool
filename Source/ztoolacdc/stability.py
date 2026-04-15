@@ -76,7 +76,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
                        check_conditioning=False, condition_number_th=10e6, make_plot=True, save_pickle=False, save_results=True, save_Y=False, save_loop_gain=False,
                        verbose=True, run_nyquist=True, run_nyquist_det=False, run_EVD=True, run_EVD_PFs=True, run_EVD_PFs_extended=False, run_passivity=True, run_small_gain=True,
                        run_GNC_sensitivity=False, normalize_GNC_sensitivity=False, run_PMD=False, run_sigma=False, modal_estimation_nyquist=False, modal_estimation_EVD=False,
-                       order_maxima=3, extra_poles=0, samples_fitting=12, Ibase={}, Vbase={}):
+                       order_maxima=3, extra_poles=0, samples_fitting=12, Ibase={}, Vbase={}, PMD_zeta_threshold=0.25):
     # This function loads and builds the edge and node admittance matrices and applies the most common stability analysis functions
     # 0) Firstly, read the terminal angle information for the AC blocks if rotations are required
     if rotate_edge or rotate_node:
@@ -253,7 +253,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
     if run_EVD or run_PMD:
         EVD_results = EVD(Yedge+Ynode, frequencies, node_variables, results_folder, file_root, Z_closedloop=False, PFs=run_EVD_PFs, PFs_extended=run_EVD_PFs_extended,
                           run_PMD=run_PMD, modal_estimation=modal_estimation_EVD, extra_poles=extra_poles, order_maxima=order_maxima, samples_fitting=samples_fitting,
-                          verbose=verbose, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results, run_sigma=run_sigma)
+                          verbose=verbose, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results, run_sigma=run_sigma, PMD_zeta_threshold=PMD_zeta_threshold)
 
     # Save the admittance matrices
     if save_results and save_Y:
@@ -663,7 +663,7 @@ def small_gain(G2, frequencies,  G1=None, results_folder=None, filename='small_g
     return S1_max_times_S2_max
 
 def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', verbose=True, Z_closedloop=True, make_plot=True, save_pickle=False, save_results=True,
-        PFs=True, PFs_extended=False, run_PMD=False, modal_estimation=False, order_maxima=3, extra_poles=0, samples_fitting=12, run_sigma=False):
+        PFs=True, PFs_extended=False, run_PMD=False, modal_estimation=False, order_maxima=3, extra_poles=0, samples_fitting=12, run_sigma=False, PMD_zeta_threshold=0.25):
     if bus_names is None: bus_names = [str(bus+1) for bus in range(G.shape[1])]  # Sorted numbers if names not provided
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
 
@@ -708,38 +708,38 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', ver
         lambda_envelope = np.take_along_axis(eigenvalues_sorted, idx_lambda_envelope[:,None], axis=1)  # Eigenvalues with the largest magnitude at each frequency
         critical_points = argrelmax(np.abs(lambda_envelope), order=order_maxima)[0]
         if verbose: print("Critical frequencies:",frequencies[critical_points])
-        if run_PMD:
-            PMD_indexes = []
-            for critical_point in critical_points:
-                # Three-point formula to approximate the derivate of the imaginary part around the local maxima of the mangnitude
-                d1 = frequencies[critical_point] -frequencies[critical_point-1]
-                d2 = frequencies[critical_point+1] - frequencies[critical_point]
-                c_minus = -d2 / ( d1*(d1+d2) )
-                c_zero  =  (d2 - d1) / ( d1*d2 )
-                c_plus  =  d1 / ( d2*(d1+d2) )
-                dImag_df = c_minus*np.imag(lambda_envelope[critical_point-1]) + c_zero*np.imag(lambda_envelope[critical_point]) + c_plus*np.imag(lambda_envelope[critical_point+1])
-                PMD_index = dImag_df*np.real(lambda_envelope[critical_point]) # PMD criterion index: if > 0 then this is a potential unstable mode
-                PMD_indexes.append(PMD_index)
-                if PMD_index > 0 and verbose:
-                    print("Unstable mode by the PMD criterion at",round(frequencies[critical_point], 2),"Hz for eigenvalue", np.round(lambda_envelope[critical_point], 5))
-        
-        if modal_estimation:
-            modes = [] # Initialize the list of unstable modes
-            mode_samples = samples_fitting//2  # Number of samples around the unstable frequency to consider for mode estimation
-            for critical_point in critical_points:
+        PMD_indexes = [] # List of PMD criterion indexes: index > 0 -> potential unstable mode
+        modes = [] # Initialize the list of unstable modes
+        mode_samples = samples_fitting//2  # Number of samples around the unstable frequency to consider for modal estimation
+        for critical_point in critical_points:
+            if modal_estimation:
+                # Perfom mode estimation around the critical frequencies by fitting a low-order rational function
                 idx_min = critical_point-mode_samples-1 if critical_point-mode_samples-1 >= 0 else 0 # Minimum index for mode estimation larger than zero
                 idx_max = critical_point+mode_samples-1 if critical_point+mode_samples-1 <= len(frequencies) else len(frequencies) # Maximum index for mode estimation 
                 mode_parameters = mode_estimation(np.squeeze(lambda_envelope)[idx_min:idx_max], 2*np.pi*np.array(frequencies[idx_min:idx_max]), zeta0=0.05, omega0=2*np.pi*frequencies[critical_point], extra_poles=extra_poles)
                 sigma = mode_parameters[0]
                 omega = mode_parameters[1]
                 modes.append(sigma+1j*omega) # Add the identified mode to the list of modes
-                if verbose: print(f"Mode at {frequencies[critical_point]:.2f} Hz with z = {-sigma/np.sqrt(sigma**2 + omega**2):.4e} from fitted pole: {sigma:.4e} +/- {np.abs(omega):.4e}j rad/s")
-                # print(f"Mode estimation results:")
-                # for mods in range(extra_poles+1):
-                #     p = mode_parameters[4*mods] + 1j*mode_parameters[4*mods+1]
-                #     r = mode_parameters[4*mods+2] + 1j*mode_parameters[4*mods+3]
-                #     print(f" Pole {mods+1}: {p.real:.4e} + {p.imag:.4e}j rad/s, and residue {r.real:.4e} + {r.imag:.4e}j")
-                # print(f" Direct term: {mode_parameters[-1]:.4e} \n")
+                zeta = -sigma/np.sqrt(sigma**2 + omega**2) # Damping ratio of the identified mode
+                if verbose: print(f"Mode at {frequencies[critical_point]:.2f} Hz with z = {np.abs(zeta):.4e} from fitted pole: {sigma:.4e} +/- {np.abs(omega):.4e}j rad/s")
+            else:
+                zeta = 0.0 # Define an arbitrary value of the damping ratio so the variable exists in the comparison below
+
+            # Run the PMD only if the estimated damping ratio magnitude is below a threshold or if there is no modal estimation
+            if run_PMD:
+                if (not modal_estimation) or np.abs(zeta) < PMD_zeta_threshold:
+                    # Run the PMD: three-point formula to approximate the derivate of the imaginary part around the local maxima of the mangnitude
+                    d1 = frequencies[critical_point] -frequencies[critical_point-1]
+                    d2 = frequencies[critical_point+1] - frequencies[critical_point]
+                    c_minus = -d2 / ( d1*(d1+d2) )
+                    c_zero  =  (d2 - d1) / ( d1*d2 )
+                    c_plus  =  d1 / ( d2*(d1+d2) )
+                    dImag_df = c_minus*np.imag(lambda_envelope[critical_point-1]) + c_zero*np.imag(lambda_envelope[critical_point]) + c_plus*np.imag(lambda_envelope[critical_point+1])
+                    PMD_index = dImag_df*np.real(lambda_envelope[critical_point]) # PMD criterion index: if > 0 then this is a potential unstable mode
+                    PMD_indexes.append(PMD_index)
+                    if PMD_index > 0 and verbose:
+                        print("Unstable mode by the PMD criterion at",round(frequencies[critical_point], 2),"Hz for eigenvalue", np.round(lambda_envelope[critical_point], 5))
+                
 
     # 3) Compute the bus participation factors (PFs) of the critical eigenvalue at the oscillation frequency
     # Controllability (right eigenvectors) and observability (transpose of left eigenvectors)
@@ -1305,7 +1305,8 @@ Optional arguments
         run_sigma               (bool) Bool flag to run the sigma analysis for the identification of the frequencies at which the system is most sensitive to perturbations. Default = False.
         Ibase                   (dict) Dictionary of base currents per node used to per-unitize the system matrices. The node name, i.e. scan block name, is used as key. Default = None, which results in no per-unitization.
         Vbase                   (dict) Dictionary of base voltages per node used to per-unitize the system matrices. The node name, i.e. scan block name, is used as key. Default = None, which results in no per-unitization.
-        
+        PMD_zeta_threshold      (float) Damping ratio threshold for the PMD criterion. When modal_estimation is True only modes with a damping ratio below this value are checked for stability via the PMD criterion. Default = 0.25,
+
 Returns
         Dictionary of dynamic analysis results. The keys correspond to the different methods, e.g., "nyquist", "nyquist_det", "EVD", "passivity_index", "small_gain_index", etc., depending on the analyses performed.
         The values are the corresponding results, such as boolean flags for stability assessments, arrays of modal frequencies and damping ratios, participation factors, passivity indices, etc.
@@ -1359,6 +1360,7 @@ Optional arguments
         extra_poles        (int) Number of extra poles to be added in the least-squares rational fitting for modal estimation. Default = 0, which results in a second-order fit with one pair of complex conjugate poles.
         samples_fitting    (int) Number of frequency samples to be used in the least-squares rational fitting for modal estimation. Default = 12, which results in a fitting around the unstable mode with 6 points on each side.
         run_sigma          (bool) Bool flag to run the sigma analysis for the identification of the frequencies at which the system is most sensitive to perturbations. Default = False.
+        PMD_zeta_threshold (float) Damping ratio threshold for the PMD criterion when modal_estimation is True: only modes with a damping ratio below this value are checked for stability via the PMD criterion. Default = 0.25,
 
 Returns
         Dictionary including main results such as stability assessment by the PMD criterion (True means stable), the modal impedances and participation factors, the fitted modes if modal_estimation is True, and other relevant metrics.
