@@ -1099,6 +1099,7 @@ def unstable_frequency(locus, frequencies, results_folder=None, filename='unstab
         fig_bode.savefig(results_folder + '\\' + filename + ".pdf", format="pdf", bbox_inches="tight")
         if save_pickle:
             with open(results_folder + '\\' + filename + ".pickle", 'wb') as f: pickle.dump(fig_bode, f)
+        plt.close(fig_bode)
         
     return unstable_freqs
              
