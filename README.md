@@ -52,7 +52,7 @@ If you find the Z-tool useful in your work, we kindly request that you cite the 
 
 ```bibtex
 @INPROCEEDINGS{Cifuentes2024,
-  author={Cifuentes Garcia, Francisco Javier and Roose, Thomas and Sakinci, Özgür Can and Lee, Dongyeong and Dewangan, Lokesh and Avdiaj, Eros and Beerten, Jef},
+  author={{Cifuentes Garcia}, Francisco Javier and Roose, Thomas and Sakinci, Özgür Can and Lee, Dongyeong and Dewangan, Lokesh and Avdiaj, Eros and Beerten, Jef},
   booktitle={2024 IEEE PES Innovative Smart Grid Technologies Europe (ISGT EUROPE)}, 
   title={Automated Frequency-Domain Small-Signal Stability Analysis of Electrical Energy Hubs}, 
   year={2024},
@@ -79,7 +79,7 @@ This is a free software: you can redistribute it and/or modify it under the term
 ## Contributors
 * Francisco Javier Cifuentes Garcia: Main developer
 * Thomas Roose: Initial stability analysis functions
-* Jan Kircheis, Eros Avdiaj and Özgür Can Sakinci: Validation and support
+* Jeroen Tant, Jan Kircheis, Eros Avdiaj and Özgür Can Sakinci: Validation and support
 
 ## Future work
 - Scans in split projects

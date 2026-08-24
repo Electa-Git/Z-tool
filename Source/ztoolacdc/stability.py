@@ -253,7 +253,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
     if run_EVD or run_PMD:
         EVD_results = EVD(Yedge+Ynode, frequencies, node_variables, results_folder, file_root, Z_closedloop=False, PFs=run_EVD_PFs, PFs_extended=run_EVD_PFs_extended,
                           run_PMD=run_PMD, modal_estimation=modal_estimation_EVD, extra_poles=extra_poles, order_maxima=order_maxima, samples_fitting=samples_fitting,
-                          verbose=verbose, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results, run_sigma=run_sigma, PMD_zeta_threshold=PMD_zeta_threshold)
+                          verbose=verbose, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results, run_sigma=run_sigma, PMD_zeta_threshold=PMD_zeta_threshold, plot_title='Closed-loop modal impedance')
 
     # Save the admittance matrices
     if save_results and save_Y:
@@ -672,7 +672,7 @@ def small_gain(G2, frequencies,  G1=None, results_folder=None, filename='small_g
     return S1_max_times_S2_max
 
 def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', verbose=True, Z_closedloop=True, make_plot=True, save_pickle=False, save_results=True,
-        PFs=True, PFs_extended=False, run_PMD=False, modal_estimation=False, order_maxima=4, extra_poles=0, samples_fitting=12, run_sigma=False, PMD_zeta_threshold=0.707):
+        PFs=True, PFs_extended=False, run_PMD=False, modal_estimation=False, order_maxima=4, extra_poles=0, samples_fitting=12, run_sigma=False, PMD_zeta_threshold=0.707, plot_title=None):
     if bus_names is None: bus_names = [str(bus+1) for bus in range(G.shape[1])]  # Sorted numbers if names not provided
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
 
@@ -820,13 +820,13 @@ def EVD(G, frequencies, bus_names=None, results_folder=None, filename='EVD', ver
             with open(results_folder + '\\' + filename + "_EVD.pickle", 'wb') as f: pickle.dump(plt.gcf(), f)
         plt.close(fig)
 
-        bode_plot(eigenvalues_sorted, frequencies, results_folder, filename+"_EVD_Bode", title='Modal impedance: EVD of the impedance matrix over '+str(len(frequencies))+' frequencies',
+        bode_plot(eigenvalues_sorted, frequencies, results_folder, filename+"_EVD_Bode", title='Eigenvalue decomposition over '+str(len(frequencies))+' frequencies' if plot_title is None else plot_title,
                   legend=[format(idx+1,'.0f') for idx in range(eigenvalues_sorted.shape[1])], style="solid", save_pickle=save_pickle)
         if PFs:
-            bode_plot(PF_envelope, frequencies, results_folder, filename+"_EVD_max_PFs", title='Sensitivity of the largest modal impedance w.r.t. its diagonal elements',
+            bode_plot(PF_envelope, frequencies, results_folder, filename+"_EVD_max_PFs", title='Sensitivity of the largest modal entry w.r.t. the matrix diagonal elements',
                        legend=bus_names, style="solid", save_pickle=save_pickle, linear_mag=True)
         if PFs_extended:
-            # Sensitivity of the critical modal impedance to each matrix element
+            # Sensitivity of the critical modal impedance/admittance to each matrix element
             loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, loci=eigenvalues_sorted, selected_loci=[idx_lambda_max_max], bus_names=bus_names, wrt_all_elements=PFs_extended,
                              results_folder=results_folder, filename=filename+"_EVD_PFs_extended_locus", make_plot=make_plot, save_pickle=save_pickle, save_results=save_results, normalize=False)   
 
