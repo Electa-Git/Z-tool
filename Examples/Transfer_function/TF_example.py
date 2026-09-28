@@ -4,7 +4,7 @@ The script sets up the parameters for the frequency sweep, including the time se
 It then calls the frequency_sweep_TF function to execute the analysis and store the results in a specified folder.
 """
 from ztoolacdc.frequency_sweep import frequency_sweep_TF
-from ztoolacdc.mode_estimation import mode_estimation
+from ztoolacdc.stability import mode_estimation
 from os import getcwd
 import numpy as np
 """ -------------------- PSCAD PROJECT ---------------------- """

@@ -371,7 +371,7 @@ def passivity(G, frequencies, results_folder=None, filename='passivity', variabl
     return passivity_index
 
 def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=True, check_conditioning=False, condition_number_th=0.01/5e-9, make_plot=True, show_plot=False, indentations =[], save_pickle=False, save_results=True,
-            run_sensitivity=False, Z=None, Y=None, bus_names=None, unstable_frequency=False, modal_estimation=False, extra_poles=0, order_maxima=4, samples_fitting=12, verbose_modal_estimation=False, run_sigma=False):
+            run_sensitivity=False, Z=None, Y=None, bus_names=None, unstable_freq_estimation=False, modal_estimation=False, extra_poles=0, order_maxima=4, samples_fitting=12, verbose_modal_estimation=False, run_sigma=False):
     # Generalized Nyquist Criteria (GNC) for stability analysis: graphically determine the number of unstable closed-loop poles from the encirclements of the critical point by the loci of the open-loop gain matrix
     if verbose: print("Performing Nyquist stability assessment based on the eigenvalues of L")
     if not path.exists(results_folder): makedirs(results_folder)  # Create results folder if it does not exist
@@ -545,7 +545,7 @@ def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=Tru
                   title=r"Bode plot of $1/(1+\lambda(L))$ over "+str(len(frequencies))+' frequencies', legend=[str(idx+1) for idx in range(eigenvalues_sorted.shape[1])])
     
     # Unstable closed-loop poles estimation by analyzing the maxima of 1/(1+L)
-    if modal_estimation or unstable_frequency:
+    if modal_estimation or unstable_freq_estimation:
         unstable_modes = {}  # Dict of identified unstable oscillatory modes per locus (key is locus, modes are stored in a list)
         mode_samples = samples_fitting//2  # Number of samples around the unstable frequency to consider for mode estimation
         for locus in unstable_loci:
@@ -597,12 +597,12 @@ def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=Tru
         bode_plot(np.min(sigmas, axis=1), frequencies, results_folder, filename+"_GNC_sigma", title='Minimum singular value of $I + L(j\omega)$ over '+str(len(frequencies))+' frequencies',
                   legend=["\sigma_{min}"], style="solid", save_pickle=save_pickle, save_data=save_results)
 
-    return dict(stability = stable_system, unstable_loci = unstable_loci, unstable_modes = unstable_modes if modal_estimation or unstable_frequency else {}, diag_sensitivity = diag_sensitivity if run_sensitivity else None, sigmas = sigmas if run_sigma else None)
+    return dict(stability = stable_system, unstable_loci = unstable_loci, unstable_modes = unstable_modes if modal_estimation or unstable_freq_estimation else {}, diag_sensitivity = diag_sensitivity if run_sensitivity else None, sigmas = sigmas if run_sigma else None)
 
-def small_gain(G2, frequencies,  G1=None, results_folder=None, filename='small_gain', variables=None, make_plot=True, save_pickle=False, save_results=True):
+def small_gain(G2, frequencies,  G1=None, results_folder=None, filename='small_gain', variables=None, make_plot=True, save_pickle=False, save_results=True, G2_is_Y_closedloop=False):
     # Applies a conservative version of the small-gain theorem as |L| = |G1*G2| <= |G1|*|G2| < 1
     S2 = np.linalg.svd(G2, compute_uv=False)
-    S2_max = np.max(S2, axis=1)
+    S2_max = np.max(S2, axis=1) if not G2_is_Y_closedloop else 1/np.min(S2, axis=1)
     if G1 is None: G1 = np.eye(G2.shape[1])[None, :, :].repeat(G2.shape[0], axis=0)  # If G1 is not provided, consider it as an identity matrix
     S1 = np.linalg.svd(G1, compute_uv=False)
     S1_max = np.max(S1, axis=1)
@@ -1108,7 +1108,7 @@ def unstable_frequency(locus, frequencies, results_folder=None, filename='unstab
 
     if make_plot and results_folder is not None:
         fig_bode, ax_bode = bode_plot(Y=G, frequencies=frequencies, results_folder=None, style="solid", legend=None, return_plot=True,
-                                      title=r"Unstable mode identification: $1/(1+\lambda)$ over "+str(len(frequencies))+' frequencies')
+                                      title=r"Unstable mode identification: $1/(1+\lambda)$ over "+str(len(frequencies))+' frequencies' if open_loop else r"Unstable mode identification: $\lambda$ over "+str(len(frequencies))+' frequencies')
         for freq in unstable_freqs:
             ax_bode[0].axvline(x=freq, color='red', linestyle=':', linewidth=1, label='_nolegend_')
             ax_bode[0].text(freq, 0.20, str(round(freq,2)), color='r', ha='right', va='bottom', rotation=90, transform=ax_bode[0].get_xaxis_transform())
@@ -1232,7 +1232,7 @@ Optional arguments
                                 The critical loci are selected as those showing encirclements of (-1,0j) or that closest to the critical point (-1,0j).
         Y                       (numpy ndarray of complex double) If provided together with Z, the sensitivity is normalized. Default = None.
         bus_names               (list of str) List of bus names to be used in the sensitivity analysis. Default = empty list, which results in the use of sorted numbers as bus names.
-        unstable_frequency      (bool) Bool flag to run the unstable frequency identification based on the local maxima of the magnitude of 1/(1+locus) and the sign of its phase derivative. Default = False.
+        unstable_freq_estimation (bool) Bool flag to run the unstable frequency identification based on the local maxima of the magnitude of 1/(1+locus) and the sign of its phase derivative. Default = False.
         order_maxima            (int) Points on each side of each local maximum used for the comparison and maxima identification in the unstable frequency identification, i.e., the 'order' argument of the 'argrelmax' function. Default = 4.
         modal_estimation        (bool) Bool flag to run the modal estimation of the dominant modes based on least-squares rational fitting around the unstable modes. Default = False.
         verbose_modal_estimation (bool) Bool flag to show detailed information about the modal estimation results, such as the estimated poles and residues. Default = False.
@@ -1398,6 +1398,8 @@ If the unitary gain line is not crossed by the maximum singular value of G1*G2, 
 To visually check this, the plot of 1/|G1| is compared with that of |G2|, since if |G2| < 1/|G1|, then |G1*G2| < 1.
 Therefore, the Bode plot of |G2| should be below 1/|G1| to guarantee stability.
 If G2 is block-diagonal, the plot of the maximum singular value of each diagonal block in G2 is also computed.
+If G2_is_Y_closedloop is True, then the maximum singular value of 1/G2 is computed as the inverse of the minimum singular value of the closed-loop admittance matrix G2 = Ynode + Yedge.
+This can be used to compute the maximum current-to-voltage harmonic amplification of the interconnected system.
 
 Required arguments
         G2                  (numpy ndarray of complex double) System matrix at different frequencies. Possibly block-diagonal.
@@ -1406,6 +1408,7 @@ Required arguments
         filename            (str) Name root of the results output files.
  
 Optional arguments
+        G2_is_Y_closedloop  (bool) Bool flag indicating if G2 is the closed-loop admittance matrix. This can be used to avoid the inversion of G2 = Ynode + Yedge for computing the maximum singular value of the closed-loop impedance matrix. Default = False.
         G1                  (numpy ndarray of complex double) System matrix at different frequencies.
         variables           (list of str) Names of the block-diagonal matrices in G2 for block-wise analysis. Default = None.
         make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files.
@@ -1467,4 +1470,26 @@ Optional arguments
 Returns
         parameters_opt (numpy array) Array containing the optimized parameters of the rational fit.
                         The first four entries correspond to the real and imaginary parts of the complex-conjugate pole pair and its residue. Next, the real and imaginary parts of the extra poles and their residues, and lastly the direct term.
+"""
+
+unstable_frequency.__doc__ = """
+Identification of the unstable frequencies based on the local maxima of the magnitude of 1/(1+locus) for the open-loop locus or just based on locus (closed-loop) and the sign of its phase derivative at said frequencies.
+To minimize numerical errors the candidate unstable frequencies are first sorted by their approximate damping ratio. In addition, the sign of the phase derivative is checked with respect to the right and left-side first-order approximations.
+The method is based on the developments presented in A. Saad, F. J. Cifuentes Garcia, D. Lee and J. Beerten, "Unstable Oscillatory Modes Estimation in the Frequency Domain," in IEEE Transactions on Power Systems, doi: 10.1109/TPWRS.2026.3718727.
+
+Required arguments
+    locus         (numpy ndarray of complex double) Eigenloci of the system matrix for the frequencies of interest. It can be the open-loop eigenloci (L=Z*Y) or the closed-loop eigenloci (Z_bus).
+    frequencies   (numpy array) Frequencies [Hz] corresponding to the eigenloci in locus.
+
+Optional arguments
+    results_folder      (str) Absolute path where the results are to be stored.
+    filename            (str) Name root of the results output files.
+    order_maxima        (int) Points on each side of each local maximum used for comparison and maxima identification, i.e., the 'order' argument of the 'argrelmax' function. Default = 3.
+    make_plot           (bool) Bool flag to enable/disable the generation of pdf plot files. Default = True.
+    save_pickle         (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
+    save_results        (bool) Bool flag to save the results in a text file. Default = True.
+    max_zeta_abs        (float) Maximum absolute value of the damping ratio to consider a frequency as unstable. Default = 0.707. The criterion can fail for very high damping ratios.
+    diff_check          (bool) Bool flag to check the sign of the phase derivative at the candidate frequencies w.r.t. the right and left-side first order approximations. Default = True.
+    open_loop           (bool) Bool flag to indicate if the locus is the open-loop eigenloci (L=Z*Y) or the closed-loop eigenloci (Z_bus). Default = True.
+
 """

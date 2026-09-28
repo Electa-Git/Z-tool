@@ -282,7 +282,7 @@ Optional arguments
         results_folder  Full path of the directory where the result is to be saved.
         file_name       Root name of the saved text file. By default the code adds "_ab_from_dq" to indicate that the matrix has been transformed.
         q_lagging       Bool to indicate if the q-axis lags the d-axis in the input matrix. Default = True
-        interpolate     Bool to interpolate the matrix to the missing frequencies needed to compute it in the new frame. Default = False.
+        interpolate     Bool to interpolate the matrix to the missing frequencies needed to compute it in the new frame. Default = True.
                         Interpolation leads to more frequency points at the expense of accuracy when the interpolated values are very close to zero.
 
 """
