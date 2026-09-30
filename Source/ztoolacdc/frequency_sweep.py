@@ -549,7 +549,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
         names = []  # Ztool's variables output names
         counter = 1  # Total number of PSCAD output signals
         for line in info_file.readlines():
-            if line.split()[3].split('"')[1] in group:  # If the output channel corresponds to a Ztool variable
+            if line.split()[3].split('"')[min([1,len(line.split()[3].split('"'))])] in group:  # If the output channel corresponds to a Ztool variable
                 out_num.append(counter)  # Get variable's output channel number
                 # Same as out_num.append(int(line.split()[0].split('(')[1].split(')')[0]))
                 names.append(line.split()[2].split('"')[1])  # Get output variable name
@@ -1218,7 +1218,7 @@ def frequency_sweep_TF(t_snap=None, t_sim=None, t_step=None, sample_step=None, v
         names = []  # Ztool's variables output names
         counter = 1  # Total number of PSCAD output signals
         for line in info_file.readlines():
-            if line.split()[3].split('"')[1] in "TFscan":  # If the output channel corresponds to a Ztool variable
+            if line.split()[3].split('"')[min([1,len(line.split()[3].split('"'))])] in "TFscan":  # If the output channel corresponds to a Ztool variable
                 out_num.append(counter)  # Get variable's output channel number
                 names.append(line.split()[2].split('"')[1])  # Get output variable name
                 ch_var_names[counter] = names[-1]  # Var name entry with the channel num as key
