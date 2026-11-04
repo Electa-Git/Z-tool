@@ -5,6 +5,7 @@ This program contains several functions for frequency-domain stability analysis 
     2) Eigenvalue Decomposition (EVD) of the closed-loop matrix to determine oscillatory modes and bus participation factors
     3) Passivity index (for the application of the passivity theorem) and singular value decomposition (small-gain theorem) of target matrices
     4) A main stability_analysis function to apply all the previously described to a specific system
+Additional functionalities are described in the corresponding functions' documentation.
 
 Copyright (C) 2026  Francisco Javier Cifuentes Garcia
 
@@ -26,6 +27,7 @@ __all__ = ['stability_analysis','passivity','nyquist','small_gain','EVD','nyquis
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment, least_squares
+from scipy.interpolate import make_interp_spline
 from scipy.signal import argrelmax
 import matplotlib.pyplot as plt
 from .read_admittance import read_admittance
@@ -76,7 +78,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
                        check_conditioning=False, condition_number_th=10e6, make_plot=True, save_pickle=False, save_results=True, save_Y=False, save_loop_gain=False,
                        verbose=True, run_nyquist=True, run_nyquist_det=False, run_EVD=True, run_EVD_PFs=True, run_EVD_PFs_extended=False, run_passivity=True, run_small_gain=True,
                        run_GNC_sensitivity=False, normalize_GNC_sensitivity=False, run_PMD=False, run_sigma=False, modal_estimation_nyquist=False, modal_estimation_EVD=False,
-                       order_maxima=4, extra_poles=0, samples_fitting=12, Ibase={}, Vbase={}, PMD_zeta_threshold=0.25):
+                       order_maxima=4, extra_poles=0, samples_fitting=12, Ibase={}, Vbase={}, PMD_zeta_threshold=0.25, frequency_points=None):
     # This function loads and builds the edge and node admittance matrices and applies the most common stability analysis functions
     # 0) Firstly, read the terminal angle information for the AC blocks if rotations are required
     if rotate_edge or rotate_node:
@@ -165,15 +167,9 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
 
     # 4) Create the node and edge matrices with the frequency domain data
     frequencies = admittances[0].f  # Retreive the frequency vector
-    # Create the auxiliary edge matrix (different order than node matrix), useful to check the network topology and scan
-    Yedge_aux = np.zeros((len(frequencies),len(node_variables),len(node_variables)),dtype='cdouble')  # Or dtype='csingle'
+    Yedge_aux = np.zeros((len(frequencies),len(node_variables),len(node_variables)),dtype='cdouble')  # This auxiliary edge matrix (different order than node matrix) is useful to check the network topology
     y_edge_idx = 0
     for yedge in edge_aux_matrix:
-        # # Eliminate too small elements: related to PSCAD accuracy when the topology is not enforced
-        # for col in range(np.size(yedge.y, 1)):
-        #     for row in range(np.size(yedge.y, 2)):
-        #         if max(abs(yedge.y[:, row, col])) < 1e-6:  # The threshold is system and time-step dependent
-        #             yedge.y[:, row, col] = np.zeros(yedge.y[:, row, col].shape)
         Yedge_aux[:, y_edge_idx:y_edge_idx + len(yedge.vars), y_edge_idx:y_edge_idx + len(yedge.vars)] = yedge.y
         y_edge_idx = y_edge_idx + len(yedge.vars)  # Update the matrix index for the next admittance block
     
@@ -228,11 +224,23 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
             print(" The keys in the base quantities provided by the user do not match the node variables. The matrices are not converted to per unit.")
     
     # Sparsity plot for verification at the lowest frequency
-    if save_results:
+    if make_plot:
         sparsity_plot(Yedge_aux[0,:,:], title='Auxiliary edge admittance matrix at '+format(frequencies[0], '.2f')+' Hz', results_folder=results_folder, file_name=file_root+"_Edge_aux",  variables=edge_aux_variables)
         sparsity_plot(Yedge[0,:,:], title='Edge admittance matrix at '+format(frequencies[0], '.2f')+' Hz', results_folder=results_folder, file_name=file_root+"_Edge",  variables=node_variables)
         sparsity_plot(Ynode[0,:,:], title='Node admittance matrix at '+format(frequencies[0], '.2f')+' Hz', results_folder=results_folder, file_name=file_root+"_Node",  variables=node_variables)
 
+    # Interpolate the edge and node matrices at the specified frequency points
+    if frequency_points is not None:
+        if frequency_points[0] >= frequencies[0] and frequency_points[-1] <= frequencies[-1]:
+            interpolating_function = make_interp_spline(frequencies, Yedge.reshape(Yedge.shape[:-2] + (-1,), order='C'))
+            Yedge_interpolated = interpolating_function(frequency_points)
+            Yedge = Yedge_interpolated.reshape((len(frequency_points), len(node_variables), len(node_variables)), order="C")
+
+            interpolating_function = make_interp_spline(frequencies, Ynode.reshape(Ynode.shape[:-2] + (-1,), order='C'))
+            Ynode_interpolated = interpolating_function(frequency_points)
+            Ynode = Ynode_interpolated.reshape((len(frequency_points), len(node_variables), len(node_variables)), order="C")
+            frequencies = frequency_points
+    
     # 6) Perform stability analysis
     if run_nyquist or run_nyquist_det or run_small_gain:
         Zedge = np.linalg.inv(Yedge)
@@ -256,7 +264,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
                           verbose=verbose, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results, run_sigma=run_sigma, PMD_zeta_threshold=PMD_zeta_threshold, plot_title='Closed-loop modal impedance')
 
     # Save the admittance matrices
-    if save_results and save_Y:
+    if save_Y:
         results = [Yedge[:, row, col] for row in range(len(node_variables)) for col in range(len(node_variables))]
         results.insert(0, frequencies)
         results = tuple(results)
@@ -287,7 +295,7 @@ def stability_analysis(topology=None, results_folder=None, file_root=None, inden
         small_gain_index = small_gain(G2=Ynode, G1=Zedge, frequencies=frequencies, results_folder=results_folder, filename=file_root,
                                       variables=node_variables, make_plot=make_plot, save_pickle=save_pickle, save_results=save_results)
 
-    return dict(nyquist=GNC_results if run_nyquist else None, stability_nyquist_det=GNC_det_results if run_nyquist_det else None, EVD=EVD_results if run_EVD else None,
+    return dict(nyquist=GNC_results if run_nyquist else None, nyquist_det=GNC_det_results if run_nyquist_det else None, EVD=EVD_results if run_EVD else None,
                 passivity_index=passivity_index if run_passivity else None, small_gain_index=small_gain_index if run_small_gain else None)
 
 def passivity(G, frequencies, results_folder=None, filename='passivity', variables=None, Yedge=None, make_plot=True, save_pickle=False, save_results=True):
@@ -1027,7 +1035,7 @@ def loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, results
     
         if Z is not None:
             # Compute the sensitivity of the open-loop locus to changes in each (i, j) element of Y by chain rule  
-            B = np.transpose(right_eigenvectors[:, :, locus][:, :, None] @ left_eigenvectors[:, locus, :][:, None, :], axes=(0,2,1)) 
+            B = np.transpose(right_eigenvectors[:, :, locus:locus+1] @ left_eigenvectors[:, locus:locus+1, :], axes=(0,2,1)) 
             S = Z.transpose(0,2,1) @ B 
 
             if normalize and loci is not None:
@@ -1057,7 +1065,7 @@ def loci_sensitivity(right_eigenvectors, left_eigenvectors, frequencies, results
             if Z is not None:
                 PFs = B.transpose(0,2,1) # Re-use the matrix product
             else:
-                PFs = right_eigenvectors[:, :, locus][:, :, None] @ left_eigenvectors[:, locus, :][:, None, :] # Compute the matrix product
+                PFs = right_eigenvectors[:, :, locus:locus+1] @ left_eigenvectors[:, locus:locus+1, :] # Compute the matrix product
 
             if make_plot:
                 bode_plot(PFs, frequencies, results_folder=results_folder, file_name=filename+"_"+str(locus+1),style="solid", save_pickle=save_pickle,
@@ -1287,11 +1295,13 @@ Firstly, the function reads the individual admittance matrices from the specifie
 Finally, it calculates different metrics used to assess the small-signal dynamics of the system:
 - Generalized Nyquist Criteria (GNC) based on the eigenvalue decomposition (EVD) and the determinant of the open-loop (minor-loop) matrix L computed as the product of the edge and node matrices.
 - Eigenvalue decomposition (EVD) of the closed-loop impedance matrix for oscillation modes identification.
+- Sensitivity of the critical loci with respect to changes in each element of the loop matrix or the node admittance matrix.
 - Bus participation factors computation at the frequency of largest current amplification.
-- Small-gain theorem based on the singular value decomposition (SVD) of the edge and node matrices:: used to identify risk-free frequencies.
-- Passivity assessment based on the minimum singular value of the Hermitian part of the different system matrix: used to identify risk-free frequencies.
+- Small-gain theorem based on the singular value decomposition (SVD) of the edge and node matrices.
+- Passivity assessment based on the minimum eigenvalue of the Hermitian part of the system matrices.
 The user can choose which of the above analyses to perform by setting the corresponding boolean flags.
-The results are stored in the specified results folder as text files and pdf plots based on the boolean arguments save_results and make_plot.
+The results are saved in the specified results folder as text files and pdf plots based on the boolean arguments save_results and make_plot. For faster runtimes, set make_plot=False and save_results=False, which will only return the results in the output dictionary.
+The current implementation assumes that all admittances are sampled at the same frequency points, but it allows the user to use linear interpolation for a coarser frequency grid.
 
 Required arguments
         topology            (str) Absolute path to the topology file defining the system the subsystems interconnections.
@@ -1306,9 +1316,9 @@ Optional arguments
                                 This threshold can be set based on the expected input error and maximum acceptable ouTput error.
         make_plot               (bool) Bool flag to enable/disable the generation of pdf plot files.
         save_pickle             (bool) Bool flag to save the generated plots as pickle objects in addition to pdf files. Default = False.
-        save_results            (bool) Bool flag to save the results in a text file. Default = True.
-        save_Y                  (bool) Bool flag to save the system admittance matrices in text files. Default = True.
-        save_loop_gain          (bool) Bool flag to save the loop gain matrix as a text file. Default = True.
+        save_results            (bool) Bool flag to save the stability analysis results in as text files. Default = True.
+        save_Y                  (bool) Bool flag to save the system admittance matrices as text files. Default = False.
+        save_loop_gain          (bool) Bool flag to save the loop gain matrix as a text file. Default = False.
         verbose                 (bool) Bool flag to show detailed analysis information, such as the crossings in the GNC and the participation factors of the dominant mode. Default = True.
         reference_buses         (list of str) List of AC bus names (e.g. Z-tool scan block names) which define the reference angles for each area. Default = None, which results in the use of the first block of each area as reference.
         relative_angles         (bool) Bool flag to use the relative angles for the matrix rotations. If set to True, the relative angle between each bus and the reference buses is used; otherwise the angles in the text file are used directly. Default = True.
@@ -1329,7 +1339,8 @@ Optional arguments
         run_sigma               (bool) Bool flag to run the sigma analysis for the identification of the frequencies at which the system is most sensitive to perturbations. Default = False.
         Ibase                   (dict) Dictionary of base currents per node used to per-unitize the system matrices. The node name, i.e. scan block name, is used as key. Default = None, which results in no per-unitization.
         Vbase                   (dict) Dictionary of base voltages per node used to per-unitize the system matrices. The node name, i.e. scan block name, is used as key. Default = None, which results in no per-unitization.
-        PMD_zeta_threshold      (float) Damping ratio threshold for the PMD criterion. When modal_estimation is True only modes with a damping ratio below this value are checked for stability via the PMD criterion. Default = 0.25,
+        PMD_zeta_threshold      (float) Damping ratio threshold for the PMD criterion. When modal_estimation is True only modes with a damping ratio below this value are checked for stability via the PMD criterion. Default = 0.25.
+        frequency_points        (numpy array) Frequencies which the system matrices are linearly interpolated to [Hz]. If not provided, the frequencies are read from the admittance files. 
 
 Returns
         Dictionary of dynamic analysis results. The keys correspond to the different methods, e.g., "nyquist", "nyquist_det", "EVD", "passivity_index", "small_gain_index", etc., depending on the analyses performed.

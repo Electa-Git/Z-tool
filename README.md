@@ -5,11 +5,11 @@ The analysis relies on an existing system model in the EMT simulation software [
 
 The following features are currently implemented and validated:
 - Voltage perturbation-based admittance scan at several nodes, including converter-based systems and black-box components, via [frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L194)
-- Stability assessment via [Generalized Nyquist Criteria](Source/ztoolacdc/stability.py#L373) applicable to standalone-stable MIMO systems
-- Oscillation mode identification via closed-loop eigenvalue decomposition and bus participation factors, [EVD](Source/ztoolacdc/stability.py#L665)
-- [Passivity](Source/ztoolacdc/stability.py#L293) assessment and [small gain](Source/ztoolacdc/stability.py#L593) theorem application
-- Sensitivity of the Nyquist loci with respect to the components' admittance via [loci_sensitivity](./Source/ztoolacdc/stability.py#L985)
-- Comprehensive stability analysis computing previous and other metrics via [stability_analysis](./Source/ztoolacdc/stability.py#L75)
+- Stability assessment via [Generalized Nyquist Criteria](Source/ztoolacdc/stability.py#L381) applicable to standalone-stable MIMO systems
+- Oscillation mode identification via closed-loop eigenvalue decomposition and bus participation factors, [EVD](Source/ztoolacdc/stability.py#L682)
+- [Passivity](Source/ztoolacdc/stability.py#L301) assessment and [small gain](Source/ztoolacdc/stability.py#L610) theorem application
+- Sensitivity of the Nyquist loci with respect to the components' admittance via [loci_sensitivity](./Source/ztoolacdc/stability.py#L1002)
+- Automated stability analysis building the system matrices and computing previous and more metrics via [stability_analysis](./Source/ztoolacdc/stability.py#L77)
 - [Frame conversion](Source/ztoolacdc/frame_conversion.py) functions, e.g. from dq-frame to alpha/beta-frame and to positive/negative sequence
 
 The flowchart below summarizes a common usage of the tool for stability studies, including frequency-domain system identification ([frequency_sweep](Source/ztoolacdc/frequency_sweep.py#L194)) and several stability analysis functions ([stability](Source/ztoolacdc/stability.py#L75)):
@@ -36,13 +36,13 @@ A generic usage of the package can be summarized in the following steps:
 Follow the example(s) described [here](./Examples) for more guidance. More details on the approach and implemented functions can be found in the papers below and/or this [webinar](https://www.youtube.com/watch?v=AqK5q3ediU0) with the complementary [slides](./Doc/Z_tool_webinar_slides_13-02-2025.pdf). The GUI is currently under development.
 
 ## Other features
-- Transfer function scan via the [frequency_sweep_TF](./Source/ztoolacdc/frequency_sweep.py#L1015) function, see the example [here](./Examples/Transfer_function)
+- Transfer function scan via the [frequency_sweep_TF](./Source/ztoolacdc/frequency_sweep.py#L1018) function, see the example [here](./Examples/Transfer_function)
 - Change of PSCAD component values for parametric studies, see the example [here](Examples/Parametric_sweep)
-- Rational fitting via least-squares optimization with the [mode_estimation](./Source/ztoolacdc/stability.py#L1105) function, see the example [here](./Examples/Transfer_function)
-- Alternative computation of participation factors, e.g. extended PFs via [EVD](./Source/ztoolacdc/stability.py#L665)
-- Singular value (sigmas) computation for the sensitivity and complementary sensitivity functions
+- Rational fitting via least-squares optimization with the [mode_estimation](./Source/ztoolacdc/stability.py#L1133) function, see the example [here](./Examples/Transfer_function)
+- Alternative computation of participation factors, e.g. extended PFs via [EVD](./Source/ztoolacdc/stability.py#L682)
+- Singular value (sigmas) computation for the sensitivity and complementary sensitivity functions with [small_gain](Source/ztoolacdc/stability.py#L610)
 - Exploit the symmetric properties of the system to reduce the scan time (optional)
-- Base conversion for the analysis of systems with different voltage levels
+- Base conversion for the analysis of systems with different voltage levels in [stability_analysis](./Source/ztoolacdc/stability.py#L77)
 - PSCAD control arguments: disabling unnecessary outputs, clear temporary files, keep PSCAD open, retain certificate, etc.
 - Previous snapshots can be re-used to speed-up simulations
 - Snapshot simulation plots for a quick look into the initialization run

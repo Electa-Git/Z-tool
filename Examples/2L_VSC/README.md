@@ -28,10 +28,10 @@ After running the script [Single_bus_analysis.py](Single_bus_analysis.py), the s
 ![Admittances](../../Doc/pdf_out_2LVSC.png)
 
 For a detailed stability analysis, we can simply call the different functions defined in [stability.py](./../../Source/ztoolacdc/stability.py):
-- [nyquist](./../../Source/ztoolacdc/stability.py#L373) for the application of the Generalized Nyquist Criterion (GNC) to determine system stability
-- [EVD](./../../Source/ztoolacdc/stability.py#L665) to reveal the closed-loop oscillatory modes and participating buses via eigenvalue decomposition
-- [passivity](./../../Source/ztoolacdc/stability.py#L293) for the computation of the passivity index of the different system matrices
-- [small_gain](./../../Source/ztoolacdc/stability.py#L593) for the application of the small-gain theorem.
+- [nyquist](./../../Source/ztoolacdc/stability.py#L381) for the application of the Generalized Nyquist Criterion (GNC) to determine system stability
+- [EVD](./../../Source/ztoolacdc/stability.py#L682) to reveal the closed-loop oscillatory modes and participating buses via eigenvalue decomposition
+- [passivity](./../../Source/ztoolacdc/stability.py#L301) for the computation of the passivity index of the different system matrices
+- [small_gain](./../../Source/ztoolacdc/stability.py#L610) for the application of the small-gain theorem.
 
 For convenience and for larger systems which require additional flexibility, these functions are run when calling the _stability_analysis_ function. If only the stability of the system is of interest the calculation of the other metrics can be disabled by setting their corresponding argument to `False`, e.g. when `run_passivity=False`, `run_EVD=False` the function does not calculate the passivity index and the bus PFs, respectively. Furthermore, additional result logging can be disabled if desired to minimize data overhead, e.g. `make_plot=False` and `save_results=False`.
 

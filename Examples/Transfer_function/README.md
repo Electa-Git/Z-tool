@@ -1,5 +1,5 @@
 # Transfer function scan example
-This example shows how to perform frequency scans to obtain Single-Input Single-Output Transfer Functions (TF). Power systems entail a high degree of complexity and analytically representing their dynamics by transfer functions can be very challenging. Nonetheless, knowing the frequency response of a process provides very valuable information to better understand different phenomena involved as well as to mitigate certain problems and/or design better controllers. Therefore, the function [frequency_sweep_TF](../../Source/ztoolacdc/frequency_sweep.py#L1030) automatically extracts the transfer function between any given quantities in an EMT model.
+This example shows how to perform frequency scans to obtain Single-Input Single-Output Transfer Functions (TF). Power systems entail a high degree of complexity and analytically representing their dynamics by transfer functions can be very challenging. Nonetheless, knowing the frequency response of a process provides very valuable information to better understand different phenomena involved as well as to mitigate certain problems and/or design better controllers. Therefore, the function [frequency_sweep_TF](../../Source/ztoolacdc/frequency_sweep.py#L1018) automatically extracts the transfer function between any given quantities in an EMT model.
 
 In order to be as general as possible, the model for this example is very simple so the results can also be verified analytically. Yet, the functionalities also apply to more complex non-linear systems; for example, the modulation TF of the MMC is examined in [this paper](https://doi.org/10.1049/icp.2025.1220).
 
@@ -28,7 +28,7 @@ The progress is reported during the execution, and the results can be accessed i
 
 ![TF results and validation](../../Doc/TF_results.png)
 
-The last part of the script is optional and shows how to obtain a continous-time approximation via the [mode_estimation](../../Source/ztoolacdc/stability.py#L1105) function. This function can be used to fit a rational model to the frequency response data around a frequency band of interest. Its arguments control the target frequency band and the fitted model order. The fitted modes provide an estimate of the damping ratio of the system as well as other modal properties, or to interface the model with other software.
+The last part of the script is optional and shows how to obtain a continous-time approximation via the [mode_estimation](../../Source/ztoolacdc/stability.py#L1133) function. This function can be used to fit a rational model to the frequency response data around a frequency band of interest. Its arguments control the target frequency band and the fitted model order. The fitted modes provide an estimate of the damping ratio of the system as well as other modal properties, or to interface the model with other software.
 
 ![TF results and validation](../../Doc/TF_fitting_results.png)
 
