@@ -1340,7 +1340,7 @@ Optional arguments
         Ibase                   (dict) Dictionary of base currents per node used to per-unitize the system matrices. The node name, i.e. scan block name, is used as key. Default = None, which results in no per-unitization.
         Vbase                   (dict) Dictionary of base voltages per node used to per-unitize the system matrices. The node name, i.e. scan block name, is used as key. Default = None, which results in no per-unitization.
         PMD_zeta_threshold      (float) Damping ratio threshold for the PMD criterion. When modal_estimation is True only modes with a damping ratio below this value are checked for stability via the PMD criterion. Default = 0.25.
-        frequency_points        (numpy array) Frequencies which the system matrices are linearly interpolated to [Hz]. If not provided, the frequencies are read from the admittance files. 
+        frequency_points        (numpy array) Frequencies at which the system matrices are linearly interpolated to [Hz]. It can be used to specify a custom frequency grid, e.g. more detailed. If not provided, the frequencies from the admittance files are used and interpolation is omitted.
 
 Returns
         Dictionary of dynamic analysis results. The keys correspond to the different methods, e.g., "nyquist", "nyquist_det", "EVD", "passivity_index", "small_gain_index", etc., depending on the analyses performed.

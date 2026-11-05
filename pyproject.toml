@@ -28,7 +28,7 @@ Homepage = "https://www.esat.kuleuven.be/electa/ztool"
 Documentation = "https://www.esat.kuleuven.be/electa/ztool"
 
 [tool.setuptools]
-package-dir = { "" = "Source" }
+package-dir = {"" = "Source"}
 include-package-data = true
 
 [tool.setuptools.packages.find]

@@ -43,6 +43,7 @@ Follow the example(s) described [here](./Examples) for more guidance. More detai
 - Singular value (sigmas) computation for the sensitivity and complementary sensitivity functions with [small_gain](Source/ztoolacdc/stability.py#L610)
 - Exploit the symmetric properties of the system to reduce the scan time (optional)
 - Base conversion for the analysis of systems with different voltage levels in [stability_analysis](./Source/ztoolacdc/stability.py#L77)
+- Linear interpolation of the node and edge matrices for increased frequency resolution in [stability_analysis](./Source/ztoolacdc/stability.py#L77) 
 - PSCAD control arguments: disabling unnecessary outputs, clear temporary files, keep PSCAD open, retain certificate, etc.
 - Previous snapshots can be re-used to speed-up simulations
 - Snapshot simulation plots for a quick look into the initialization run
