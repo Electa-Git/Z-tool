@@ -463,7 +463,7 @@ def nyquist(L, frequencies, results_folder=None, filename='nyquist', verbose=Tru
         ccwi = 0
         for j in range(1,eigenvalues_sorted.shape[0]):
             # Only consider clockwise crossings of the real axis beyond (-1,0j)
-            if y[j - 1, idx] < 0 < y[j, idx] and (x[j-1,idx] < -1 or x[j,idx] < -1) and j not in idx_indentations: 
+            if y[j - 1, idx] < 0 < y[j, idx] and (x[j,idx] < -1 or x[j-1,idx] < -1) and j not in idx_indentations:  # 
                 # Check that the (-1,0j) is to the right of the line between (x1,y1) and (x2,y2)
                 # If the cross product of vectors (x2-x1, y2-y1) and (-1-x1, 0-y1) is < 0, then (-1,0) is to the right
                 if (x[j,idx] - x[j-1,idx])*(0 - y[j-1,idx]) - (y[j,idx] - y[j-1,idx])*(-1 - x[j-1,idx]) < 0:
