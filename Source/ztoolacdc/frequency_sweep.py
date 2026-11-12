@@ -487,7 +487,7 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     if not pscad_plot:
         if verbose: print(' Disabling needless outputs and animated displays')
         scan_vars = ['blockid','VDUTac','IDUTacA1','IDUTacA2','VDUTdc','IDUTdcA1','IDUTdcA2','theta']  # Target outputs
-        disable_pscad_outputs(main, scan_vars, max_depth=0) # Explore the project subcomponents up to max_depth looking for output channels
+        disable_pscad_outputs(main, scan_vars, max_depth=0, verbose=verbose) # Explore the project subcomponents up to max_depth looking for output channels
 
     # Set simulation-specific parameters
     if 'Perturbation' not in pscad.simulation_sets():
@@ -547,18 +547,16 @@ def frequency_sweep(t_snap=None, t_sim=None, t_step=None, sample_step=None, v_pe
     with open(out_filename + ".inf", 'r') as info_file:
         out_num = []  # Ztool's variables output channel number
         names = []  # Ztool's variables output names
-        counter = 1  # Total number of PSCAD output signals
         for line in info_file.readlines():
-            if line.split()[3].split('"')[min([1,len(line.split()[3].split('"'))])] in group:  # If the output channel corresponds to a Ztool variable
-                out_num.append(counter)  # Get variable's output channel number
-                # Same as out_num.append(int(line.split()[0].split('(')[1].split(')')[0]))
-                names.append(line.split()[2].split('"')[1])  # Get output variable name
-                # ch_var_names.__setitem__(key=counter, value=names[-1])  # Var name entry with the channel num as key
-                ch_var_names[counter] = names[-1]  # Var name entry with the channel num as key
-            counter = counter + 1
+            if line[0:3] == "PGB":  # If the line contains a PSCAD output channel
+                line_split = line.split()
+                if line_split[3].split('"')[min([1,len(line_split[3].split('"'))])] in group:  # If the output channel corresponds to a Ztool variable
+                    channel = int(line_split[0].replace("PGB(", "").replace(')',''))
+                    out_num.append(channel)  # Get variable's output channel number
+                    names.append(line_split[2].split('"')[1])  # Get output variable name
+                    ch_var_names[channel] = names[-1]  # Var name entry with the channel num as key
 
     block_id_out_num = [out_num[i] for i in range(len(names)) if "blockid" in names[i]]  # block_id outputs numbers
-    # out_files = int(np.ceil(counter / 10))  # Only 10 output channels per .out file
     files_to_open = [int(np.ceil(block_id_out / 10)) for block_id_out in block_id_out_num]  # With block_id outputs
     files_to_open = list(set(files_to_open))  # File's number to be opened
     block_id_out = {}  # Dict with block_id signal as the key and block_id output channel number as the content
@@ -1156,7 +1154,7 @@ def frequency_sweep_TF(t_snap=None, t_sim=None, t_step=None, sample_step=None, v
     # Disable output channel components (all but Z-tool's scaning blocks) and animated displays
     if not pscad_plot:
         if verbose: print(' Disabling needless outputs and animated displays')
-        disable_pscad_outputs(main, ['blockid','inputTF', 'outputTF'], max_depth=0) # Explore the project subcomponents up to max_depth looking for output channels
+        disable_pscad_outputs(main, ['blockid','inputTF', 'outputTF'], max_depth=0, verbose=verbose) # Explore the project subcomponents up to max_depth looking for output channels
 
     # Set simulation-specific parameters
     if 'Perturbation' not in pscad.simulation_sets():
@@ -1216,13 +1214,15 @@ def frequency_sweep_TF(t_snap=None, t_sim=None, t_step=None, sample_step=None, v
     with open(out_filename + ".inf", 'r') as info_file:
         out_num = []  # Ztool's variables output channel number
         names = []  # Ztool's variables output names
-        counter = 1  # Total number of PSCAD output signals
         for line in info_file.readlines():
-            if line.split()[3].split('"')[min([1,len(line.split()[3].split('"'))])] in "TFscan":  # If the output channel corresponds to a Ztool variable
-                out_num.append(counter)  # Get variable's output channel number
-                names.append(line.split()[2].split('"')[1])  # Get output variable name
-                ch_var_names[counter] = names[-1]  # Var name entry with the channel num as key
-            counter = counter + 1
+            if line[0:3] == "PGB":  # If the line contains a PSCAD output channel
+                line_split = line.split()
+                if line_split[3].split('"')[min([1,len(line_split[3].split('"'))])] in 'TFscan':  # If the output channel corresponds to a Ztool variable
+                    channel = int(line_split[0].replace("PGB(", "").replace(')',''))
+                    out_num.append(channel)  # Get variable's output channel number
+                    names.append(line_split[2].split('"')[1])  # Get output variable name
+                    ch_var_names[channel] = names[-1]  # Var name entry with the channel num as key
+
     if verbose: print("Output channel variable names \n","\n".join(names))
     block_id_out_num = [out_num[i] for i in range(len(names)) if "blockid" in names[i]]  # block_id outputs numbers
     files_to_open = [int(np.ceil(block_id_out / 10)) for block_id_out in block_id_out_num]  # With block_id outputs
@@ -1396,7 +1396,7 @@ def read_one_line(file_path, nline):
             if line_number == nline + 1: selected_data = line.split()
     return selected_data
 
-def disable_pscad_outputs(canvas, target_variables=[], max_depth=0, current_depth=0):
+def disable_pscad_outputs(canvas, target_variables=[], max_depth=0, current_depth=0, verbose=False):
     all_pgb = canvas.find_all("master:pgb")  # Find all output channels in the canvas
     for pgb in all_pgb:
         if not (pgb.parameters()['Name'] in target_variables):  pgb.disable()  # Disable the non-selected outputs
@@ -1405,7 +1405,7 @@ def disable_pscad_outputs(canvas, target_variables=[], max_depth=0, current_dept
     if max_depth > current_depth:
         current_depth += 1 # Increase the current depth
         # Go into the sub-canvases and disable outputs within as well: this can take a long time if there are many components and sub-canvases, so it is optional
-        # print(' Current canvas', canvas,"and depth", current_depth)
+        if verbose: print(' Current canvas', canvas,"and depth", current_depth)
         components = canvas.find_all()  # Find all components in the canvas
         for component in components:
             try:
